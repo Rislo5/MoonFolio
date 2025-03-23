@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCryptoPrices } from "@/lib/api";
-import { formatCurrency, formatPercentage, calculateProfitLoss, calculateProfitLossPercentage } from "@/lib/utils";
-import { Asset } from "@/types";
+import { fetchCryptoPrice } from "@/lib/api";
+import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { AssetWithPrice } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface AssetTableProps {
-  assets: Asset[];
+  assets: AssetWithPrice[];
   onAddTransaction: () => void;
   onTransferAsset?: (assetId: number) => void;
   showTransferButton?: boolean;
@@ -19,34 +19,11 @@ export default function AssetTable({
   onTransferAsset, 
   showTransferButton = false 
 }: AssetTableProps) {
-  // Generate coin IDs for API call
-  const coinIds = assets.map(asset => asset.symbol.toLowerCase());
+  // Non abbiamo bisogno di fare una chiamata API extra perché gli asset includono già i prezzi
+  const isLoading = false;
 
-  // Fetch current prices from API
-  const { data: prices, isLoading } = useQuery({
-    queryKey: [`/api/crypto/prices?ids=${coinIds.join(',')}`],
-    enabled: assets.length > 0
-  });
-
-  // Enrich assets with current prices and calculations
-  const enrichedAssets = assets.map(asset => {
-    const symbol = asset.symbol.toLowerCase();
-    const currentPrice = prices?.[symbol]?.usd || 0;
-    const change24h = prices?.[symbol]?.usd_24h_change || 0;
-    const totalValue = currentPrice * parseFloat(asset.quantity);
-    const avgPrice = parseFloat(asset.avgPrice);
-    const profitLoss = calculateProfitLoss(currentPrice, avgPrice, parseFloat(asset.quantity));
-    const profitLossPercentage = calculateProfitLossPercentage(currentPrice, avgPrice);
-
-    return {
-      ...asset,
-      currentPrice,
-      totalValue,
-      change24h,
-      profitLoss,
-      profitLossPercentage
-    };
-  });
+  // Gli asset sono già arricchiti con informazioni sui prezzi
+  const enrichedAssets = assets;
 
   if (assets.length === 0) {
     return (
@@ -115,12 +92,12 @@ export default function AssetTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{parseFloat(asset.quantity).toFixed(4)} {asset.symbol.toUpperCase()}</TableCell>
-                  <TableCell>{formatCurrency(parseFloat(asset.avgPrice))}</TableCell>
+                  <TableCell>{parseFloat(asset.balance).toFixed(4)} {asset.symbol.toUpperCase()}</TableCell>
+                  <TableCell>{formatCurrency(asset.avgBuyPrice ? parseFloat(asset.avgBuyPrice) : 0)}</TableCell>
                   <TableCell>{formatCurrency(asset.currentPrice || 0)}</TableCell>
-                  <TableCell className="font-medium">{formatCurrency(asset.totalValue || 0)}</TableCell>
-                  <TableCell className={(asset.change24h || 0) >= 0 ? "text-green-500" : "text-red-500"}>
-                    {formatPercentage(asset.change24h || 0)}
+                  <TableCell className="font-medium">{formatCurrency(asset.value || 0)}</TableCell>
+                  <TableCell className={(asset.priceChange24h || 0) >= 0 ? "text-green-500" : "text-red-500"}>
+                    {formatPercentage(asset.priceChange24h || 0)}
                   </TableCell>
                   <TableCell className={(asset.profitLoss || 0) >= 0 ? "text-green-500" : "text-red-500"}>
                     {formatCurrency(asset.profitLoss || 0)}

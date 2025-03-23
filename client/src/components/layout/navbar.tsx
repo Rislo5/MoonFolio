@@ -18,11 +18,15 @@ const Navbar = () => {
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Disconnetti il portfolio e vai alla pagina di benvenuto
-    if (isConnected) {
-      disconnect();
-    }
+    
+    // Se siamo già connessi ma vogliamo tornare alla pagina di benvenuto
+    // non disconnettiamo il portfolio, ma andiamo semplicemente alla home
     setLocation("/");
+    
+    // Chiudi il menu mobile se è aperto
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
   };
   
   const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ComponentType<any> }) => (
