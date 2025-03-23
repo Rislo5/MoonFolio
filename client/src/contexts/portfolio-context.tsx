@@ -90,17 +90,26 @@ export const PortfolioContext = createContext<PortfolioContextType>({
   activeTimeframe: "7d",
   
   connectEnsWallet: async () => {},
-  createManualPortfolio: async () => {},
+  createManualPortfolio: async () => ({
+    id: 0,
+    name: "",
+    userId: null,
+    walletAddress: null,
+    isEns: null,
+    ensName: null,
+    createdAt: null,
+    updatedAt: null,
+  }),
   setActivePortfolio: () => {},
   disconnect: () => {},
   
-  addAsset: async () => {},
-  editAsset: async () => {},
-  removeAsset: async () => {},
+  addAsset: async () => ({} as AssetWithPrice),
+  editAsset: async () => ({} as AssetWithPrice),
+  removeAsset: async () => true,
   
-  addTransaction: async () => {},
-  editTransaction: async () => {},
-  removeTransaction: async () => {},
+  addTransaction: async () => ({} as TransactionWithDetails),
+  editTransaction: async () => ({} as TransactionWithDetails),
+  removeTransaction: async () => true,
   
   setActiveTimeframe: () => {},
 });

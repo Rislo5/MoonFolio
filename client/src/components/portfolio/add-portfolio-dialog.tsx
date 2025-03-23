@@ -148,14 +148,13 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     setIsSubmitting(true);
     try {
       const newPortfolio = await createManualPortfolio(values.name);
-      // @ts-ignore - portfolio structure is complex
+      // Il portfolio ora è un'istanza completa di Portfolio
       setCreatedPortfolioId(newPortfolio.id);
       setStep(2);
       setProgress(66);
       
       // Attiva subito il portfolio appena creato
-      // @ts-ignore - TypeScript doesn't recognize newPortfolio structure
-      const portfolioId = newPortfolio?.id || 0;
+      const portfolioId = newPortfolio.id;
       setActivePortfolio(portfolioId);
       
       toast({
