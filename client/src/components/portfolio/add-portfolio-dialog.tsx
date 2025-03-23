@@ -216,7 +216,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
+          <DialogTitle className="text-2xl font-bold">
             Crea Portfolio in un Solo Passaggio
           </DialogTitle>
           <DialogDescription>
@@ -264,7 +264,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                     variant="outline" 
                     size="sm" 
                     type="button"
-                    className="justify-start text-sm h-8"
+                    className="justify-start text-sm h-8 rounded-xl"
                     onClick={() => form.setValue("name", suggestion)}
                   >
                     <Plus className="h-3 w-3 mr-1" />
@@ -316,7 +316,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                       popularCryptos.slice(0, 6).map((crypto: { id: string; name: string; symbol: string; image?: string; current_price?: number }) => (
                         <div
                           key={crypto.id}
-                          className={`border rounded-lg p-3 cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5 ${
+                          className={`border rounded-xl p-3 cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5 ${
                             selectedCrypto?.id === crypto.id ? "border-primary bg-primary/10" : ""
                           }`}
                           onClick={() => handleCryptoSelect(crypto)}
