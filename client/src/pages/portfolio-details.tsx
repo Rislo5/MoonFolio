@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import AddAssetDialog from "@/components/portfolio/add-asset-dialog";
-import PortfolioCharts from "@/components/portfolio/portfolio-charts";
+import PortfolioSummaryCard from "@/components/portfolio/portfolio-summary-card";
 import AssetDetailTable from "@/components/portfolio/asset-detail-table";
 import TransactionDetailList from "@/components/portfolio/transaction-detail-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -113,63 +113,8 @@ export default function PortfolioDetails() {
         </div>
       </div>
       
-      {/* Riepilogo portfolio */}
-      <Card className="bg-muted/30">
-        <CardHeader>
-          <CardTitle className="text-xl">Riepilogo Portfolio</CardTitle>
-          <CardDescription>
-            Panoramica del valore e delle performance
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-background rounded-lg p-4 shadow-sm">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Valore Totale</h3>
-              <p className="text-xl sm:text-2xl font-bold">
-                {formatCurrency(portfolioOverview?.totalValue || 0)}
-              </p>
-            </div>
-            <div className="bg-background rounded-lg p-4 shadow-sm">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Cambio 24h</h3>
-              <div className="flex items-center">
-                <p className={`text-xl sm:text-2xl font-bold ${
-                  (portfolioOverview?.change24hPercentage || 0) >= 0 
-                    ? 'text-green-500' 
-                    : 'text-red-500'
-                }`}>
-                  {formatCurrency(portfolioOverview?.change24h || 0)}
-                </p>
-                <span className={`text-sm ml-2 ${
-                  (portfolioOverview?.change24hPercentage || 0) >= 0 
-                    ? 'text-green-500' 
-                    : 'text-red-500'
-                }`}>
-                  {(portfolioOverview?.change24hPercentage || 0) >= 0 ? '+' : ''}
-                  {(portfolioOverview?.change24hPercentage || 0).toFixed(2)}%
-                </span>
-              </div>
-            </div>
-            <div className="bg-background rounded-lg p-4 shadow-sm">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Numero di Asset</h3>
-              <p className="text-xl sm:text-2xl font-bold">{assets.length}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Sezione Grafici */}
-      {assets.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-1.5 sm:gap-2">
-              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
-              Analisi Portfolio
-            </h2>
-          </div>
-          
-          <PortfolioCharts />
-        </div>
-      )}
+      {/* Riepilogo Portfolio con Grafici Integrati */}
+      <PortfolioSummaryCard />
       
       {/* Sezione Dettagli */}
       <div>

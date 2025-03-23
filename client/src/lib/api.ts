@@ -263,22 +263,111 @@ export async function generatePortfolioChartData(timeframe: string): Promise<Cha
   const days = timeframeToDays(timeframe);
   const dates = generateDates(days);
   
-  // Ottieni il valore attuale del portfolio dal localStorage o usa un valore base più basso
-  const currentValueStr = localStorage.getItem('currentPortfolioValue');
-  let startValue = currentValueStr ? parseFloat(currentValueStr) : 5000 + Math.random() * 1000;
-  const values = [startValue];
-  
-  for (let i = 1; i < dates.length; i++) {
-    // Random walk with a slight positive bias
-    const changePercent = (Math.random() * 0.06) - 0.02; // Between -2% and +4%
-    startValue = startValue * (1 + changePercent);
-    values.push(startValue);
+  try {
+    // Ottieni il valore attuale del portfolio attivo
+    const portfolios = await fetchPortfolios();
+    if (!portfolios || portfolios.length === 0) {
+      throw new Error("Nessun portfolio trovato");
+    }
+    
+    // Trova il portfolio attivo dal localStorage o usa il primo
+    const activePortfolioIdStr = localStorage.getItem('activePortfolioId');
+    const portfolioId = activePortfolioIdStr ? parseInt(activePortfolioIdStr) : portfolios[0].id;
+    
+    // Ottieni il valore corrente del portfolio
+    const overview = await fetchPortfolioOverview(portfolioId);
+    let currentValue = overview.totalValue;
+    
+    // Per evitare grafici piatti quando il valore è 0
+    if (currentValue <= 0) {
+      currentValue = 1000; // Valore base minimo
+    }
+    
+    // Calcola un valore iniziale realistico basato sul timeframe
+    let startValue = currentValue;
+    const variationFactors = {
+      '24h': { min: -0.03, max: 0.03 },    // ±3% nelle ultime 24 ore
+      '7d': { min: -0.08, max: 0.08 },     // ±8% negli ultimi 7 giorni
+      '30d': { min: -0.15, max: 0.15 },    // ±15% negli ultimi 30 giorni
+      '1y': { min: -0.30, max: 0.50 },     // -30% a +50% nell'ultimo anno
+      'all': { min: -0.40, max: 0.70 }     // -40% a +70% da sempre
+    };
+    
+    // Seleziona il range di variazione appropriato
+    const range = variationFactors[timeframe as keyof typeof variationFactors] || 
+                 { min: -0.10, max: 0.10 };
+    
+    // Determina casualmente se il trend è positivo o negativo con bias positivo
+    const isPositive = Math.random() > 0.3; // 70% di probabilità di trend positivo
+    
+    // Calcola il valore iniziale
+    if (isPositive) {
+      // Se positivo, il valore finale (corrente) è più alto di quello iniziale
+      const variationPercent = range.min + (Math.random() * (range.max - range.min));
+      startValue = currentValue / (1 + variationPercent);
+    } else {
+      // Se negativo, il valore finale (corrente) è più basso di quello iniziale
+      const variationPercent = range.min + (Math.random() * (range.max - range.min));
+      startValue = currentValue / (1 - variationPercent);
+    }
+    
+    // Genera i valori con una camminata casuale tendente al valore corrente
+    const values: number[] = [];
+    const stepChange = (currentValue - startValue) / (dates.length - 1);
+    
+    let cumulativeValue = startValue;
+    
+    // Aggiungi volatilità ai valori
+    dates.forEach((_, index) => {
+      // Volatilità proporzionale al valore e alla lunghezza del timeframe
+      const volatilityFactor = timeframe === '24h' ? 0.005 : 
+                            timeframe === '7d' ? 0.01 : 
+                            timeframe === '30d' ? 0.015 : 0.02;
+      
+      const volatility = Math.min(volatilityFactor * cumulativeValue, 1000);
+      const randomChange = (Math.random() - 0.5) * volatility * 2;
+      
+      // Aggiungi il cambiamento di tendenza
+      if (index > 0) { // Mantieni il primo valore come calcolato
+        cumulativeValue += stepChange;
+        cumulativeValue += randomChange;
+      }
+      
+      // Assicura che i valori non siano negativi
+      cumulativeValue = Math.max(cumulativeValue, 1);
+      
+      // Arrotonda a 2 decimali e aggiungi all'array dei valori
+      values.push(Number(cumulativeValue.toFixed(2)));
+    });
+    
+    // Assicurati che l'ultimo valore sia esattamente il valore corrente del portfolio
+    if (values.length > 0) {
+      values[values.length - 1] = currentValue;
+    }
+    
+    return {
+      labels: dates,
+      values: values
+    };
+  } catch (error) {
+    console.error("Errore nella generazione dei dati del grafico:", error);
+    
+    // Fallback con dati semplici in caso di errore
+    const baseValue = 1000;
+    const volatility = 0.05; // 5% di volatilità giornaliera
+    
+    let value = baseValue;
+    const values = dates.map(() => {
+      const change = (Math.random() - 0.45) * volatility * value; // Leggero bias positivo
+      value += change;
+      return Math.max(value, 1); // Evita valori negativi
+    });
+    
+    return {
+      labels: dates,
+      values: values
+    };
   }
-  
-  return {
-    labels: dates,
-    values: values
-  };
 }
 
 // Helper function to convert timeframe to days
@@ -304,10 +393,28 @@ function generateDates(days: number): string[] {
   const dates = [];
   const today = new Date();
   
-  for (let i = days; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(today.getDate() - i);
-    dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  // Per periodi lunghi (1 anno o più), creiamo meno punti per rendere il grafico più leggibile
+  if (days > 90) {
+    // Intervallo in giorni tra i punti del grafico
+    const interval = Math.max(1, Math.floor(days / 30));
+    
+    for (let i = days; i >= 0; i -= interval) {
+      const date = new Date();
+      date.setDate(today.getDate() - i);
+      dates.push(date.toISOString().split('T')[0]); // Format as YYYY-MM-DD
+    }
+    
+    // Assicuriamoci di avere il punto finale se non è già incluso
+    if ((days % interval) !== 0) {
+      dates.push(today.toISOString().split('T')[0]);
+    }
+  } else {
+    // Per periodi più brevi, mostriamo tutti i giorni
+    for (let i = days; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(today.getDate() - i);
+      dates.push(date.toISOString().split('T')[0]); // Format as YYYY-MM-DD
+    }
   }
   
   return dates;
