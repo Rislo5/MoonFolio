@@ -11,7 +11,8 @@ import {
   DialogDescription, 
   DialogFooter, 
   DialogHeader, 
-  DialogTitle
+  DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -22,44 +23,31 @@ import {
   FormMessage,
   FormDescription
 } from "@/components/ui/form";
-import {
-  Card,
-  CardContent
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Search, 
-  ArrowRight, 
   Sparkles, 
   Plus, 
-  Wallet,
   Briefcase,
-  CreditCard,
   Loader2
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPopularCryptos, searchCryptos } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 
-// Schema unificato per la creazione semplificata
+// Schema per la creazione del portfolio
 const createPortfolioSchema = z.object({
   name: z.string().min(2, "Il nome deve contenere almeno 2 caratteri").max(50, "Il nome non può superare i 50 caratteri"),
-  assetId: z.string().optional(),
-  assetName: z.string().optional(),
-  assetSymbol: z.string().optional(),
-  assetImage: z.string().optional(),
-  assetCoinGeckoId: z.string().optional(),
-  quantity: z.string().optional(),
-  pricePerCoin: z.string().optional(),
+  selectedCryptos: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    symbol: z.string(),
+    image: z.string().optional(),
+    balance: z.string().optional(),
+    avgPrice: z.string().optional()
+  })).optional(),
 });
 
 type Props = {
@@ -73,6 +61,9 @@ type CryptoCurrency = {
   symbol: string;
   image?: string;
   current_price?: number;
+  selected?: boolean;
+  balance?: string;
+  avgPrice?: string;
 };
 
 export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
@@ -82,15 +73,15 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<CryptoCurrency[]>([]);
-  const [selectedCrypto, setSelectedCrypto] = useState<CryptoCurrency | null>(null);
+  const [selectedCryptos, setSelectedCryptos] = useState<CryptoCurrency[]>([]);
+  const [activeTab, setActiveTab] = useState<"popular" | "search">("popular");
   
-  // Form unificato per la creazione in un solo passaggio
+  // Form per la creazione del portfolio
   const form = useForm<z.infer<typeof createPortfolioSchema>>({
     resolver: zodResolver(createPortfolioSchema),
     defaultValues: {
       name: "",
-      quantity: "",
-      pricePerCoin: "",
+      selectedCryptos: [],
     },
   });
   
@@ -107,7 +98,12 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
       if (searchTerm.trim().length > 2) {
         try {
           const results = await searchCryptos(searchTerm);
-          setSearchResults(results);
+          // Aggiungi flag selected per quelli già selezionati
+          const resultsWithSelected = results.map(crypto => ({
+            ...crypto,
+            selected: selectedCryptos.some(selected => selected.id === crypto.id)
+          }));
+          setSearchResults(resultsWithSelected);
         } catch (error) {
           console.error("Error searching cryptos:", error);
         }
@@ -115,39 +111,51 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     }, 500);
     
     return () => clearTimeout(delaySearch);
-  }, [searchTerm]);
+  }, [searchTerm, selectedCryptos]);
   
-  // Gestisce la selezione di una criptovaluta
-  const handleCryptoSelect = (crypto: CryptoCurrency) => {
-    setSelectedCrypto(crypto);
-    form.setValue("assetId", crypto.id);
-    form.setValue("assetName", crypto.name);
-    form.setValue("assetSymbol", crypto.symbol);
-    form.setValue("assetImage", crypto.image);
-    form.setValue("assetCoinGeckoId", crypto.id);
-    
-    // Se la criptovaluta ha un prezzo corrente, precompiliamo il campo
-    if (crypto.current_price) {
-      form.setValue("pricePerCoin", crypto.current_price.toString());
+  // Gestisce la selezione/deselezione di una criptovaluta
+  const toggleCryptoSelection = (crypto: CryptoCurrency) => {
+    if (selectedCryptos.some(selected => selected.id === crypto.id)) {
+      // Se già selezionato, rimuovilo
+      setSelectedCryptos(prev => prev.filter(item => item.id !== crypto.id));
+    } else {
+      // Altrimenti aggiungilo
+      setSelectedCryptos(prev => [...prev, { 
+        ...crypto, 
+        balance: "", 
+        avgPrice: crypto.current_price ? crypto.current_price.toString() : ""
+      }]);
     }
   };
   
-  // Gestisce il submit del form unificato
+  // Gestisce l'aggiornamento del balance di una crypto selezionata
+  const updateCryptoBalance = (id: string, balance: string) => {
+    setSelectedCryptos(prev => 
+      prev.map(crypto => 
+        crypto.id === id 
+          ? { ...crypto, balance } 
+          : crypto
+      )
+    );
+  };
+  
+  // Gestisce l'aggiornamento del prezzo medio di una crypto selezionata
+  const updateCryptoAvgPrice = (id: string, avgPrice: string) => {
+    setSelectedCryptos(prev => 
+      prev.map(crypto => 
+        crypto.id === id 
+          ? { ...crypto, avgPrice } 
+          : crypto
+      )
+    );
+  };
+  
+  // Gestisce il submit del form
   const handleFormSubmit = async (values: z.infer<typeof createPortfolioSchema>) => {
     if (!values.name.trim()) {
       toast({
         title: "Campo obbligatorio",
         description: "Inserisci un nome per il tuo portfolio",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Se abbiamo selezionato una crypto ma mancano i dettagli
-    if (selectedCrypto && (!values.quantity || !values.pricePerCoin)) {
-      toast({
-        title: "Campi obbligatori",
-        description: "Inserisci la quantità e il prezzo di acquisto per la criptovaluta selezionata",
         variant: "destructive",
       });
       return;
@@ -162,20 +170,25 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
       // Attiva subito il portfolio appena creato
       setActivePortfolio(newPortfolio.id);
       
-      // Se è stato selezionato un asset, aggiungilo
-      if (selectedCrypto && values.quantity && values.pricePerCoin) {
-        await addAsset({
-          name: selectedCrypto.name,
-          symbol: selectedCrypto.symbol,
-          coinGeckoId: selectedCrypto.id,
-          balance: values.quantity,
-          avgBuyPrice: values.pricePerCoin,
-          imageUrl: selectedCrypto.image
-        });
+      // Aggiungi tutti gli asset selezionati se presenti
+      if (selectedCryptos.length > 0) {
+        for (const crypto of selectedCryptos) {
+          // Aggiungi solo se balance e avgPrice sono stati compilati
+          if (crypto.balance && crypto.avgPrice) {
+            await addAsset({
+              name: crypto.name,
+              symbol: crypto.symbol,
+              coinGeckoId: crypto.id,
+              balance: crypto.balance,
+              avgBuyPrice: crypto.avgPrice,
+              imageUrl: crypto.image
+            });
+          }
+        }
         
         toast({
-          title: "Portfolio e asset creati con successo",
-          description: "Puoi ora visualizzare e gestire il tuo portfolio",
+          title: "Portfolio creato con successo",
+          description: `Portfolio "${values.name}" creato con ${selectedCryptos.filter(c => c.balance && c.avgPrice).length} asset`,
         });
       } else {
         toast({
@@ -207,9 +220,35 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
       form.reset();
       setSearchTerm("");
       setSearchResults([]);
-      setSelectedCrypto(null);
+      setSelectedCryptos([]);
+      setActiveTab("popular");
     }
     onOpenChange(open);
+  };
+  
+  // Renderizza una crypto card
+  const renderCryptoCard = (crypto: CryptoCurrency) => {
+    const isSelected = selectedCryptos.some(selected => selected.id === crypto.id);
+    
+    return (
+      <div
+        key={crypto.id}
+        className={`border rounded-xl p-3 cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5 ${
+          isSelected ? "border-primary bg-primary/10" : ""
+        }`}
+        onClick={() => toggleCryptoSelection(crypto)}
+      >
+        <div className="flex items-center space-x-2">
+          {crypto.image && (
+            <img src={crypto.image} alt={crypto.name} className="w-8 h-8" />
+          )}
+          <div>
+            <p className="font-medium text-sm leading-tight">{crypto.name}</p>
+            <p className="text-xs text-muted-foreground uppercase">{crypto.symbol}</p>
+          </div>
+        </div>
+      </div>
+    );
   };
   
   return (
@@ -276,7 +315,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
             
             <Separator />
             
-            {/* SEZIONE AGGIUNGI ASSET (OPZIONALE) */}
+            {/* SEZIONE AGGIUNGI CRYPTO (OPZIONALE) */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -286,21 +325,34 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                 <Badge variant="secondary">Facoltativo</Badge>
               </div>
               
-              <Tabs defaultValue="popular" className="w-full">
-                <TabsList className="grid grid-cols-2 mb-4">
-                  <TabsTrigger value="popular">
+              {/* Tabs per popolari/cerca */}
+              <div className="space-y-4">
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant={activeTab === "popular" ? "default" : "outline"}
+                    className="flex-1"
+                    onClick={() => setActiveTab("popular")}
+                  >
                     <Sparkles className="h-4 w-4 mr-2" />
                     Popolari
-                  </TabsTrigger>
-                  <TabsTrigger value="search">
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activeTab === "search" ? "default" : "outline"}
+                    className="flex-1"
+                    onClick={() => setActiveTab("search")}
+                  >
                     <Search className="h-4 w-4 mr-2" />
                     Cerca
-                  </TabsTrigger>
-                </TabsList>
+                  </Button>
+                </div>
                 
-                <TabsContent value="popular">
+                {/* Contenuto tab popolari */}
+                {activeTab === "popular" && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {isLoadingPopular ? (
+                      // Placeholders mentre carica
                       Array(6).fill(0).map((_, i) => (
                         <div key={i} className="border rounded-lg p-3 animate-pulse">
                           <div className="flex items-center space-x-2">
@@ -313,165 +365,147 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                         </div>
                       ))
                     ) : popularCryptos && popularCryptos.length > 0 ? (
-                      popularCryptos.slice(0, 6).map((crypto: { id: string; name: string; symbol: string; image?: string; current_price?: number }) => (
-                        <div
-                          key={crypto.id}
-                          className={`border rounded-xl p-3 cursor-pointer transition-all hover:border-primary/50 hover:bg-primary/5 ${
-                            selectedCrypto?.id === crypto.id ? "border-primary bg-primary/10" : ""
-                          }`}
-                          onClick={() => handleCryptoSelect(crypto)}
-                        >
-                          <div className="flex items-center space-x-2">
-                            {crypto.image && (
-                              <img src={crypto.image} alt={crypto.name} className="w-8 h-8" />
-                            )}
-                            <div>
-                              <p className="font-medium text-sm leading-tight">{crypto.name}</p>
-                              <p className="text-xs text-muted-foreground uppercase">{crypto.symbol}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
+                      // Elenco delle cryptos popolari
+                      popularCryptos.slice(0, 6).map((crypto: any) => renderCryptoCard(crypto))
                     ) : (
                       <div className="col-span-full text-center p-4 text-muted-foreground">
                         Nessuna criptovaluta popolare disponibile
                       </div>
                     )}
                   </div>
-                </TabsContent>
+                )}
                 
-                <TabsContent value="search" className="space-y-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-                    <Input
-                      className="pl-10"
-                      placeholder="Cerca una criptovaluta (es. Bitcoin, Ethereum...)"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  
-                  {searchTerm.trim().length > 0 && (
-                    <div className="border rounded-md max-h-[200px] overflow-y-auto">
-                      {searchResults.length > 0 ? (
-                        <div className="p-1">
-                          {searchResults.map((crypto) => (
-                            <div
-                              key={crypto.id}
-                              className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                                selectedCrypto?.id === crypto.id ? "bg-primary/10 border-primary" : ""
-                              }`}
-                              onClick={() => handleCryptoSelect(crypto)}
-                            >
-                              {crypto.image && (
-                                <img src={crypto.image} alt={crypto.name} className="w-6 h-6 mr-2 rounded-full" />
-                              )}
-                              <div>
-                                <p className="font-medium">{crypto.name}</p>
-                                <p className="text-xs text-muted-foreground uppercase">{crypto.symbol}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : searchTerm.trim().length > 2 ? (
-                        <div className="p-4 text-center text-muted-foreground">
-                          Nessun risultato trovato per "{searchTerm}"
-                        </div>
-                      ) : (
-                        <div className="p-4 text-center text-muted-foreground">
-                          Digita almeno 3 caratteri per iniziare la ricerca
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-              
-              {selectedCrypto && (
-                <Card className="border border-primary/20 bg-primary/5 mt-4">
-                  <CardContent className="p-4">
-                    <div className="flex items-start space-x-3">
-                      {selectedCrypto.image && (
-                        <img src={selectedCrypto.image} alt={selectedCrypto.name} className="w-10 h-10 rounded-full" />
-                      )}
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{selectedCrypto.name}</h3>
-                        <p className="text-sm text-muted-foreground uppercase">{selectedCrypto.symbol}</p>
-                      </div>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setSelectedCrypto(null)}
-                      >
-                        Cambia
-                      </Button>
+                {/* Contenuto tab ricerca */}
+                {activeTab === "search" && (
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+                      <Input
+                        className="pl-10"
+                        placeholder="Cerca una criptovaluta (es. Bitcoin, Ethereum...)"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3 mt-3">
-                      <FormField
-                        control={form.control}
-                        name="quantity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Quantità</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Wallet className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                                <Input
-                                  type="number"
-                                  step="any"
-                                  className="pl-10"
-                                  placeholder="Es. 0.5"
-                                  {...field}
-                                />
+                    {searchTerm.trim().length > 0 && (
+                      <div className="border rounded-md max-h-[200px] overflow-y-auto">
+                        {searchResults.length > 0 ? (
+                          <div className="p-1">
+                            {searchResults.map((crypto) => (
+                              <div
+                                key={crypto.id}
+                                className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-muted transition-colors ${
+                                  selectedCryptos.some(selected => selected.id === crypto.id) ? "bg-primary/10" : ""
+                                }`}
+                                onClick={() => toggleCryptoSelection(crypto)}
+                              >
+                                {crypto.image && (
+                                  <img src={crypto.image} alt={crypto.name} className="w-6 h-6 mr-2 rounded-full" />
+                                )}
+                                <div>
+                                  <p className="font-medium">{crypto.name}</p>
+                                  <p className="text-xs text-muted-foreground uppercase">{crypto.symbol}</p>
+                                </div>
                               </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                            ))}
+                          </div>
+                        ) : searchTerm.trim().length > 2 ? (
+                          <div className="p-4 text-center text-muted-foreground">
+                            Nessun risultato trovato per "{searchTerm}"
+                          </div>
+                        ) : (
+                          <div className="p-4 text-center text-muted-foreground">
+                            Digita almeno 3 caratteri per iniziare la ricerca
+                          </div>
                         )}
-                      />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {/* Lista delle crypto selezionate */}
+              {selectedCryptos.length > 0 && (
+                <div className="space-y-3 mt-4">
+                  <h4 className="text-sm font-medium">Crypto selezionate</h4>
+                  
+                  {selectedCryptos.map((crypto) => (
+                    <div key={crypto.id} className="border rounded-lg p-3 bg-muted/10">
+                      <div className="flex items-center mb-2">
+                        {crypto.image && (
+                          <img src={crypto.image} alt={crypto.name} className="w-6 h-6 mr-2 rounded-full" />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{crypto.name}</p>
+                          <p className="text-xs text-muted-foreground uppercase">{crypto.symbol}</p>
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-7 px-2"
+                          onClick={() => toggleCryptoSelection(crypto)}
+                        >
+                          Rimuovi
+                        </Button>
+                      </div>
                       
-                      <FormField
-                        control={form.control}
-                        name="pricePerCoin"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Prezzo ($)</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                                <Input
-                                  type="number"
-                                  step="any"
-                                  className="pl-10"
-                                  placeholder="Es. 50000"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Quantità</label>
+                          <Input 
+                            type="number" 
+                            step="any" 
+                            min="0"
+                            placeholder="Es. 0.25" 
+                            value={crypto.balance || ""}
+                            onChange={(e) => updateCryptoBalance(crypto.id, e.target.value)}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium block mb-1">Prezzo acquisto ($)</label>
+                          <Input 
+                            type="number" 
+                            step="any" 
+                            min="0"
+                            placeholder="Es. 50000" 
+                            value={crypto.avgPrice || ""}
+                            onChange={(e) => updateCryptoAvgPrice(crypto.id, e.target.value)}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  ))}
+                </div>
               )}
             </div>
             
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Annulla
-              </Button>
-              <Button type="submit" disabled={isSubmitting} className="gap-1 min-w-[120px]">
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                >
+                  Annulla
+                </Button>
+              </DialogClose>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !form.getValues().name}
+                className="ml-2"
+              >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                    Creazione...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creazione in corso...
                   </>
                 ) : (
-                  "Crea Portfolio"
+                  <>
+                    Crea Portfolio
+                  </>
                 )}
               </Button>
             </DialogFooter>
