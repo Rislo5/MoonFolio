@@ -737,11 +737,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Portfolio not found" });
       }
       
-      // Add portfolio ID to transaction data
-      const transactionData = insertTransactionSchema.parse({
+      // Prepara i dati della transazione
+      let transactionInput = {
         ...req.body,
         portfolioId: portfolioIdNum
-      });
+      };
+      
+      // Se date è una stringa ISO, convertila in un oggetto Date
+      if (transactionInput.date && typeof transactionInput.date === 'string') {
+        transactionInput.date = new Date(transactionInput.date);
+      }
+      
+      // Ora valida con lo schema
+      const transactionData = insertTransactionSchema.parse(transactionInput);
       
       const transaction = await storage.createTransaction(transactionData);
       res.status(201).json(transaction);
@@ -835,7 +843,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Transaction not found" });
       }
       
-      const transactionData = insertTransactionSchema.partial().parse(req.body);
+      // Prepara i dati della transazione per l'aggiornamento
+      let transactionInput = { ...req.body };
+      
+      // Se date è una stringa ISO, convertila in un oggetto Date
+      if (transactionInput.date && typeof transactionInput.date === 'string') {
+        transactionInput.date = new Date(transactionInput.date);
+      }
+      
+      const transactionData = insertTransactionSchema.partial().parse(transactionInput);
       const updatedTransaction = await storage.updateTransaction(transactionId, transactionData);
       
       res.json(updatedTransaction);
