@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
+import { createTransaction } from "@/lib/api";
 import { 
   Dialog, 
   DialogContent, 
@@ -116,8 +117,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         type: "withdraw",
         amount: amount.toString(),
         price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-        // Invia direttamente un oggetto Date invece di una stringa ISO
-        date: new Date(),
+        date: new Date().toISOString(), // Converte la data in stringa ISO per evitare problemi di serializzazione
       });
       
       // 2. Verifica se l'asset esiste già nel portfolio di destinazione
@@ -125,7 +125,8 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
       if (!targetPortfolio) throw new Error("Portfolio di destinazione non trovato");
       
       // 3. Aggiungi o aggiorna l'asset nel portfolio di destinazione
-      await addAsset({
+      // Salva il nuovo asset restituito
+      const newAsset = await addAsset({
         portfolioId: targetPortfolioId,
         name: selectedAsset.name,
         symbol: selectedAsset.symbol,
@@ -135,15 +136,16 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         imageUrl: selectedAsset.imageUrl || undefined
       });
       
-      // 4. Crea anche una transazione "deposit" nel portfolio di destinazione
-      await addTransaction({
-        assetId: -1, // Questo verrà sostituito dal backend con l'asset appena creato
-        type: "deposit",
-        amount: amount.toString(),
-        price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-        // Invia direttamente un oggetto Date invece di una stringa ISO
-        date: new Date(),
-      });
+      // 4. Crea anche una transazione "deposit" nel portfolio di destinazione usando l'ID dell'asset appena creato
+      if (newAsset && newAsset.id) {
+        await createTransaction(targetPortfolioId, {
+          assetId: newAsset.id,
+          type: "deposit",
+          amount: amount.toString(),
+          price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
+          date: new Date().toISOString(), // Converte la data in stringa ISO per evitare problemi di serializzazione
+        });
+      }
       
       toast({
         title: "Trasferimento completato",
