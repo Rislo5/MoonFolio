@@ -250,8 +250,8 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
       name: string;
       symbol: string;
       coinGeckoId: string;
-      balance: number;
-      avgBuyPrice?: number;
+      balance: string; // Changed to string
+      avgBuyPrice?: string; // Changed to string
       imageUrl?: string;
     }) => {
       if (!activePortfolioId) throw new Error("No active portfolio");

@@ -133,8 +133,8 @@ const AddAssetDialog = ({ open, onOpenChange }: Props) => {
         name: values.name,
         symbol: values.symbol,
         coinGeckoId: values.coinGeckoId,
-        balance: values.balance,
-        avgBuyPrice: values.avgBuyPrice,
+        balance: values.balance.toString(), // Convert to string
+        avgBuyPrice: values.avgBuyPrice ? values.avgBuyPrice.toString() : undefined, // Convert to string if defined
         imageUrl: values.imageUrl,
       });
       onOpenChange(false);
