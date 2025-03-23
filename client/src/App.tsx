@@ -17,7 +17,7 @@ function App() {
         <PortfolioProvider>
           <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 flex">
             <Sidebar />
-            <main className="flex-1 p-6 md:ml-64 pt-6 pb-12">
+            <main className="flex-1 p-6 sm:ml-20 pt-6 pb-12">
               <Switch>
                 <Route path="/" component={Dashboard} />
                 <Route path="/portfolios" component={Portfolios} />
