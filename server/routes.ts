@@ -577,25 +577,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch current prices for all assets to calculate total value
       try {
-        const coinGeckoIds = assets.map(asset => asset.coinGeckoId).join(',');
-        const priceResponse = await fetch(
-          `${COINGECKO_API_URL}/simple/price?ids=${coinGeckoIds}&vs_currencies=usd&include_24hr_change=true${
-            COINGECKO_API_KEY ? `&x_cg_api_key=${COINGECKO_API_KEY}` : ""
-          }`
-        );
+        // Create a map to store prices
+        const priceMap: Record<string, { price: number, percentChange24h: number }> = {};
         
-        if (!priceResponse.ok) {
-          throw new Error(`CoinGecko API error: ${priceResponse.statusText}`);
+        // Group assets by 10 to avoid hitting API limits
+        const assetGroups = [];
+        for (let i = 0; i < assets.length; i += 10) {
+          assetGroups.push(assets.slice(i, i + 10));
         }
         
-        const priceData = await priceResponse.json();
+        // Fetch prices for each group
+        for (const group of assetGroups) {
+          const slugs = group.map(asset => asset.coinGeckoId).join(','); // coinGeckoId is actually the slug
+          
+          if (slugs.length === 0) continue;
+          
+          const priceResponse = await fetch(
+            `${COINMARKETCAP_API_URL}/cryptocurrency/quotes/latest?slug=${slugs}`, {
+              headers: {
+                'X-CMC_PRO_API_KEY': COINMARKETCAP_API_KEY,
+                'Accept': 'application/json'
+              }
+            }
+          );
+          
+          if (!priceResponse.ok) {
+            throw new Error(`CoinMarketCap API error: ${priceResponse.statusText}`);
+          }
+          
+          const responseData = await priceResponse.json();
+          
+          // Extract price data for each asset
+          if (responseData.data) {
+            // CoinMarketCap returns data as an object with IDs as keys
+            Object.values(responseData.data).forEach((coin: any) => {
+              priceMap[coin.slug] = {
+                price: coin.quote.USD.price,
+                percentChange24h: coin.quote.USD.percent_change_24h
+              };
+            });
+          }
+        }
         
         // Enhance assets with current price data
         const assetsWithPrices = assets.map(asset => {
-          const priceInfo = priceData[asset.coinGeckoId] || { usd: 0, usd_24h_change: 0 };
-          const currentPrice = priceInfo.usd;
+          const priceInfo = priceMap[asset.coinGeckoId] || { price: 0, percentChange24h: 0 };
+          const currentPrice = priceInfo.price;
           const value = Number(asset.balance) * currentPrice;
-          const priceChange24h = priceInfo.usd_24h_change || 0;
+          const priceChange24h = priceInfo.percentChange24h || 0;
           
           // Calculate profit/loss
           let profitLoss = 0;
@@ -866,27 +895,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch current prices for all assets to calculate total value
       try {
-        const coinGeckoIds = assets.map(asset => asset.coinGeckoId).join(',');
-        const priceResponse = await fetch(
-          `${COINGECKO_API_URL}/simple/price?ids=${coinGeckoIds}&vs_currencies=usd&include_24hr_change=true${
-            COINGECKO_API_KEY ? `&x_cg_api_key=${COINGECKO_API_KEY}` : ""
-          }`
-        );
+        // Create a map to store prices
+        const priceMap: Record<string, { price: number, percentChange24h: number }> = {};
         
-        if (!priceResponse.ok) {
-          throw new Error(`CoinGecko API error: ${priceResponse.statusText}`);
+        // Group assets by 10 to avoid hitting API limits
+        const assetGroups = [];
+        for (let i = 0; i < assets.length; i += 10) {
+          assetGroups.push(assets.slice(i, i + 10));
         }
         
-        const priceData = await priceResponse.json();
+        // Fetch prices for each group
+        for (const group of assetGroups) {
+          const slugs = group.map(asset => asset.coinGeckoId).join(','); // coinGeckoId is actually the slug
+          
+          if (slugs.length === 0) continue;
+          
+          const priceResponse = await fetch(
+            `${COINMARKETCAP_API_URL}/cryptocurrency/quotes/latest?slug=${slugs}`, {
+              headers: {
+                'X-CMC_PRO_API_KEY': COINMARKETCAP_API_KEY,
+                'Accept': 'application/json'
+              }
+            }
+          );
+          
+          if (!priceResponse.ok) {
+            throw new Error(`CoinMarketCap API error: ${priceResponse.statusText}`);
+          }
+          
+          const responseData = await priceResponse.json();
+          
+          // Extract price data for each asset
+          if (responseData.data) {
+            // CoinMarketCap returns data as an object with IDs as keys
+            Object.values(responseData.data).forEach((coin: any) => {
+              priceMap[coin.slug] = {
+                price: coin.quote.USD.price,
+                percentChange24h: coin.quote.USD.percent_change_24h
+              };
+            });
+          }
+        }
         
         // Calculate total portfolio value and 24h change
         let totalValue = 0;
         let previousValue = 0;
         
         assets.forEach(asset => {
-          const priceInfo = priceData[asset.coinGeckoId] || { usd: 0, usd_24h_change: 0 };
-          const currentPrice = priceInfo.usd;
-          const priceChange24h = priceInfo.usd_24h_change || 0;
+          const priceInfo = priceMap[asset.coinGeckoId] || { price: 0, percentChange24h: 0 };
+          const currentPrice = priceInfo.price;
+          const priceChange24h = priceInfo.percentChange24h || 0;
           
           const assetValue = Number(asset.balance) * currentPrice;
           totalValue += assetValue;
