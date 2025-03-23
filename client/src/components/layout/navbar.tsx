@@ -18,14 +18,11 @@ const Navbar = () => {
   
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // If connected to a portfolio, go to dashboard, otherwise to portfolio list
+    // Disconnetti il portfolio e vai alla pagina di benvenuto
     if (isConnected) {
-      setLocation("/");
-    } else if (portfolios.length > 0) {
-      setLocation("/portfolios");
-    } else {
-      setLocation("/");
+      disconnect();
     }
+    setLocation("/");
   };
   
   const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ComponentType<any> }) => (
