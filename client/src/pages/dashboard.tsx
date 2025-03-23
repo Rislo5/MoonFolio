@@ -25,11 +25,13 @@ import {
   Wallet, 
   ArrowUpRight, 
   BarChart3,
-  LineChart
+  LineChart,
+  Trash2
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
 import { TransferAssetDialog } from "@/components/portfolio/transfer-asset-dialog";
+import { DeletePortfolioDialog } from "@/components/portfolio/delete-portfolio-dialog";
 import AddAssetDialog from "@/components/portfolio/add-asset-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -40,11 +42,13 @@ const formatTimestamp = (timestamp: string | Date | null) => {
 };
 
 const Dashboard = () => {
-  const { portfolios, assets, isConnected, setActivePortfolio } = usePortfolio();
+  const { portfolios, assets, isConnected, setActivePortfolio, deletePortfolio } = usePortfolio();
   const [isAddPortfolioOpen, setIsAddPortfolioOpen] = useState(false);
   const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] = useState(false);
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
+  const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null);
   const [overviews, setOverviews] = useState<Record<number, { totalValue: number, assetCount: number }>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [_, navigate] = useLocation();

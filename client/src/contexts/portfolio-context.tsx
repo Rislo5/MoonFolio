@@ -44,6 +44,7 @@ type PortfolioContextType = {
   createManualPortfolio: (name: string) => Promise<Portfolio>;
   setActivePortfolio: (portfolioId: number) => void;
   disconnect: () => void;
+  deletePortfolio: (portfolioId: number) => Promise<void>;
   
   // Asset actions
   addAsset: (asset: {
@@ -53,9 +54,10 @@ type PortfolioContextType = {
     balance: string;
     avgBuyPrice?: string;
     imageUrl?: string;
-  }) => Promise<void>;
-  editAsset: (assetId: number, assetData: Partial<AssetWithPrice>) => Promise<void>;
-  removeAsset: (assetId: number) => Promise<void>;
+    portfolioId?: number;
+  }) => Promise<AssetWithPrice>;
+  editAsset: (assetId: number, assetData: Partial<AssetWithPrice>) => Promise<AssetWithPrice>;
+  removeAsset: (assetId: number) => Promise<boolean>;
   
   // Transaction actions
   addTransaction: (transaction: {
@@ -67,12 +69,12 @@ type PortfolioContextType = {
     toAmount?: string;
     toPrice?: string;
     date?: string;
-  }) => Promise<void>;
+  }) => Promise<TransactionWithDetails>;
   editTransaction: (
     transactionId: number,
     transactionData: Partial<TransactionWithDetails>
-  ) => Promise<void>;
-  removeTransaction: (transactionId: number) => Promise<void>;
+  ) => Promise<TransactionWithDetails>;
+  removeTransaction: (transactionId: number) => Promise<boolean>;
   
   // Chart actions
   setActiveTimeframe: (timeframe: TimeFrame) => void;
@@ -102,6 +104,7 @@ export const PortfolioContext = createContext<PortfolioContextType>({
   }),
   setActivePortfolio: () => {},
   disconnect: () => {},
+  deletePortfolio: async () => {},
   
   addAsset: async () => ({} as AssetWithPrice),
   editAsset: async () => ({} as AssetWithPrice),
@@ -471,6 +474,7 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
           setActivePortfolioId(null);
           localStorage.removeItem("activePortfolioId");
         },
+        deletePortfolio: (portfolioId) => deletePortfolioMutation.mutateAsync(portfolioId),
         
         addAsset: (asset) => addAssetMutation.mutateAsync(asset),
         editAsset: (assetId, assetData) => editAssetMutation.mutateAsync({ assetId, assetData }),
