@@ -49,13 +49,6 @@ const Dashboard = () => {
   const [_, navigate] = useLocation();
   const { toast } = useToast();
   
-  // Reindirizza alla welcome screen se non ci sono portfolio
-  useEffect(() => {
-    if (!isLoading && portfolios.length === 0) {
-      navigate('/welcome');
-    }
-  }, [isLoading, portfolios.length, navigate]);
-  
   // Funzione per aprire il dialogo di trasferimento
   const handleOpenTransferDialog = (assetId: number) => {
     setSelectedAssetId(assetId);
@@ -111,8 +104,15 @@ const Dashboard = () => {
     navigate("/portfolios");
   };
   
-  // Se non ci sono portfolios, la precedente useEffect si occuperà di reindirizzare
-  // alla pagina di benvenuto, quindi non dobbiamo fare altro qui
+  // If no portfolios, show welcome screen
+  if (portfolios.length === 0 && !isLoading) {
+    return (
+      <>
+        <WelcomeScreen />
+        <AddPortfolioDialog open={isAddPortfolioOpen} onOpenChange={setIsAddPortfolioOpen} />
+      </>
+    );
+  }
   
   return (
     <div className="space-y-8">
