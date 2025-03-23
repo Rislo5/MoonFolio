@@ -211,7 +211,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
       });
       
       // Reindirizza alla pagina del portfolio
-      window.location.href = '/portfolios';
+      setLocation('/portfolios');
     } catch (error) {
       console.error("Failed to add asset:", error);
       toast({
