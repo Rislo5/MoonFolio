@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
+import { createAsset } from "@/lib/api";
 import { 
   Dialog, 
   DialogContent, 
@@ -107,7 +108,13 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     
     setIsSubmitting(true);
     try {
-      // 1. Crea una transazione di trasferimento in uscita dal portfolio corrente
+      // 1. Ottieni il portfolio di destinazione
+      const targetPortfolio = portfolios.find(p => p.id === values.targetPortfolioId);
+      if (!targetPortfolio) {
+        throw new Error("Portfolio di destinazione non trovato");
+      }
+      
+      // 2. Crea una transazione di trasferimento in uscita dal portfolio corrente
       await addTransaction({
         assetId: values.sourceAssetId,
         type: "transfer",
@@ -116,8 +123,52 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         date: new Date().toISOString()
       });
       
-      // 2. Si potrebbe inviare una notifica al sistema per aggiungere l'asset anche al portfolio destinazione
-      // In un'app reale, questo sarebbe gestito dal backend
+      // 3. In un'app reale, il backend gestirebbe tutto il flusso di trasferimento
+      // Per questa demo, simuliamo l'aggiunta dell'asset anche nel portfolio di destinazione
+      
+      // Verifica se l'asset esiste già nel portfolio di destinazione
+      const existingAssetInTarget = assets.find(a => 
+        a.portfolioId === values.targetPortfolioId && 
+        a.coinGeckoId === selectedAsset.coinGeckoId
+      );
+      
+      if (existingAssetInTarget) {
+        // Se l'asset esiste già, aggiungi solo una transazione di trasferimento in entrata
+        await addTransaction({
+          assetId: existingAssetInTarget.id,
+          type: "transfer",
+          amount: values.amount, // Valore positivo per indicare l'entrata
+          price: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "0",
+          date: new Date().toISOString()
+        });
+      } else {
+        // Se l'asset non esiste, crealo prima nel portfolio di destinazione
+        try {
+          const newAsset = await createAsset(
+            values.targetPortfolioId,
+            {
+              name: selectedAsset.name,
+              symbol: selectedAsset.symbol,
+              coinGeckoId: selectedAsset.coinGeckoId,
+              balance: values.amount, // La quantità trasferita diventa il bilancio iniziale
+              avgBuyPrice: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : undefined,
+              imageUrl: selectedAsset.imageUrl
+            }
+          );
+          
+          // Poi aggiungi una transazione di trasferimento in entrata
+          await addTransaction({
+            assetId: newAsset.id,
+            type: "transfer",
+            amount: values.amount, // Valore positivo per indicare l'entrata
+            price: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "0",
+            date: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error("Failed to create asset in target portfolio:", error);
+          // Continua comunque, almeno abbiamo registrato l'uscita dal portfolio corrente
+        }
+      }
       
       toast({
         title: "Trasferimento avviato",

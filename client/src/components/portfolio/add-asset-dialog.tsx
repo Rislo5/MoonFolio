@@ -108,23 +108,36 @@ const AddAssetDialog = ({ open, onOpenChange }: Props) => {
       setIsSearching(true);
       try {
         const data = await searchCryptos(searchQuery);
+        if (!data || !data.coins || !Array.isArray(data.coins)) {
+          console.warn("Invalid search results format:", data);
+          setSearchResults([]);
+          return;
+        }
+        
         // Map to format we need
         const cryptos = data.coins.map((crypto: any) => ({
-          id: crypto.id,
-          name: crypto.name,
-          symbol: crypto.symbol,
-          image: crypto.large,
-        }));
+          id: crypto.id || '',
+          name: crypto.name || 'Unknown',
+          symbol: crypto.symbol || '???',
+          image: crypto.large || crypto.thumb || '',
+        })).filter(c => c.id && c.name && c.symbol); // Filtra risultati non validi
+        
         setSearchResults(cryptos);
       } catch (error) {
         console.error("Failed to search cryptocurrencies:", error);
+        setSearchResults([]); // Assicuriamoci di resettare in caso di errore
+        toast({
+          title: "Errore nella ricerca",
+          description: "Non è stato possibile completare la ricerca. Prova a utilizzare l'elenco delle criptovalute popolari.",
+          variant: "destructive",
+        });
       } finally {
         setIsSearching(false);
       }
     }, 500);
     
     return () => clearTimeout(searchTimer);
-  }, [searchQuery]);
+  }, [searchQuery, toast]);
   
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
