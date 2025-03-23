@@ -116,7 +116,8 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         type: "withdraw",
         amount: amount.toString(),
         price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-        date: new Date().toISOString(),
+        // Invia direttamente un oggetto Date invece di una stringa ISO
+        date: new Date(),
       });
       
       // 2. Verifica se l'asset esiste già nel portfolio di destinazione
@@ -140,7 +141,8 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         type: "deposit",
         amount: amount.toString(),
         price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-        date: new Date().toISOString(),
+        // Invia direttamente un oggetto Date invece di una stringa ISO
+        date: new Date(),
       });
       
       toast({
