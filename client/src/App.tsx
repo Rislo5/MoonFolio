@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 
 import Dashboard from "@/pages/dashboard";
 import Portfolios from "@/pages/portfolios";
+import PortfolioDetails from "@/pages/portfolio-details";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/layout/sidebar";
 
@@ -22,6 +23,7 @@ function App() {
                 <Switch>
                   <Route path="/" component={Dashboard} />
                   <Route path="/portfolios" component={Portfolios} />
+                  <Route path="/portfolios/:id" component={PortfolioDetails} />
                   <Route component={NotFound} />
                 </Switch>
               </div>

@@ -138,16 +138,16 @@ export default function Sidebar() {
         {/* Navigation */}
         <nav className="p-2 space-y-2">
           <NavItem
-            href="/dashboard"
+            href="/"
             icon={LayoutDashboard}
             label="Dashboard"
-            current={location === "/dashboard"}
+            current={location === "/" || location === "/dashboard"}
           />
           <NavItem
             href="/portfolios"
             icon={Wallet}
             label="Portfolio"
-            current={location === "/portfolios" || location.startsWith("/portfolio/")}
+            current={location === "/portfolios" || location.startsWith("/portfolios/")}
           />
 
           <Separator className="my-4" />

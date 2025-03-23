@@ -47,11 +47,12 @@ const Portfolios = () => {
     return sum + (extendedPortfolio.totalValue || 0);
   }, 0);
 
-  // Funzione per visualizzare il portfolio 
+  // Funzione per visualizzare i dettagli del portfolio
   const handleViewPortfolio = (e: React.MouseEvent, portfolioId: number) => {
     e.stopPropagation();
     setActivePortfolio(portfolioId);
-    navigate('/');
+    // Se siamo già alla pagina del dettaglio del portfolio corretto, non fare nulla
+    navigate(`/portfolios/${portfolioId}`);
   };
   
   const handleAddAsset = () => {
