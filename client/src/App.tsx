@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import Dashboard from "@/pages/dashboard";
 import Assets from "@/pages/assets";
 import Transactions from "@/pages/transactions";
+import Portfolios from "@/pages/portfolios";
 import NotFound from "@/pages/not-found";
 import Navbar from "@/components/layout/navbar";
 
@@ -21,6 +22,7 @@ function App() {
             <main className="container mx-auto px-4 pt-20 pb-12">
               <Switch>
                 <Route path="/" component={Dashboard} />
+                <Route path="/portfolios" component={Portfolios} />
                 <Route path="/assets" component={Assets} />
                 <Route path="/transactions" component={Transactions} />
                 <Route component={NotFound} />
