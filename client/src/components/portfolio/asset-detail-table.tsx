@@ -37,6 +37,7 @@ import {
 import AddTransactionDialog from "./add-transaction-dialog";
 import AddAssetDialog from "./add-asset-dialog";
 import { TransferAssetDialog } from "./transfer-asset-dialog";
+import EditAssetDialog from "./edit-asset-dialog";
 import { Badge } from "@/components/ui/badge";
 
 // Tipo per le opzioni di ordinamento
@@ -53,6 +54,7 @@ export default function AssetDetailTable() {
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [showAddAssetDialog, setShowAddAssetDialog] = useState(false);
   const [showTransferAssetDialog, setShowTransferAssetDialog] = useState(false);
+  const [showEditAssetDialog, setShowEditAssetDialog] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithPrice | null>(null);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
@@ -374,7 +376,14 @@ export default function AssetDetailTable() {
                           <PlusCircle className="h-4 w-4 mr-2" />
                           Aggiungi transazione
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedAsset(asset);
+                          // Open a dialog to edit the asset or implement inline editing
+                          toast({
+                            title: "Modifica asset",
+                            description: `La modifica di ${asset.name} sarà disponibile a breve.`,
+                          });
+                        }}>
                           <RefreshCcw className="h-4 w-4 mr-2" />
                           Modifica asset
                         </DropdownMenuItem>
