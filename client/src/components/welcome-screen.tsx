@@ -48,6 +48,8 @@ const WelcomeScreen = () => {
     try {
       await createManualPortfolio(portfolioName);
       setIsCreateDialogOpen(false);
+      // Reindirizza l'utente alla dashboard dopo la creazione del portfolio
+      navigate("/dashboard");
     } catch (error) {
       console.error("Failed to create portfolio:", error);
     } finally {
