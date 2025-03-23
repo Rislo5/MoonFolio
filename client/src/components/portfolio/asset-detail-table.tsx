@@ -26,6 +26,7 @@ import {
   ArrowUpDown,
   CircleArrowDown,
   CircleArrowUp,
+  ExternalLink,
   ListFilter,
   MoreHorizontal,
   PlusCircle,
@@ -35,6 +36,7 @@ import {
 } from "lucide-react";
 import AddTransactionDialog from "./add-transaction-dialog";
 import AddAssetDialog from "./add-asset-dialog";
+import { TransferAssetDialog } from "./transfer-asset-dialog";
 import { Badge } from "@/components/ui/badge";
 
 // Tipo per le opzioni di ordinamento
@@ -50,6 +52,7 @@ export default function AssetDetailTable() {
   const [sortOption, setSortOption] = useState<SortOption>({ column: 'value', direction: 'desc' });
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [showAddAssetDialog, setShowAddAssetDialog] = useState(false);
+  const [showTransferAssetDialog, setShowTransferAssetDialog] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithPrice | null>(null);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
@@ -57,6 +60,12 @@ export default function AssetDetailTable() {
   const handleAddTransaction = (asset: AssetWithPrice) => {
     setSelectedAsset(asset);
     setShowAddTransactionDialog(true);
+  };
+  
+  // Apre il dialog per trasferire un asset a un altro portfolio
+  const handleTransferAsset = (asset: AssetWithPrice) => {
+    setSelectedAsset(asset);
+    setShowTransferAssetDialog(true);
   };
 
   // Gestisce l'eliminazione di un asset
@@ -369,6 +378,10 @@ export default function AssetDetailTable() {
                           <RefreshCcw className="h-4 w-4 mr-2" />
                           Modifica asset
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTransferAsset(asset)}>
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Trasferisci asset
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
@@ -411,6 +424,15 @@ export default function AssetDetailTable() {
         open={showAddAssetDialog} 
         onOpenChange={setShowAddAssetDialog}
       />
+      
+      {/* Dialog per trasferire asset */}
+      {selectedAsset && (
+        <TransferAssetDialog
+          open={showTransferAssetDialog}
+          onOpenChange={setShowTransferAssetDialog}
+          initialAssetId={selectedAsset.id}
+        />
+      )}
     </Card>
   );
 }
