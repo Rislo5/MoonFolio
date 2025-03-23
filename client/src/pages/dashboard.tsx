@@ -247,7 +247,19 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-end border-t pt-3 sm:pt-4">
+                <CardFooter className="flex justify-between border-t pt-3 sm:pt-4">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPortfolio(portfolio);
+                      setIsDeleteDialogOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                   <Button 
                     variant="outline" 
                     size={isMobile ? "sm" : "default"}
@@ -391,6 +403,12 @@ const Dashboard = () => {
         open={isTransferDialogOpen} 
         onOpenChange={setIsTransferDialogOpen} 
         initialAssetId={selectedAssetId || undefined}
+      />
+
+      <DeletePortfolioDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        portfolio={selectedPortfolio}
       />
     </div>
   );
