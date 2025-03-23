@@ -10,6 +10,7 @@ import { Wallet, BookCopy, PlusCircle, CoinsIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog";
 import AddAssetDialog from "../components/portfolio/add-asset-dialog";
+import PortfolioOverviewSummary from "../components/portfolio/portfolio-overview-summary";
 
 // Define type with runtime properties
 type ExtendedPortfolio = {
@@ -90,29 +91,8 @@ const Portfolios = () => {
         </div>
       </div>
       
-      {/* Summary Card */}
-      <Card className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Riepilogo Generale</CardTitle>
-          <CardDescription>Panoramica di tutti i tuoi portfolio</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-white/50 dark:bg-black/20 rounded-lg">
-              <div className="text-sm font-medium text-muted-foreground mb-1">Valore Totale</div>
-              <div className="text-2xl font-bold">{formatCurrency(totalPortfolioValue)}</div>
-            </div>
-            <div className="p-4 bg-white/50 dark:bg-black/20 rounded-lg">
-              <div className="text-sm font-medium text-muted-foreground mb-1">Numero di Portfolio</div>
-              <div className="text-2xl font-bold">{portfolios.length}</div>
-            </div>
-            <div className="p-4 bg-white/50 dark:bg-black/20 rounded-lg">
-              <div className="text-sm font-medium text-muted-foreground mb-1">Portfolio Attivo</div>
-              <div className="text-xl font-bold truncate">{activePortfolio?.name || "Nessuno"}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Riepilogo dettagliato */}
+      <PortfolioOverviewSummary />
       
       {manualPortfolios.length > 0 && (
         <div>
