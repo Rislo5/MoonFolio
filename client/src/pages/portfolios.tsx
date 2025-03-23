@@ -11,6 +11,7 @@ import { formatCurrency } from "@/lib/utils";
 import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog";
 import AddAssetDialog from "../components/portfolio/add-asset-dialog";
 import PortfolioOverviewSummary from "../components/portfolio/portfolio-overview-summary";
+import { TransferAssetDialog } from "../components/portfolio/transfer-asset-dialog";
 
 // Define type with runtime properties
 type ExtendedPortfolio = {
@@ -32,6 +33,8 @@ const Portfolios = () => {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] = useState(false);
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
   const [_, navigate] = useLocation();
   
   // If no portfolios exist, show welcome screen
@@ -79,10 +82,25 @@ const Portfolios = () => {
         </div>
         <div className="flex space-x-2">
           {activePortfolio && (
-            <Button onClick={handleAddAsset} variant="outline">
-              <CoinsIcon className="mr-2 h-4 w-4" />
-              Aggiungi Asset
-            </Button>
+            <>
+              <Button onClick={handleAddAsset} variant="outline">
+                <CoinsIcon className="mr-2 h-4 w-4" />
+                Aggiungi Asset
+              </Button>
+              
+              {portfolios.length > 1 && (
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsTransferDialogOpen(true)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                    <path d="M18 8L22 12L18 16" />
+                    <path d="M2 12H22" />
+                  </svg>
+                  Trasferisci Asset
+                </Button>
+              )}
+            </>
           )}
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -208,6 +226,12 @@ const Portfolios = () => {
       <AddAssetDialog 
         open={isAddAssetDialogOpen}
         onOpenChange={setIsAddAssetDialogOpen}
+      />
+      
+      <TransferAssetDialog 
+        open={isTransferDialogOpen} 
+        onOpenChange={setIsTransferDialogOpen} 
+        initialAssetId={selectedAssetId || undefined}
       />
     </div>
   );
