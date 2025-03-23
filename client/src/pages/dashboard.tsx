@@ -38,12 +38,20 @@ const formatTimestamp = (timestamp: string | Date | null) => {
 };
 
 const Dashboard = () => {
-  const { portfolios, isConnected, setActivePortfolio } = usePortfolio();
+  const { portfolios, assets, isConnected, setActivePortfolio } = usePortfolio();
   const [isAddPortfolioOpen, setIsAddPortfolioOpen] = useState(false);
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
   const [overviews, setOverviews] = useState<Record<number, { totalValue: number, assetCount: number }>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [_, navigate] = useLocation();
   const { toast } = useToast();
+  
+  // Funzione per aprire il dialogo di trasferimento
+  const handleOpenTransferDialog = (assetId: number) => {
+    setSelectedAssetId(assetId);
+    setIsTransferDialogOpen(true);
+  };
   
   // Calcola il valore totale di tutti i portfoli
   const totalPortfolioValue = Object.values(overviews).reduce((sum, { totalValue }) => sum + totalValue, 0);
@@ -255,7 +263,74 @@ const Dashboard = () => {
         </div>
       </div>
       
+      {/* Sezione Asset */}
+      {assets && assets.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Asset nel Portfolio Attivo
+            </h2>
+          </div>
+          
+          {isLoading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : (
+            <div className="bg-background border rounded-lg overflow-hidden">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h3 className="font-medium">Asset nel Portfolio {(portfolios as ExtendedPortfolio[]).find(p => p.isActive)?.name}</h3>
+                {portfolios.length > 1 && (
+                  <Button variant="outline" size="sm" onClick={() => setIsTransferDialogOpen(true)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                      <path d="M18 8L22 12L18 16" />
+                      <path d="M2 12H22" />
+                    </svg>
+                    Trasferisci Asset
+                  </Button>
+                )}
+              </div>
+              <div className="p-4">
+                {assets.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">Non hai ancora nessun asset in questo portfolio</p>
+                    <Button variant="outline">Aggiungi il primo asset</Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {assets.slice(0, 6).map(asset => (
+                      <div key={asset.id} className="border rounded-lg p-4 flex items-center gap-3 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => handleOpenTransferDialog(asset.id)}>
+                        {asset.imageUrl && (
+                          <img src={asset.imageUrl} alt={asset.name} className="w-10 h-10 rounded-full" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium truncate">{asset.name}</h4>
+                          <div className="flex justify-between mt-1">
+                            <span className="text-sm text-muted-foreground">{asset.balance} {asset.symbol.toUpperCase()}</span>
+                            <span className="font-medium">{formatCurrency(asset.value || 0)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {assets.length > 6 && (
+                      <div className="border rounded-lg p-4 flex items-center justify-center bg-muted/10 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => navigate("/assets")}>
+                        <span className="text-muted-foreground">+{assets.length - 6} altri asset</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
       <AddPortfolioDialog open={isAddPortfolioOpen} onOpenChange={setIsAddPortfolioOpen} />
+      
+      <TransferAssetDialog 
+        open={isTransferDialogOpen} 
+        onOpenChange={setIsTransferDialogOpen} 
+        initialAssetId={selectedAssetId || undefined}
+      />
     </div>
   );
 };
