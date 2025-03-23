@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
+import { generatePortfolioChartData } from "@/lib/api";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
-import { AssetWithPrice } from "@shared/schema";
+import { AssetWithPrice, ChartData } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Area, AreaChart, XAxis, YAxis } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Area, AreaChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { BarChart3, Wallet, PieChart as PieChartIcon, ArrowUp, ArrowDown } from "lucide-react";
 
 // Definizione del tipo ExtendedPortfolio
