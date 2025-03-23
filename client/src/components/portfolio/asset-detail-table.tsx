@@ -34,6 +34,7 @@ import {
   Trash2,
 } from "lucide-react";
 import AddTransactionDialog from "./add-transaction-dialog";
+import AddAssetDialog from "./add-asset-dialog";
 import { Badge } from "@/components/ui/badge";
 
 // Tipo per le opzioni di ordinamento
@@ -48,6 +49,7 @@ export default function AssetDetailTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>({ column: 'value', direction: 'desc' });
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
+  const [showAddAssetDialog, setShowAddAssetDialog] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithPrice | null>(null);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
@@ -173,7 +175,12 @@ export default function AssetDetailTable() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="default" size="sm" className="h-9">
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="h-9"
+            onClick={() => setShowAddAssetDialog(true)}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             Nuovo Asset
           </Button>
