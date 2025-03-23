@@ -41,7 +41,7 @@ type PortfolioContextType = {
   
   // Portfolio actions
   connectEnsWallet: (ensNameOrAddress: string) => Promise<void>;
-  createManualPortfolio: (name: string) => Promise<void>;
+  createManualPortfolio: (name: string) => Promise<Portfolio>;
   setActivePortfolio: (portfolioId: number) => void;
   disconnect: () => void;
   
