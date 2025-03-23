@@ -267,7 +267,11 @@ export default function AssetDetailTable() {
                   ) : (
                     <div>
                       <p className="text-muted-foreground mb-2">Non hai ancora nessun asset in questo portfolio</p>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowAddAssetDialog(true)}
+                      >
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Aggiungi il primo asset
                       </Button>
@@ -401,6 +405,12 @@ export default function AssetDetailTable() {
           defaultAssetId={selectedAsset.id}
         />
       )}
+
+      {/* Dialog per aggiungere asset */}
+      <AddAssetDialog
+        open={showAddAssetDialog} 
+        onOpenChange={setShowAddAssetDialog}
+      />
     </Card>
   );
 }
