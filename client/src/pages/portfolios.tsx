@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
+import { useLocation } from "wouter";
 import WelcomeScreen from "@/components/welcome-screen";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ type ExtendedPortfolio = {
 const Portfolios = () => {
   const { portfolios, activePortfolio, setActivePortfolio, isLoading } = usePortfolio();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [_, navigate] = useLocation();
   
   // If no portfolios exist, show welcome screen
   if (portfolios.length === 0) {
@@ -40,6 +42,13 @@ const Portfolios = () => {
     const extendedPortfolio = portfolio as ExtendedPortfolio;
     return sum + (extendedPortfolio.totalValue || 0);
   }, 0);
+
+  // Funzione per visualizzare il portfolio 
+  const handleViewPortfolio = (e: React.MouseEvent, portfolioId: number) => {
+    e.stopPropagation();
+    setActivePortfolio(portfolioId);
+    navigate('/');
+  };
   
   return (
     <div className="space-y-8">
@@ -122,11 +131,7 @@ const Portfolios = () => {
                     <Button 
                       variant="ghost" 
                       className="w-full" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActivePortfolio(portfolio.id);
-                        window.location.href = '/';
-                      }}
+                      onClick={(e) => handleViewPortfolio(e, portfolio.id)}
                     >
                       Visualizza Dettagli
                     </Button>
@@ -178,11 +183,7 @@ const Portfolios = () => {
                     <Button 
                       variant="ghost" 
                       className="w-full" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActivePortfolio(portfolio.id);
-                        window.location.href = '/';
-                      }}
+                      onClick={(e) => handleViewPortfolio(e, portfolio.id)}
                     >
                       Visualizza Dettagli
                     </Button>

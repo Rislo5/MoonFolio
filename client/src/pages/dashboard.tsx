@@ -4,6 +4,11 @@ import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
 import { fetchPortfolios } from "@/lib/api";
 import { Portfolio } from "@shared/schema";
+
+// Estende il tipo Portfolio con la proprietà isActive
+type ExtendedPortfolio = Portfolio & {
+  isActive?: boolean;
+};
 import WelcomeScreen from "@/components/welcome-screen";
 import { 
   Card,
