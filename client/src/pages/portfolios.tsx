@@ -6,7 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, BookCopy, PlusCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
+import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog";
+
+// Define type with runtime properties
+type ExtendedPortfolio = {
+  id: number;
+  name: string;
+  userId: number | null;
+  walletAddress: string | null;
+  isEns: boolean | null;
+  ensName: string | null;
+  createdAt: Date | string | null;
+  updatedAt: Date | string | null;
+  // Runtime properties added by API
+  totalValue?: number;
+  assetCount?: number;
+};
 
 const Portfolios = () => {
   const { portfolios, activePortfolio, setActivePortfolio, isLoading } = usePortfolio();
@@ -19,11 +34,11 @@ const Portfolios = () => {
   
   const manualPortfolios = portfolios.filter(p => !p.isEns);
   const ensPortfolios = portfolios.filter(p => p.isEns);
-  
+
   // Calculate total value across all portfolios - using a default value of 0 for missing data
   const totalPortfolioValue = portfolios.reduce((sum, portfolio) => {
-    // @ts-ignore - portfolio may have additional runtime properties
-    return sum + (portfolio.totalValue || 0);
+    const extendedPortfolio = portfolio as ExtendedPortfolio;
+    return sum + (extendedPortfolio.totalValue || 0);
   }, 0);
   
   return (
@@ -72,50 +87,53 @@ const Portfolios = () => {
             Portfolio Manuali
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {manualPortfolios.map(portfolio => (
-              <Card 
-                key={portfolio.id} 
-                className={`hover:shadow-md transition-all cursor-pointer ${
-                  activePortfolio?.id === portfolio.id ? "ring-2 ring-primary" : ""
-                }`}
-                onClick={() => setActivePortfolio(portfolio.id)}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle>{portfolio.name}</CardTitle>
-                    {activePortfolio?.id === portfolio.id && (
-                      <Badge variant="default" className="ml-2">Attivo</Badge>
-                    )}
-                  </div>
-                  <CardDescription>
-                    Creato il {portfolio.createdAt 
-                      ? new Date(portfolio.createdAt).toLocaleDateString() 
-                      : 'data non disponibile'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {formatCurrency(portfolio.totalValue || 0)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {portfolio.assetCount || 0} asset
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivePortfolio(portfolio.id);
-                      window.location.href = '/';
-                    }}
-                  >
-                    Visualizza Dettagli
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+            {manualPortfolios.map(portfolio => {
+              const extendedPortfolio = portfolio as ExtendedPortfolio;
+              return (
+                <Card 
+                  key={portfolio.id} 
+                  className={`hover:shadow-md transition-all cursor-pointer ${
+                    activePortfolio?.id === portfolio.id ? "ring-2 ring-primary" : ""
+                  }`}
+                  onClick={() => setActivePortfolio(portfolio.id)}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{portfolio.name}</CardTitle>
+                      {activePortfolio?.id === portfolio.id && (
+                        <Badge variant="default" className="ml-2">Attivo</Badge>
+                      )}
+                    </div>
+                    <CardDescription>
+                      Creato il {portfolio.createdAt 
+                        ? new Date(portfolio.createdAt).toLocaleDateString() 
+                        : 'data non disponibile'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(extendedPortfolio.totalValue || 0)}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {extendedPortfolio.assetCount || 0} asset
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivePortfolio(portfolio.id);
+                        window.location.href = '/';
+                      }}
+                    >
+                      Visualizza Dettagli
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -127,48 +145,51 @@ const Portfolios = () => {
             Wallet ENS
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ensPortfolios.map(portfolio => (
-              <Card 
-                key={portfolio.id} 
-                className={`hover:shadow-md transition-all cursor-pointer ${
-                  activePortfolio?.id === portfolio.id ? "ring-2 ring-primary" : ""
-                }`}
-                onClick={() => setActivePortfolio(portfolio.id)}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle>{portfolio.name}</CardTitle>
-                    {activePortfolio?.id === portfolio.id && (
-                      <Badge variant="default" className="ml-2">Attivo</Badge>
-                    )}
-                  </div>
-                  <CardDescription>
-                    {portfolio.ensName || portfolio.walletAddress?.substring(0, 10) + '...'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {formatCurrency(portfolio.totalValue || 0)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {portfolio.assetCount || 0} asset
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivePortfolio(portfolio.id);
-                      window.location.href = '/';
-                    }}
-                  >
-                    Visualizza Dettagli
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+            {ensPortfolios.map(portfolio => {
+              const extendedPortfolio = portfolio as ExtendedPortfolio;
+              return (
+                <Card 
+                  key={portfolio.id} 
+                  className={`hover:shadow-md transition-all cursor-pointer ${
+                    activePortfolio?.id === portfolio.id ? "ring-2 ring-primary" : ""
+                  }`}
+                  onClick={() => setActivePortfolio(portfolio.id)}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{portfolio.name}</CardTitle>
+                      {activePortfolio?.id === portfolio.id && (
+                        <Badge variant="default" className="ml-2">Attivo</Badge>
+                      )}
+                    </div>
+                    <CardDescription>
+                      {portfolio.ensName || portfolio.walletAddress?.substring(0, 10) + '...'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(extendedPortfolio.totalValue || 0)}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {extendedPortfolio.assetCount || 0} asset
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActivePortfolio(portfolio.id);
+                        window.location.href = '/';
+                      }}
+                    >
+                      Visualizza Dettagli
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}

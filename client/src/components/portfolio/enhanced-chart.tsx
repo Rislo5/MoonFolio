@@ -150,7 +150,9 @@ export default function EnhancedChart({ portfolioValue }: EnhancedChartProps) {
             </div>
             <CardDescription className="mt-1">
               {isLoading ? (
-                <Skeleton className="h-5 w-32" />
+                <span className="block h-5 w-32">
+                  <Skeleton className="h-5 w-32" />
+                </span>
               ) : (
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{formatCurrency(portfolioValue)}</span>

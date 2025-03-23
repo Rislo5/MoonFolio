@@ -113,9 +113,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         type: "transfer",
         amount: "-" + values.amount, // Segnale negativo per indicare l'uscita
         price: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "0",
-        date: new Date().toISOString(),
-        status: "completed",
-        notes: `Trasferito a Portfolio #${values.targetPortfolioId}`
+        date: new Date().toISOString()
       });
       
       // 2. Si potrebbe inviare una notifica al sistema per aggiungere l'asset anche al portfolio destinazione
