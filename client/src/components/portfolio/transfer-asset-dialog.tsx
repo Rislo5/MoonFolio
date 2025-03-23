@@ -52,9 +52,8 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     activePortfolio, 
     portfolios, 
     assets, 
-    createTransaction, 
-    addAsset, 
-    getAsset
+    addTransaction, 
+    addAsset
   } = usePortfolio();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,11 +111,11 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     
     try {
       // 1. Crea una transazione "withdraw" nel portfolio di origine
-      await createTransaction({
+      await addTransaction({
         assetId: sourceAssetId,
         type: "withdraw",
         amount: amount.toString(),
-        price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice,
+        price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
         date: new Date().toISOString(),
       });
       
@@ -125,20 +124,24 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
       if (!targetPortfolio) throw new Error("Portfolio di destinazione non trovato");
       
       // 3. Aggiungi o aggiorna l'asset nel portfolio di destinazione
-      // Nota: nella tua implementazione reale, dovresti verificare se l'asset esiste già nel portfolio di destinazione
       await addAsset({
         portfolioId: targetPortfolioId,
         name: selectedAsset.name,
         symbol: selectedAsset.symbol,
         coinGeckoId: selectedAsset.coinGeckoId,
         balance: amount.toString(),
-        avgBuyPrice: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice,
-        imageUrl: selectedAsset.imageUrl
+        avgBuyPrice: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
+        imageUrl: selectedAsset.imageUrl || undefined
       });
       
-      // 4. Crea una transazione "deposit" nel portfolio di destinazione
-      // Nota: questo dipende da come hai implementato la logica di transazione
-      // Potresti avere bisogno di un metodo diverso o aggiuntivo qui
+      // 4. Crea anche una transazione "deposit" nel portfolio di destinazione
+      await addTransaction({
+        assetId: -1, // Questo verrà sostituito dal backend con l'asset appena creato
+        type: "deposit",
+        amount: amount.toString(),
+        price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
+        date: new Date().toISOString(),
+      });
       
       toast({
         title: "Trasferimento completato",
