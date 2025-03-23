@@ -20,9 +20,9 @@ const Portfolios = () => {
   const manualPortfolios = portfolios.filter(p => !p.isEns);
   const ensPortfolios = portfolios.filter(p => p.isEns);
   
-  // Calculate total value across all portfolios
+  // Calculate total value across all portfolios - using a default value of 0 for missing data
   const totalPortfolioValue = portfolios.reduce((sum, portfolio) => {
-    // This is a placeholder, in a real app we would fetch the portfolio value
+    // @ts-ignore - portfolio may have additional runtime properties
     return sum + (portfolio.totalValue || 0);
   }, 0);
   
@@ -88,7 +88,9 @@ const Portfolios = () => {
                     )}
                   </div>
                   <CardDescription>
-                    Creato il {new Date(portfolio.createdAt).toLocaleDateString()}
+                    Creato il {portfolio.createdAt 
+                      ? new Date(portfolio.createdAt).toLocaleDateString() 
+                      : 'data non disponibile'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

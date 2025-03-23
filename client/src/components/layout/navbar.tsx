@@ -30,16 +30,17 @@ const Navbar = () => {
   
   const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ComponentType<any> }) => (
     <li>
-      <Link href={href}>
-        <a className={`flex items-center py-2 pr-4 pl-3 rounded md:p-2 transition-colors ${
+      <div 
+        className={`flex items-center py-2 pr-4 pl-3 rounded md:p-2 transition-colors cursor-pointer ${
           location === href 
             ? "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 font-medium" 
             : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/60"
-        }`}>
-          <Icon className="h-4 w-4 mr-2" />
-          <span>{label}</span>
-        </a>
-      </Link>
+        }`}
+        onClick={() => setLocation(href)}
+      >
+        <Icon className="h-4 w-4 mr-2" />
+        <span>{label}</span>
+      </div>
     </li>
   );
   
