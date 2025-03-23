@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { usePortfolio } from "@/hooks/use-portfolio";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { fetchPortfolios } from "@/lib/api";
 import { Portfolio, AssetWithPrice } from "@shared/schema";
@@ -48,6 +49,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [_, navigate] = useLocation();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   // Funzione per aprire il dialogo di trasferimento
   const handleOpenTransferDialog = (assetId: number) => {
@@ -116,14 +118,18 @@ const Dashboard = () => {
   
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Panoramica di tutti i tuoi portfolio di criptovalute
           </p>
         </div>
-        <Button onClick={() => setIsAddPortfolioOpen(true)} className="ml-auto gap-1">
+        <Button 
+          onClick={() => setIsAddPortfolioOpen(true)} 
+          className="w-full sm:w-auto ml-0 sm:ml-auto gap-1"
+          size={isMobile ? "sm" : "default"}
+        >
           <PlusCircle className="h-4 w-4" />
           Nuovo Portfolio
         </Button>
@@ -138,13 +144,13 @@ const Dashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <div className="bg-background rounded-lg p-4 shadow-sm">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Valore Totale</h3>
               {isLoading ? (
                 <Skeleton className="h-9 w-28" />
               ) : (
-                <p className="text-2xl font-bold">{formatCurrency(totalPortfolioValue)}</p>
+                <p className="text-xl sm:text-2xl font-bold">{formatCurrency(totalPortfolioValue)}</p>
               )}
             </div>
             <div className="bg-background rounded-lg p-4 shadow-sm">
@@ -152,7 +158,7 @@ const Dashboard = () => {
               {isLoading ? (
                 <Skeleton className="h-9 w-8" />
               ) : (
-                <p className="text-2xl font-bold">{portfolios.length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{portfolios.length}</p>
               )}
             </div>
             <div className="bg-background rounded-lg p-4 shadow-sm">
@@ -160,11 +166,11 @@ const Dashboard = () => {
               {isLoading ? (
                 <Skeleton className="h-9 w-40" />
               ) : (
-                <p className="text-2xl font-bold">
+                <p className="text-xl sm:text-2xl font-bold truncate">
                   {isConnected ? (
                     <span className="flex items-center">
-                      <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                      {(portfolios as ExtendedPortfolio[]).find(p => p.isActive)?.name || "Nessuno"}
+                      <span className="w-2 h-2 rounded-full bg-green-500 mr-2 flex-shrink-0"></span>
+                      <span className="truncate">{(portfolios as ExtendedPortfolio[]).find(p => p.isActive)?.name || "Nessuno"}</span>
                     </span>
                   ) : (
                     "Nessuno"

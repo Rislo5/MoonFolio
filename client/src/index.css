@@ -2,6 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Responsive font scaling */
+@layer base {
+  html {
+    font-size: 14px;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 15px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
+  /* Improve touch targets on mobile */
+  @media (max-width: 640px) {
+    button, a, input, select, textarea {
+      @apply min-h-[44px] min-w-[44px];
+    }
+  }
+
+  /* Ensure images are responsive */
+  img {
+    @apply max-w-full h-auto;
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom utility classes */
+@layer components {
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:bg-muted/20;
+  }
+  
+  .card-grid {
+    @apply grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+  }
+  
+  .card-grid-compact {
+    @apply grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

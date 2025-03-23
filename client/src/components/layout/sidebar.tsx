@@ -53,14 +53,16 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Header */}
-      <header className="lg:hidden flex items-center justify-between p-4 bg-background border-b">
+      <header className="sm:hidden flex items-center justify-between sticky top-0 z-50 p-4 bg-background border-b shadow-sm">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-4">
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-3">
             <Menu className="h-5 w-5" />
           </Button>
           <div className="font-bold text-xl text-primary">Moonfolio</div>
         </div>
-        <ModeToggle />
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+        </div>
       </header>
 
       {/* Sidebar Overlay */}
@@ -74,14 +76,14 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "flex-shrink-0 h-screen fixed sm:sticky top-0 left-0 z-50",
+          "flex-shrink-0 h-[100dvh] sm:h-screen fixed sm:sticky top-0 left-0 z-50",
           "transform transition-all duration-200 ease-in-out",
-          "bg-background border-r",
-          "sm:translate-x-0",
+          "bg-background border-r shadow-sm",
+          "sm:translate-x-0 overflow-y-auto hide-scrollbar",
           isMobileOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0",
           isCollapsed 
-            ? "w-full sm:w-20" 
-            : "w-full sm:w-20 lg:w-64"
+            ? "w-[85vw] sm:w-20" 
+            : "w-[85vw] sm:w-20 lg:w-64"
         )}
       >
         {/* Sidebar Header */}
