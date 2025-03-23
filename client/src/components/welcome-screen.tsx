@@ -46,10 +46,15 @@ const WelcomeScreen = () => {
     
     setIsCreating(true);
     try {
-      await createManualPortfolio(portfolioName);
+      const newPortfolio = await createManualPortfolio(portfolioName);
+      console.log("Portfolio created successfully:", newPortfolio);
       setIsCreateDialogOpen(false);
-      // Reindirizza l'utente alla dashboard dopo la creazione del portfolio
-      navigate("/dashboard");
+      
+      // Breve timeout per assicurarsi che le query vengano invalidate prima del redirect
+      setTimeout(() => {
+        // Reindirizza l'utente alla dashboard dopo la creazione del portfolio
+        navigate("/portfolios");
+      }, 300);
     } catch (error) {
       console.error("Failed to create portfolio:", error);
     } finally {
