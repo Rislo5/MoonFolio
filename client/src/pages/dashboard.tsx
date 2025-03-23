@@ -111,15 +111,8 @@ const Dashboard = () => {
     navigate("/portfolios");
   };
   
-  // If no portfolios, show welcome screen
-  if (portfolios.length === 0 && !isLoading) {
-    return (
-      <>
-        <WelcomeScreen />
-        <AddPortfolioDialog open={isAddPortfolioOpen} onOpenChange={setIsAddPortfolioOpen} />
-      </>
-    );
-  }
+  // Se non ci sono portfolios, la precedente useEffect si occuperà di reindirizzare
+  // alla pagina di benvenuto, quindi non dobbiamo fare altro qui
   
   return (
     <div className="space-y-8">
