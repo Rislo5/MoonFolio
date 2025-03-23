@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchCryptoPrice } from "@/lib/api";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
 import { AssetWithPrice } from "@shared/schema";
 import { Button } from "@/components/ui/button";
