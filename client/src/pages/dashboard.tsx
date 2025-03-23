@@ -113,7 +113,7 @@ const Dashboard = () => {
   
   const handlePortfolioSelect = (portfolio: Portfolio) => {
     setActivePortfolio(portfolio.id);
-    navigate("/portfolios");
+    navigate(`/portfolios/${portfolio.id}`);
   };
   
   // If no portfolios, show welcome screen
