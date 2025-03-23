@@ -5,6 +5,7 @@ import { z } from "zod";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
 import { createTransaction } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
   Dialog, 
   DialogContent, 
@@ -57,6 +58,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     addAsset
   } = usePortfolio();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithPrice | null>(null);
   
@@ -186,6 +188,21 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         title: "Trasferimento completato",
         description: `${amount} ${selectedAsset.symbol.toUpperCase()} trasferiti con successo a ${targetPortfolio.name}`,
       });
+      
+      // Forza il refresh dei dati: assets, transazioni e overview
+      
+      // Invalida tutte le queries relative agli assets del portfolio di origine
+      await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolio.id}/assets`] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolio.id}/overview`] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolio.id}/transactions`] });
+      
+      // Invalida tutte le queries relative agli assets del portfolio di destinazione
+      await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${targetPortfolioId}/assets`] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${targetPortfolioId}/overview`] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${targetPortfolioId}/transactions`] });
+      
+      // Attende un breve momento per dare tempo ai dati di aggiornarsi
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       onOpenChange(false);
     } catch (error) {
