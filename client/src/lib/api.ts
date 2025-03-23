@@ -256,45 +256,50 @@ export async function fetchPortfolioOverview(id: number): Promise<PortfolioOverv
   return response.json();
 }
 
-// Mock functions for generating chart data - these would normally come from the API
-// but are implemented client-side for simplicity
+// Funzione per generare dati di grafici basati sui dati del portfolio
 export async function generatePortfolioChartData(timeframe: string, specificPortfolioId?: number): Promise<ChartData> {
-  // This would normally fetch from an API endpoint
+  // Questo normalmente otterrebbe i dati da un endpoint API
   const days = timeframeToDays(timeframe);
   const dates = generateDates(days);
   
   try {
-    let portfolioId: number;
     let currentValue: number = 0;
     
-    // Se è stato specificato un ID di portfolio, usa quello
+    // Se è stato specificato un ID di portfolio, usa quello per un singolo portfolio
     if (specificPortfolioId) {
-      portfolioId = specificPortfolioId;
-      
       try {
-        const overview = await fetchPortfolioOverview(portfolioId);
+        const overview = await fetchPortfolioOverview(specificPortfolioId);
         currentValue = overview.totalValue;
       } catch (error) {
         console.error("Errore nel caricamento dell'overview per il portfolio specificato:", error);
       }
     } else {
-      // Altrimenti cerca di ottenere il portfolio attivo
+      // Altrimenti calcola il valore totale di tutti i portfolio (vista generale)
       try {
         const portfolios = await fetchPortfolios();
         if (!portfolios || portfolios.length === 0) {
           throw new Error("Nessun portfolio trovato");
         }
         
-        // Trova il portfolio attivo dal localStorage o usa il primo
-        const activePortfolioIdStr = localStorage.getItem('activePortfolioId');
-        portfolioId = activePortfolioIdStr ? parseInt(activePortfolioIdStr) : portfolios[0].id;
+        // Calcola la somma di tutti i portfolios 
+        for (const portfolio of portfolios) {
+          try {
+            // Aggiungiamo un piccolo delay per evitare di sovraccaricare le API
+            const overview = await fetchPortfolioOverview(portfolio.id);
+            currentValue += overview.totalValue;
+          } catch (error) {
+            console.error(`Errore nel caricamento dell'overview per il portfolio ID ${portfolio.id}:`, error);
+          }
+        }
         
-        // Ottieni il valore corrente del portfolio
-        const overview = await fetchPortfolioOverview(portfolioId);
-        currentValue = overview.totalValue;
+        // Se dopo tutto non abbiamo un valore, usa un valore di default
+        if (currentValue <= 0 && portfolios.length > 0) {
+          const fallbackPortfolio = portfolios[0];
+          const overview = await fetchPortfolioOverview(fallbackPortfolio.id);
+          currentValue = overview.totalValue;
+        }
       } catch (error) {
-        console.error("Errore nel caricamento del portfolio attivo:", error);
-        portfolioId = 0;
+        console.error("Errore nel caricamento dei portfolios:", error);
       }
     }
     

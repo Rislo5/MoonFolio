@@ -49,34 +49,53 @@ const PortfolioOverviewSummary = () => {
     value: chartData.values[index]
   })) : [];
 
-  // Calcola il valore totale del portfolio e prepara i dati per i grafici
+  // Calcolo dei dati aggregati per tutti i portfolio
   useEffect(() => {
     if (portfolios && portfolios.length > 0) {
       try {
-        // Cast portfolios a ExtendedPortfolio per avere accesso a totalValue
+        // Cast a ExtendedPortfolio per avere accesso a totalValue
         const extendedPortfolios = portfolios as ExtendedPortfolio[];
         
-        // Calcola il valore totale di tutti i portfolios
-        const total = extendedPortfolios.reduce((sum, portfolio) => {
-          return sum + (portfolio.totalValue || 0);
-        }, 0);
+        // Calcola il valore totale aggregato di tutti i portfolio
+        let total = 0;
+        let totalChange = 0;
+        
+        // Elabora ogni portfolio e calcola i totali
+        extendedPortfolios.forEach(portfolio => {
+          if (portfolio.totalValue) {
+            total += portfolio.totalValue;
+            
+            // Aggiungi una stima della variazione 24h (in un'app reale questa info verrebbe dall'API)
+            // Nota: questo è solo un calcolo di esempio, in una vera app dovresti usare valori reali
+            const changePercentage = Math.random() * 0.05 - 0.01; // Valore casuale tra -1% e +4%
+            const portfolioChange = portfolio.totalValue * changePercentage;
+            totalChange += portfolioChange;
+          }
+        });
+        
         setTotalValue(total);
+        setTotalChange24h(totalChange);
 
-        // Crea i dati per il grafico a torta
+        // Crea i dati per il grafico a torta (distribuzione dei portfolio)
         const pieChartData = extendedPortfolios
           .filter(portfolio => (portfolio.totalValue || 0) > 0) // Filtra i portfolio con valore positivo
-          .map((portfolio, index) => ({
-            name: portfolio.name,
-            value: portfolio.totalValue || 0,
-            color: COLORS[index % COLORS.length]
-          }));
+          .map((portfolio, index) => {
+            const portfolioValue = portfolio.totalValue || 0;
+            const percentage = total > 0 ? (portfolioValue / total) * 100 : 0;
+            
+            return {
+              name: portfolio.name,
+              value: portfolioValue,
+              percentage: Math.round(percentage * 10) / 10, // Arrotonda a 1 decimale
+              color: COLORS[index % COLORS.length]
+            };
+          })
+          .sort((a, b) => b.value - a.value); // Ordina per valore decrescente
+          
         setPieData(pieChartData);
-
-        // Calcola la variazione totale nelle ultime 24 ore (circa 1.8% di variazione giornaliera media)
-        setTotalChange24h(total > 0 ? total * 0.018 : 0);
       } catch (error) {
         console.error("Errore nei calcoli del riepilogo del portfolio:", error);
-        // Impostazione dei valori di fallback
+        // Valori di fallback
         setTotalValue(0);
         setPieData([]);
         setTotalChange24h(0);
@@ -215,15 +234,37 @@ const PortfolioOverviewSummary = () => {
                         outerRadius={90}
                         paddingAngle={1}
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        isAnimationActive={true}
+                        animationDuration={1000}
+                        label={(entry) => {
+                          // Mostra l'etichetta solo per i portfolio che rappresentano almeno il 5% del totale
+                          if (entry.percent < 0.05) return null;
+                          return `${entry.name}: ${entry.percentage}%`;
+                        }}
+                        labelLine={{
+                          stroke: 'var(--muted-foreground)',
+                          strokeWidth: 1,
+                          strokeOpacity: 0.5
+                        }}
                       >
                         {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.color} 
+                            stroke="var(--background)"
+                            strokeWidth={1}
+                          />
                         ))}
                       </Pie>
                       <Tooltip 
                         formatter={(value: number) => formatCurrency(value)}
                         labelFormatter={(name) => `Portfolio: ${name}`}
+                        contentStyle={{ 
+                          backgroundColor: 'var(--background)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '0.375rem',
+                          boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+                        }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
