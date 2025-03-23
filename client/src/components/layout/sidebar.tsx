@@ -137,18 +137,40 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <nav className="p-2 space-y-2">
-          <NavItem
-            href="/"
-            icon={LayoutDashboard}
-            label="Dashboard"
-            current={location === "/" || location === "/dashboard"}
-          />
-          <NavItem
-            href="/portfolios"
-            icon={Wallet}
-            label="Portfolio"
-            current={location === "/portfolios" || location.startsWith("/portfolios/")}
-          />
+          <Link href="/">
+            <Button
+              variant={location === "/" ? "default" : "ghost"}
+              className={cn(
+                "w-full justify-start",
+                location === "/"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "hover:bg-muted"
+              )}
+              onClick={() => setIsMobileOpen(false)}
+            >
+              <LayoutDashboard className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
+              {!isCollapsed && (
+                <span>Dashboard</span>
+              )}
+            </Button>
+          </Link>
+          <Link href="/portfolios">
+            <Button
+              variant={location === "/portfolios" || location.startsWith("/portfolios/") ? "default" : "ghost"}
+              className={cn(
+                "w-full justify-start",
+                location === "/portfolios" || location.startsWith("/portfolios/")
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "hover:bg-muted"
+              )}
+              onClick={() => setIsMobileOpen(false)}
+            >
+              <Wallet className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
+              {!isCollapsed && (
+                <span>Portfolio</span>
+              )}
+            </Button>
+          </Link>
 
           <Separator className="my-4" />
 
