@@ -398,7 +398,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                         </div>
                       ) : popularCryptos && popularCryptos.length > 0 ? (
                         <div className="p-1">
-                          {popularCryptos.map((crypto) => (
+                          {popularCryptos.map((crypto: { id: string; name: string; symbol: string; image?: string; current_price?: number }) => (
                             <div
                               key={crypto.id}
                               className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-muted transition-colors ${

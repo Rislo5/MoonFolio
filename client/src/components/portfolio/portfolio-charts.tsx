@@ -129,7 +129,9 @@ const PortfolioCharts = () => {
           </div>
           <CardDescription>
             {isLoading ? (
-              <Skeleton className="h-5 w-32" />
+              <span className="block h-5 w-32">
+                <Skeleton className="h-5 w-32" />
+              </span>
             ) : (
               `Valore totale: ${formatCurrency(totalPortfolioValue)}`
             )}
