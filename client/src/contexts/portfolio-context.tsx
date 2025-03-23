@@ -50,8 +50,8 @@ type PortfolioContextType = {
     name: string;
     symbol: string;
     coinGeckoId: string;
-    balance: number;
-    avgBuyPrice?: number;
+    balance: string;
+    avgBuyPrice?: string;
     imageUrl?: string;
   }) => Promise<void>;
   editAsset: (assetId: number, assetData: Partial<AssetWithPrice>) => Promise<void>;
@@ -61,11 +61,11 @@ type PortfolioContextType = {
   addTransaction: (transaction: {
     assetId: number;
     type: string;
-    amount: number;
-    price?: number;
+    amount: string;
+    price?: string;
     toAssetId?: number;
-    toAmount?: number;
-    toPrice?: number;
+    toAmount?: string;
+    toPrice?: string;
     date?: string;
   }) => Promise<void>;
   editTransaction: (
@@ -317,11 +317,11 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     mutationFn: async (transaction: {
       assetId: number;
       type: string;
-      amount: number;
-      price?: number;
+      amount: string;
+      price?: string;
       toAssetId?: number;
-      toAmount?: number;
-      toPrice?: number;
+      toAmount?: string;
+      toPrice?: string;
       date?: string;
     }) => {
       if (!activePortfolioId) throw new Error("No active portfolio");
