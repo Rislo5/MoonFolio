@@ -193,47 +193,108 @@ const PortfolioOverviewSummary = () => {
           </div>
           
           {/* Charts */}
-          <div className="bg-background rounded-lg border shadow-sm p-4">
-            <h3 className="text-sm font-semibold mb-4 flex items-center">
-              <PieChartIcon className="h-4 w-4 mr-2" />
-              Distribuzione Portfolio
-            </h3>
+          <div className="space-y-6">
+            {/* Distribuzione Portfolio (Grafico a Torta) */}
+            <div className="bg-background rounded-lg border shadow-sm p-4">
+              <h3 className="text-sm font-semibold mb-4 flex items-center">
+                <PieChartIcon className="h-4 w-4 mr-2" />
+                Distribuzione Portfolio
+              </h3>
+              
+              {isLoading ? (
+                <div className="h-[250px] flex items-center justify-center">
+                  <Skeleton className="h-[200px] w-[200px] rounded-full" />
+                </div>
+              ) : pieData.length > 0 ? (
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={1}
+                        dataKey="value"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => formatCurrency(value)}
+                        labelFormatter={(name) => `Portfolio: ${name}`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-[250px] flex items-center justify-center">
+                  <p className="text-muted-foreground">Nessun dato disponibile per la visualizzazione</p>
+                </div>
+              )}
+            </div>
             
-            {isLoading ? (
-              <div className="h-[250px] flex items-center justify-center">
-                <Skeleton className="h-[200px] w-[200px] rounded-full" />
-              </div>
-            ) : pieData.length > 0 ? (
-              <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={1}
-                      dataKey="value"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            {/* Andamento Portfolio (Grafico Lineare) */}
+            <div className="bg-background rounded-lg border shadow-sm p-4">
+              <h3 className="text-sm font-semibold mb-4 flex items-center">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Andamento Portfolio
+              </h3>
+              
+              {isLoading ? (
+                <div className="h-[250px] flex items-center justify-center">
+                  <Skeleton className="h-full w-full" />
+                </div>
+              ) : lineChartData.length > 0 ? (
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={lineChartData}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                     >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => formatCurrency(value)}
-                      labelFormatter={(name) => `Portfolio: ${name}`}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-[250px] flex items-center justify-center">
-                <p className="text-muted-foreground">Nessun dato disponibile per la visualizzazione</p>
-              </div>
-            )}
+                      <defs>
+                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#0088FE" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 10 }}
+                        tickFormatter={(str) => {
+                          const date = new Date(str);
+                          return date.getDate() + '/' + (date.getMonth() + 1);
+                        }}
+                        interval={5}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 10 }}
+                        tickFormatter={(value) => formatCurrency(value, undefined, 0)}
+                      />
+                      <Tooltip
+                        formatter={(value: number) => formatCurrency(value)}
+                        labelFormatter={(date) => `Data: ${date}`}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke="#0088FE" 
+                        fillOpacity={1} 
+                        fill="url(#colorValue)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-[250px] flex items-center justify-center">
+                  <p className="text-muted-foreground">Nessun dato disponibile per la visualizzazione</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
