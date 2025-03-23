@@ -115,8 +115,8 @@ export async function createAsset(
     name: string;
     symbol: string;
     coinGeckoId: string;
-    balance: number;
-    avgBuyPrice?: number;
+    balance: string; // Changed to string to match server expectation
+    avgBuyPrice?: string; // Changed to string to match server expectation
     imageUrl?: string;
   }
 ): Promise<AssetWithPrice> {
@@ -146,8 +146,8 @@ export async function updateAsset(
     name: string;
     symbol: string;
     coinGeckoId: string;
-    balance: number;
-    avgBuyPrice: number;
+    balance: string; // Changed to string
+    avgBuyPrice: string; // Changed to string
     imageUrl: string;
   }>
 ): Promise<AssetWithPrice> {
@@ -173,11 +173,11 @@ export async function createTransaction(
   data: {
     assetId: number;
     type: string;
-    amount: number;
-    price?: number;
+    amount: string; // Changed to string
+    price?: string; // Changed to string
     toAssetId?: number;
-    toAmount?: number;
-    toPrice?: number;
+    toAmount?: string; // Changed to string
+    toPrice?: string; // Changed to string
     date?: string;
     status?: string;
   }
@@ -207,11 +207,11 @@ export async function updateTransaction(
   data: Partial<{
     assetId: number;
     type: string;
-    amount: number;
-    price: number;
+    amount: string; // Changed to string
+    price: string; // Changed to string
     toAssetId: number;
-    toAmount: number;
-    toPrice: number;
+    toAmount: string; // Changed to string
+    toPrice: string; // Changed to string
     date: string;
     status: string;
   }>
