@@ -32,8 +32,22 @@ const PortfolioOverviewSummary = () => {
   const [totalValue, setTotalValue] = useState(0);
   const [totalChange24h, setTotalChange24h] = useState(0);
   const [pieData, setPieData] = useState<any[]>([]);
-  const [lineChartData, setLineChartData] = useState<any[]>([]);
   const [top5Assets, setTop5Assets] = useState<AssetWithPrice[]>([]);
+  
+  // Ottieni i dati del grafico usando React Query
+  const { data: chartData, isLoading: isChartLoading } = useQuery({
+    queryKey: ['/overview-chart', '30d'],
+    queryFn: () => generatePortfolioChartData('30d'),
+    staleTime: 1000 * 60 * 5,
+    retry: 3,
+    retryDelay: 1000
+  });
+  
+  // Prepara i dati per il grafico lineare
+  const lineChartData = chartData ? chartData.labels.map((date, index) => ({
+    date,
+    value: chartData.values[index]
+  })) : [];
 
   // Calcola il valore totale del portfolio e prepara i dati per i grafici
   useEffect(() => {
@@ -58,33 +72,13 @@ const PortfolioOverviewSummary = () => {
           }));
         setPieData(pieChartData);
 
-        // Genera i dati per il grafico lineare
-        const today = new Date();
-        const lineData = [];
-        for (let i = 30; i >= 0; i--) {
-          const date = new Date();
-          date.setDate(today.getDate() - i);
-          
-          // Crea una leggera tendenza al rialzo con alcune variazioni casuali
-          const value = total > 0 
-            ? total * (0.85 + (0.3 * (30 - i) / 30) + Math.random() * 0.05)
-            : 1000 * (0.85 + (0.3 * (30 - i) / 30) + Math.random() * 0.05); // Valore di esempio se total è 0
-          
-          lineData.push({
-            date: date.toLocaleDateString(),
-            value: value
-          });
-        }
-        setLineChartData(lineData);
-
-        // Calcola la variazione totale nelle ultime 24 ore (circa 1.8% di variazione giornaliera)
+        // Calcola la variazione totale nelle ultime 24 ore (circa 1.8% di variazione giornaliera media)
         setTotalChange24h(total > 0 ? total * 0.018 : 0);
       } catch (error) {
         console.error("Errore nei calcoli del riepilogo del portfolio:", error);
         // Impostazione dei valori di fallback
         setTotalValue(0);
         setPieData([]);
-        setLineChartData([]);
         setTotalChange24h(0);
       }
     }
@@ -248,7 +242,7 @@ const PortfolioOverviewSummary = () => {
                 Andamento Portfolio
               </h3>
               
-              {isLoading ? (
+              {isLoading || isChartLoading ? (
                 <div className="h-[250px] flex items-center justify-center">
                   <Skeleton className="h-full w-full" />
                 </div>
@@ -265,29 +259,45 @@ const PortfolioOverviewSummary = () => {
                           <stop offset="95%" stopColor="#0088FE" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                       <XAxis 
                         dataKey="date" 
-                        tick={{ fontSize: 10 }}
+                        tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
                         tickFormatter={(str) => {
-                          const date = new Date(str);
-                          return date.getDate() + '/' + (date.getMonth() + 1);
+                          try {
+                            const date = new Date(str);
+                            return date.getDate() + '/' + (date.getMonth() + 1);
+                          } catch (e) {
+                            return str;
+                          }
                         }}
                         interval={5}
+                        axisLine={{ stroke: 'var(--border)' }}
+                        tickLine={{ stroke: 'var(--border)' }}
                       />
                       <YAxis 
-                        tick={{ fontSize: 10 }}
+                        tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
                         tickFormatter={(value) => formatCurrency(value, undefined, 0)}
+                        axisLine={{ stroke: 'var(--border)' }}
+                        tickLine={{ stroke: 'var(--border)' }}
                       />
                       <Tooltip
                         formatter={(value: number) => formatCurrency(value)}
                         labelFormatter={(date) => `Data: ${date}`}
+                        contentStyle={{ 
+                          backgroundColor: 'var(--background)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '0.375rem'
+                        }}
                       />
                       <Area 
                         type="monotone" 
                         dataKey="value" 
                         stroke="#0088FE" 
+                        strokeWidth={2}
                         fillOpacity={1} 
                         fill="url(#colorValue)" 
+                        activeDot={{ r: 6, fill: '#0088FE', strokeWidth: 2, stroke: 'var(--background)' }}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
