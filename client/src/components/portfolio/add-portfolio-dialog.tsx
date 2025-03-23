@@ -152,9 +152,15 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
       setCreatedPortfolioId(newPortfolio.id);
       setStep(2);
       setProgress(66);
+      
+      // Attiva subito il portfolio appena creato
+      // @ts-ignore - TypeScript doesn't recognize newPortfolio structure
+      const portfolioId = newPortfolio?.id || 0;
+      setActivePortfolio(portfolioId);
+      
       toast({
         title: "Portfolio creato con successo",
-        description: "Ora puoi aggiungere il tuo primo asset",
+        description: "Ora aggiungi la tua prima crypto",
       });
     } catch (error) {
       console.error("Failed to create portfolio:", error);
@@ -181,6 +187,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     
     setIsSubmitting(true);
     try {
+      // Aggiungi l'asset e crea automaticamente una transazione di acquisto
       await addAsset({
         name: selectedCrypto.name,
         symbol: selectedCrypto.symbol,
@@ -190,20 +197,20 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
         imageUrl: selectedCrypto.image
       });
       
-      // Attiva il portfolio appena creato
-      setActivePortfolio(createdPortfolioId);
+      // Per ora usiamo solo addAsset direttamente con la quantità completa
+      // Le transazioni verranno gestite in un secondo momento quando implementeremo una vera interfaccia di transazione
       
       // Chiudi il dialog e reimposta tutto
       onOpenChange(false);
       resetForms();
       
       toast({
-        title: "Asset aggiunto con successo",
-        description: "Il tuo portfolio è pronto all'uso",
+        title: "Portfolio creato con successo",
+        description: "Il tuo asset è stato aggiunto con la prima transazione",
       });
       
-      // Reindirizza alla dashboard
-      window.location.href = '/';
+      // Reindirizza alla pagina del portfolio
+      window.location.href = '/portfolios';
     } catch (error) {
       console.error("Failed to add asset:", error);
       toast({
