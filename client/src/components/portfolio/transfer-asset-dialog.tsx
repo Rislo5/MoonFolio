@@ -111,39 +111,51 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     setIsSubmitting(true);
     
     try {
-      // 1. Crea una transazione "withdraw" nel portfolio di origine
+      // 1. Verifica se il portfolio di destinazione esiste
+      const targetPortfolio = portfolios.find(p => p.id === targetPortfolioId);
+      if (!targetPortfolio) {
+        throw new Error("Portfolio di destinazione non trovato");
+      }
+      
+      // 2. Crea una transazione "withdraw" nel portfolio di origine
       await addTransaction({
         assetId: sourceAssetId,
         type: "withdraw",
         amount: amount.toString(),
         price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-        date: new Date().toISOString(), // Converte la data in stringa ISO per evitare problemi di serializzazione
+        date: new Date().toISOString(), // Converti in stringa ISO
       });
       
-      // 2. Verifica se l'asset esiste già nel portfolio di destinazione
-      const targetPortfolio = portfolios.find(p => p.id === targetPortfolioId);
-      if (!targetPortfolio) throw new Error("Portfolio di destinazione non trovato");
-      
-      // 3. Aggiungi o aggiorna l'asset nel portfolio di destinazione
-      // Salva il nuovo asset restituito
-      const newAsset = await addAsset({
-        portfolioId: targetPortfolioId,
-        name: selectedAsset.name,
-        symbol: selectedAsset.symbol,
-        coinGeckoId: selectedAsset.coinGeckoId,
-        balance: amount.toString(),
-        avgBuyPrice: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-        imageUrl: selectedAsset.imageUrl || undefined
+      // 3. Aggiungi o aggiorna l'asset nel portfolio di destinazione usando la API diretta
+      const response = await fetch(`/api/portfolios/${targetPortfolioId}/assets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: selectedAsset.name,
+          symbol: selectedAsset.symbol,
+          coinGeckoId: selectedAsset.coinGeckoId,
+          balance: amount.toString(),
+          avgBuyPrice: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
+          imageUrl: selectedAsset.imageUrl || undefined
+        }),
       });
       
-      // 4. Crea anche una transazione "deposit" nel portfolio di destinazione usando l'ID dell'asset appena creato
+      if (!response.ok) {
+        throw new Error("Impossibile aggiungere l'asset al portfolio di destinazione");
+      }
+      
+      const newAsset = await response.json();
+      
+      // 4. Crea una transazione "deposit" nel portfolio di destinazione
       if (newAsset && newAsset.id) {
         await createTransaction(targetPortfolioId, {
           assetId: newAsset.id,
           type: "deposit",
           amount: amount.toString(),
           price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-          date: new Date().toISOString(), // Converte la data in stringa ISO per evitare problemi di serializzazione
+          date: new Date().toISOString(), // Converti in stringa ISO
         });
       }
       
