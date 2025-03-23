@@ -26,7 +26,9 @@ import {
   ArrowUpRight, 
   BarChart3,
   LineChart,
-  Trash2
+  Trash2,
+  CoinsIcon,
+  Calendar
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
@@ -35,6 +37,7 @@ import { DeletePortfolioDialog } from "@/components/portfolio/delete-portfolio-d
 import AddAssetDialog from "@/components/portfolio/add-asset-dialog";
 import PortfolioCharts from "@/components/portfolio/portfolio-charts";
 import AssetDetailTable from "@/components/portfolio/asset-detail-table";
+import TransactionDetailList from "@/components/portfolio/transaction-detail-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -309,7 +312,7 @@ const Dashboard = () => {
       )}
 
       {/* Sezione Asset Dettagliata */}
-      {isConnected && assets && assets.length > 0 && (
+      {isConnected && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-1.5 sm:gap-2">
@@ -318,7 +321,32 @@ const Dashboard = () => {
             </h2>
           </div>
           
-          <AssetDetailTable />
+          <Tabs defaultValue="assets" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="assets" className="flex items-center">
+                <CoinsIcon className="mr-2 h-4 w-4" />
+                Asset
+              </TabsTrigger>
+              <TabsTrigger value="transactions" className="flex items-center">
+                <Calendar className="mr-2 h-4 w-4" />
+                Transazioni
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="assets" className="mt-0">
+              <AssetDetailTable />
+            </TabsContent>
+            
+            <TabsContent value="transactions" className="mt-0">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <p className="text-sm text-muted-foreground">
+                  Visualizza e gestisci tutte le tue transazioni in questo portfolio
+                </p>
+              </div>
+              
+              <TransactionDetailList />
+            </TabsContent>
+          </Tabs>
         </div>
       )}
       
