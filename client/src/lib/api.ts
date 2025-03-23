@@ -258,25 +258,45 @@ export async function fetchPortfolioOverview(id: number): Promise<PortfolioOverv
 
 // Mock functions for generating chart data - these would normally come from the API
 // but are implemented client-side for simplicity
-export async function generatePortfolioChartData(timeframe: string): Promise<ChartData> {
+export async function generatePortfolioChartData(timeframe: string, specificPortfolioId?: number): Promise<ChartData> {
   // This would normally fetch from an API endpoint
   const days = timeframeToDays(timeframe);
   const dates = generateDates(days);
   
   try {
-    // Ottieni il valore attuale del portfolio attivo
-    const portfolios = await fetchPortfolios();
-    if (!portfolios || portfolios.length === 0) {
-      throw new Error("Nessun portfolio trovato");
+    let portfolioId: number;
+    let currentValue: number = 0;
+    
+    // Se è stato specificato un ID di portfolio, usa quello
+    if (specificPortfolioId) {
+      portfolioId = specificPortfolioId;
+      
+      try {
+        const overview = await fetchPortfolioOverview(portfolioId);
+        currentValue = overview.totalValue;
+      } catch (error) {
+        console.error("Errore nel caricamento dell'overview per il portfolio specificato:", error);
+      }
+    } else {
+      // Altrimenti cerca di ottenere il portfolio attivo
+      try {
+        const portfolios = await fetchPortfolios();
+        if (!portfolios || portfolios.length === 0) {
+          throw new Error("Nessun portfolio trovato");
+        }
+        
+        // Trova il portfolio attivo dal localStorage o usa il primo
+        const activePortfolioIdStr = localStorage.getItem('activePortfolioId');
+        portfolioId = activePortfolioIdStr ? parseInt(activePortfolioIdStr) : portfolios[0].id;
+        
+        // Ottieni il valore corrente del portfolio
+        const overview = await fetchPortfolioOverview(portfolioId);
+        currentValue = overview.totalValue;
+      } catch (error) {
+        console.error("Errore nel caricamento del portfolio attivo:", error);
+        portfolioId = 0;
+      }
     }
-    
-    // Trova il portfolio attivo dal localStorage o usa il primo
-    const activePortfolioIdStr = localStorage.getItem('activePortfolioId');
-    const portfolioId = activePortfolioIdStr ? parseInt(activePortfolioIdStr) : portfolios[0].id;
-    
-    // Ottieni il valore corrente del portfolio
-    const overview = await fetchPortfolioOverview(portfolioId);
-    let currentValue = overview.totalValue;
     
     // Per evitare grafici piatti quando il valore è 0
     if (currentValue <= 0) {

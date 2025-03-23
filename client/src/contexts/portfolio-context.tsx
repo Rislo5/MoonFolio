@@ -153,8 +153,10 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
   const portfolioChartQuery = useQuery({
     queryKey: [`/portfolio-chart`, activePortfolioId, activeTimeframe],
     enabled: !!activePortfolioId,
-    queryFn: () => generatePortfolioChartData(activeTimeframe),
+    queryFn: () => generatePortfolioChartData(activeTimeframe, activePortfolioId || undefined),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    retryDelay: 1000
   });
   
   const assets = assetsQuery.data as AssetWithPrice[] || [];
