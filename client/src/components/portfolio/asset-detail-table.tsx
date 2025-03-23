@@ -378,11 +378,7 @@ export default function AssetDetailTable() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                           setSelectedAsset(asset);
-                          // Open a dialog to edit the asset or implement inline editing
-                          toast({
-                            title: "Modifica asset",
-                            description: `La modifica di ${asset.name} sarà disponibile a breve.`,
-                          });
+                          setShowEditAssetDialog(true);
                         }}>
                           <RefreshCcw className="h-4 w-4 mr-2" />
                           Modifica asset
@@ -440,6 +436,15 @@ export default function AssetDetailTable() {
           open={showTransferAssetDialog}
           onOpenChange={setShowTransferAssetDialog}
           initialAssetId={selectedAsset.id}
+        />
+      )}
+      
+      {/* Dialog per modificare asset */}
+      {selectedAsset && (
+        <EditAssetDialog
+          open={showEditAssetDialog}
+          onOpenChange={setShowEditAssetDialog}
+          asset={selectedAsset}
         />
       )}
     </Card>
