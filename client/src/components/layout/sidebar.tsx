@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Menu, X, LayoutDashboard, Wallet, RefreshCw, Settings } from "lucide-react";
+import { Menu, X, LayoutDashboard, Wallet, Settings } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -103,16 +103,10 @@ export default function Sidebar() {
             current={location === "/dashboard"}
           />
           <NavItem
-            href="/portfolio"
+            href="/portfolios"
             icon={Wallet}
             label="Portfolio"
-            current={location === "/portfolio"}
-          />
-          <NavItem
-            href="/transactions"
-            icon={RefreshCw}
-            label="Transactions"
-            current={location === "/transactions"}
+            current={location === "/portfolios" || location.startsWith("/portfolio/")}
           />
           <NavItem
             href="/settings"

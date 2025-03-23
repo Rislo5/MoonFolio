@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import WelcomeScreen from "@/components/welcome-screen";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, BookCopy, PlusCircle } from "lucide-react";
+import { Wallet, BookCopy, PlusCircle, CoinsIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog";
+import AddAssetDialog from "../components/portfolio/add-asset-dialog";
 
 // Define type with runtime properties
 type ExtendedPortfolio = {
@@ -27,6 +29,7 @@ type ExtendedPortfolio = {
 const Portfolios = () => {
   const { portfolios, activePortfolio, setActivePortfolio, isLoading } = usePortfolio();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] = useState(false);
   const [_, navigate] = useLocation();
   
   // If no portfolios exist, show welcome screen
@@ -50,6 +53,18 @@ const Portfolios = () => {
     navigate('/');
   };
   
+  const handleAddAsset = () => {
+    if (activePortfolio) {
+      setIsAddAssetDialogOpen(true);
+    } else {
+      toast({
+        title: "Nessun portfolio attivo",
+        description: "Seleziona prima un portfolio per aggiungere asset",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -59,10 +74,18 @@ const Portfolios = () => {
             Gestisci e visualizza tutti i tuoi portfolio di criptovalute
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nuovo Portfolio
-        </Button>
+        <div className="flex space-x-2">
+          {activePortfolio && (
+            <Button onClick={handleAddAsset} variant="outline">
+              <CoinsIcon className="mr-2 h-4 w-4" />
+              Aggiungi Asset
+            </Button>
+          )}
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Nuovo Portfolio
+          </Button>
+        </div>
       </div>
       
       {/* Summary Card */}
