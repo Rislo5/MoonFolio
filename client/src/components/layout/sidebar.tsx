@@ -58,7 +58,7 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          "flex-shrink-0 w-full sm:w-20 lg:w-64 h-screen fixed top-0 left-0 z-50",
+          "flex-shrink-0 w-full sm:w-20 lg:w-64 h-screen fixed sm:sticky top-0 left-0 z-50",
           "transform transition-transform duration-200 ease-in-out",
           "bg-background border-r",
           "sm:translate-x-0",
