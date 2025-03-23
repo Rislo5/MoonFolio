@@ -99,7 +99,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
         try {
           const results = await searchCryptos(searchTerm);
           // Aggiungi flag selected per quelli già selezionati
-          const resultsWithSelected = results.map(crypto => ({
+          const resultsWithSelected = results.map((crypto: CryptoCurrency) => ({
             ...crypto,
             selected: selectedCryptos.some(selected => selected.id === crypto.id)
           }));

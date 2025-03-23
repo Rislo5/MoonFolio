@@ -99,8 +99,11 @@ export default function TransactionDetailList() {
     return [...filtered].sort((a, b) => {
       // Ordinamento per data (usa un campo speciale)
       if (sortOption.column === 'date') {
-        const aValue = new Date(a.date).getTime();
-        const bValue = new Date(b.date).getTime();
+        // Gestisce in modo sicuro i valori null o undefined
+        const aDate = a.date ? new Date(a.date) : new Date(0);
+        const bDate = b.date ? new Date(b.date) : new Date(0);
+        const aValue = aDate.getTime();
+        const bValue = bDate.getTime();
         return sortOption.direction === 'asc' ? aValue - bValue : bValue - aValue;
       }
       
@@ -318,7 +321,7 @@ export default function TransactionDetailList() {
                   <TableCell>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-3 w-3 mr-1.5" />
-                      {formatDate(new Date(transaction.date))}
+                      {formatDate(transaction.date ? new Date(transaction.date) : new Date())}
                     </div>
                   </TableCell>
                   <TableCell>
