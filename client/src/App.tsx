@@ -26,10 +26,10 @@ function App() {
             {isDashboardRoute && <Sidebar />}
             <main className={`flex-1 p-6 ${isDashboardRoute ? "sm:ml-20 lg:ml-64" : ""} pt-6 pb-12`}>
               <Switch>
-                <Route path="/" component={Dashboard} />
-                <Route path="/dashboard" component={Dashboard} />
-                <Route path="/portfolios" component={Portfolios} />
                 <Route path="/welcome" component={WelcomeScreen} />
+                <Route path="/dashboard" component={Dashboard} />
+                <Route path="/" component={Dashboard} />
+                <Route path="/portfolios" component={Portfolios} />
                 <Route component={NotFound} />
               </Switch>
             </main>
