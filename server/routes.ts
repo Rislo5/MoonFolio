@@ -55,20 +55,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Search query must be at least 2 characters" });
       }
       
-      const response = await fetch(
-        `${COINGECKO_API_URL}/search?query=${query}${
-          COINGECKO_API_KEY ? `&x_cg_api_key=${COINGECKO_API_KEY}` : ""
-        }`
-      );
+      // Implementiamo un semplice sistema di fallback in caso di problemi con l'API
+      let data;
       
-      if (!response.ok) {
-        throw new Error(`CoinGecko API error: ${response.statusText}`);
+      try {
+        const response = await fetch(
+          `${COINGECKO_API_URL}/search?query=${query}${
+            COINGECKO_API_KEY ? `&x_cg_api_key=${COINGECKO_API_KEY}` : ""
+          }`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`CoinGecko API error: ${response.statusText}`);
+        }
+        
+        data = await response.json();
+      } catch (error) {
+        console.error("Error searching cryptocurrencies, using fallback data:", error);
+        
+        // Dati di fallback solo per alcune monete popolari in caso di errore
+        if (query.toLowerCase().includes("bitcoin") || query.toLowerCase().includes("btc")) {
+          data = {
+            coins: [
+              { id: "bitcoin", name: "Bitcoin", symbol: "BTC", thumb: "https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png" }
+            ]
+          };
+        } else if (query.toLowerCase().includes("ethereum") || query.toLowerCase().includes("eth")) {
+          data = {
+            coins: [
+              { id: "ethereum", name: "Ethereum", symbol: "ETH", thumb: "https://assets.coingecko.com/coins/images/279/thumb/ethereum.png" }
+            ]
+          };
+        } else if (query.toLowerCase().includes("tether") || query.toLowerCase().includes("usdt")) {
+          data = {
+            coins: [
+              { id: "tether", name: "Tether", symbol: "USDT", thumb: "https://assets.coingecko.com/coins/images/325/thumb/Tether.png" }
+            ]
+          };
+        } else {
+          data = { coins: [] };
+        }
       }
       
-      const data = await response.json();
-      res.json(data);
+      // Prepariamo i dati per il client con il formato necessario
+      const enrichedCoins = data.coins.map((coin: any) => ({
+        id: coin.id,
+        name: coin.name,
+        symbol: coin.symbol.toLowerCase(),
+        image: coin.thumb,
+        market_cap_rank: coin.market_cap_rank
+      })).slice(0, 10); // Limita a 10 risultati
+      
+      res.json(enrichedCoins);
     } catch (error) {
-      console.error("Error searching cryptocurrencies:", error);
+      console.error("Error processing search results:", error);
       res.status(500).json({
         message: "Failed to search cryptocurrency data",
         error: error instanceof Error ? error.message : String(error),
