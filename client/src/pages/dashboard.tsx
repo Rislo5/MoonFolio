@@ -3,7 +3,7 @@ import { useLocation, Link } from "wouter";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
 import { fetchPortfolios } from "@/lib/api";
-import { Portfolio } from "@shared/schema";
+import { Portfolio, AssetWithPrice } from "@shared/schema";
 
 // Estende il tipo Portfolio con la proprietà isActive
 type ExtendedPortfolio = Portfolio & {
@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
+import { TransferAssetDialog } from "@/components/portfolio/transfer-asset-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Format timestamp to readable date
@@ -153,7 +154,7 @@ const Dashboard = () => {
                   {isConnected ? (
                     <span className="flex items-center">
                       <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                      {portfolios.find(p => p.isActive)?.name || "Nessuno"}
+                      {(portfolios as ExtendedPortfolio[]).find(p => p.isActive)?.name || "Nessuno"}
                     </span>
                   ) : (
                     "Nessuno"
@@ -196,7 +197,7 @@ const Dashboard = () => {
               </Card>
             ))
           ) : (
-            portfolios.map((portfolio) => (
+            (portfolios as ExtendedPortfolio[]).map((portfolio) => (
               <Card key={portfolio.id} className="overflow-hidden">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg flex justify-between items-center">
