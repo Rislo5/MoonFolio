@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Area, AreaChart, XAxis, YAxis } from "recharts";
-import { LineChart, BarChart3, Wallet, TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
+import { BarChart3, Wallet, PieChart as PieChartIcon, ArrowUp, ArrowDown } from "lucide-react";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#a4de6c'];
 
@@ -193,115 +193,47 @@ const PortfolioOverviewSummary = () => {
           </div>
           
           {/* Charts */}
-          <div>
-            <Tabs defaultValue="distribution">
-              <TabsList className="mb-4">
-                <TabsTrigger value="distribution" className="text-xs sm:text-sm">
-                  <PieChart className="h-3.5 w-3.5 mr-1" />
-                  Distribuzione
-                </TabsTrigger>
-                <TabsTrigger value="trend" className="text-xs sm:text-sm">
-                  <TrendingUp className="h-3.5 w-3.5 mr-1" />
-                  Trend
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="distribution" className="h-[300px]">
-                {isLoading ? (
-                  <div className="h-full flex items-center justify-center">
-                    <Skeleton className="h-48 w-48 rounded-full" />
-                  </div>
-                ) : (
-                  pieData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={2}
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {pieData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: number) => formatCurrency(value)}
-                          labelFormatter={(name) => `Portfolio: ${name}`}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p className="text-muted-foreground">Nessun dato disponibile</p>
-                    </div>
-                  )
-                )}
-              </TabsContent>
-              
-              <TabsContent value="trend" className="h-[300px]">
-                {isLoading ? (
-                  <div className="h-full flex items-center justify-center">
-                    <Skeleton className="h-full w-full" />
-                  </div>
-                ) : (
-                  lineChartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={lineChartData}
-                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#0088FE" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <XAxis 
-                          dataKey="date" 
-                          tick={{ fontSize: 10 }}
-                          tickFormatter={(str) => {
-                            const date = new Date(str);
-                            return date.getDate() + '/' + (date.getMonth() + 1);
-                          }}
-                          interval={5}
-                        />
-                        <YAxis 
-                          tick={{ fontSize: 10 }}
-                          tickFormatter={(value) => {
-                            // Formatta il valore senza decimali
-                            return new Intl.NumberFormat('it-IT', {
-                              style: 'currency',
-                              currency: 'EUR',
-                              maximumFractionDigits: 0
-                            }).format(value);
-                          }}
-                        />
-                        <Tooltip
-                          formatter={(value: number) => formatCurrency(value)}
-                          labelFormatter={(date) => `Data: ${date}`}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="value" 
-                          stroke="#0088FE" 
-                          fillOpacity={1} 
-                          fill="url(#colorValue)" 
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p className="text-muted-foreground">Nessun dato disponibile</p>
-                    </div>
-                  )
-                )}
-              </TabsContent>
-            </Tabs>
+          <div className="bg-background rounded-lg border shadow-sm p-4">
+            <h3 className="text-sm font-semibold mb-4 flex items-center">
+              <PieChartIcon className="h-4 w-4 mr-2" />
+              Distribuzione Portfolio
+            </h3>
+            
+            {isLoading ? (
+              <div className="h-[250px] flex items-center justify-center">
+                <Skeleton className="h-[200px] w-[200px] rounded-full" />
+              </div>
+            ) : pieData.length > 0 ? (
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={1}
+                      dataKey="value"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value)}
+                      labelFormatter={(name) => `Portfolio: ${name}`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-[250px] flex items-center justify-center">
+                <p className="text-muted-foreground">Nessun dato disponibile per la visualizzazione</p>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
