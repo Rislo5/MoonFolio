@@ -1,49 +1,35 @@
-import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import NotFound from "@/pages/not-found";
+import { PortfolioProvider } from "@/contexts/portfolio-context";
+import { ThemeProvider } from "@/hooks/use-theme";
+
 import Dashboard from "@/pages/dashboard";
-import Portfolio from "@/pages/portfolio";
+import Assets from "@/pages/assets";
 import Transactions from "@/pages/transactions";
-import Settings from "@/pages/settings";
-import Welcome from "@/pages/welcome";
-import { ThemeProvider } from "@/components/theme-provider";
-import { WalletProvider } from "@/context/wallet-context";
-import Sidebar from "@/components/layout/sidebar";
-
-function Router() {
-  const [location] = useLocation();
-  const walletConnected = location !== "/" && location !== "/welcome";
-
-  return (
-    <div className="min-h-screen flex flex-col sm:flex-row bg-light-darker dark:bg-dark-DEFAULT text-foreground">
-      {walletConnected && <Sidebar />}
-      
-      <main className="flex-grow sm:p-6 p-4 overflow-x-hidden">
-        <Switch>
-          <Route path="/" component={Welcome} />
-          <Route path="/welcome" component={Welcome} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/portfolio" component={Portfolio} />
-          <Route path="/transactions" component={Transactions} />
-          <Route path="/settings" component={Settings} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-    </div>
-  );
-}
+import NotFound from "@/pages/not-found";
+import Navbar from "@/components/layout/navbar";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="moonfolio-theme">
-      <WalletProvider>
-        <QueryClientProvider client={queryClient}>
-          <Router />
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <PortfolioProvider>
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+            <Navbar />
+            <main className="container mx-auto px-4 pt-20 pb-12">
+              <Switch>
+                <Route path="/" component={Dashboard} />
+                <Route path="/assets" component={Assets} />
+                <Route path="/transactions" component={Transactions} />
+                <Route component={NotFound} />
+              </Switch>
+            </main>
+          </div>
           <Toaster />
-        </QueryClientProvider>
-      </WalletProvider>
+        </PortfolioProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }
