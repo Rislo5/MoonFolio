@@ -12,15 +12,14 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
+import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
 
 const WelcomeScreen = () => {
-  const { connectEnsWallet, createManualPortfolio } = usePortfolio();
+  const { connectEnsWallet } = usePortfolio();
   const [ensAddress, setEnsAddress] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [portfolioName, setPortfolioName] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const [viewMode, setViewMode] = useState<"main" | "ens" | "manual">("main");
+  const [viewMode, setViewMode] = useState<"main" | "ens">("main");
 
   const handleConnectWallet = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,21 +32,6 @@ const WelcomeScreen = () => {
       console.error("Failed to connect wallet:", error);
     } finally {
       setIsConnecting(false);
-    }
-  };
-
-  const handleCreatePortfolio = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!portfolioName.trim()) return;
-    
-    setIsCreating(true);
-    try {
-      await createManualPortfolio(portfolioName);
-      setIsCreateDialogOpen(false);
-    } catch (error) {
-      console.error("Failed to create portfolio:", error);
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -89,7 +73,7 @@ const WelcomeScreen = () => {
             <Button 
               variant="secondary" 
               className="w-full"
-              onClick={() => setViewMode("manual")}
+              onClick={() => setIsCreateDialogOpen(true)}
             >
               Create Manual Portfolio
             </Button>
@@ -145,97 +129,15 @@ const WelcomeScreen = () => {
     </div>
   );
   
-  const renderManualScreen = () => (
-    <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" size="sm" onClick={() => setViewMode("main")}>
-          ← Back
-        </Button>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-          Create Manual Portfolio
-        </h2>
-        <div className="w-10"></div> {/* Spacer for alignment */}
-      </div>
-      
-      <div className="mb-6">
-        <p className="text-gray-600 dark:text-gray-300 mb-4">
-          Name your portfolio and start adding cryptocurrencies you want to track.
-        </p>
-        
-        <form onSubmit={handleCreatePortfolio} className="space-y-4">
-          <Input
-            type="text"
-            placeholder="My Crypto Portfolio"
-            value={portfolioName}
-            onChange={(e) => setPortfolioName(e.target.value)}
-            disabled={isCreating}
-          />
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isCreating || !portfolioName.trim()}
-          >
-            {isCreating ? "Creating..." : "Create Portfolio"}
-          </Button>
-        </form>
-      </div>
-      
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-          Manual Portfolio Benefits
-        </h3>
-        <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-disc list-inside">
-          <li>Track any cryptocurrency</li>
-          <li>Record transactions manually</li>
-          <li>Monitor profit/loss over time</li>
-          <li>Full control over your data</li>
-        </ul>
-      </div>
-    </div>
-  );
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh]">
       {viewMode === "main" && renderMainScreen()}
       {viewMode === "ens" && renderEnsScreen()}
-      {viewMode === "manual" && renderManualScreen()}
-
-      {/* Create Portfolio Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Portfolio</DialogTitle>
-            <DialogDescription>
-              Give your portfolio a name to get started. You can add assets after creating it.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleCreatePortfolio}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label htmlFor="portfolio-name" className="text-sm font-medium">
-                  Portfolio Name
-                </label>
-                <Input
-                  id="portfolio-name"
-                  placeholder="My Crypto Portfolio"
-                  value={portfolioName}
-                  onChange={(e) => setPortfolioName(e.target.value)}
-                  disabled={isCreating}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isCreating || !portfolioName.trim()}>
-                {isCreating ? "Creating..." : "Create Portfolio"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      
+      {/* Utilizziamo lo stesso componente AddPortfolioDialog usato nella pagina Portfolio */}
+      <AddPortfolioDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
     </div>
   );
 };
