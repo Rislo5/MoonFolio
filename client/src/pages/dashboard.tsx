@@ -29,6 +29,7 @@ import {
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
 import { TransferAssetDialog } from "@/components/portfolio/transfer-asset-dialog";
+import AddAssetDialog from "@/components/portfolio/add-asset-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Format timestamp to readable date
@@ -40,6 +41,7 @@ const formatTimestamp = (timestamp: string | Date | null) => {
 const Dashboard = () => {
   const { portfolios, assets, isConnected, setActivePortfolio } = usePortfolio();
   const [isAddPortfolioOpen, setIsAddPortfolioOpen] = useState(false);
+  const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] = useState(false);
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
   const [overviews, setOverviews] = useState<Record<number, { totalValue: number, assetCount: number }>>({});
@@ -279,21 +281,27 @@ const Dashboard = () => {
             <div className="bg-background border rounded-lg overflow-hidden">
               <div className="p-4 border-b flex justify-between items-center">
                 <h3 className="font-medium">Asset nel Portfolio {(portfolios as ExtendedPortfolio[]).find(p => p.isActive)?.name}</h3>
-                {portfolios.length > 1 && (
-                  <Button variant="outline" size="sm" onClick={() => setIsTransferDialogOpen(true)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                      <path d="M18 8L22 12L18 16" />
-                      <path d="M2 12H22" />
-                    </svg>
-                    Trasferisci Asset
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setIsAddAssetDialogOpen(true)}>
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Aggiungi Asset
                   </Button>
-                )}
+                  {portfolios.length > 1 && (
+                    <Button variant="outline" size="sm" onClick={() => setIsTransferDialogOpen(true)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                        <path d="M18 8L22 12L18 16" />
+                        <path d="M2 12H22" />
+                      </svg>
+                      Trasferisci Asset
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="p-4">
                 {assets.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground mb-4">Non hai ancora nessun asset in questo portfolio</p>
-                    <Button variant="outline">Aggiungi il primo asset</Button>
+                    <Button variant="outline" onClick={() => setIsAddAssetDialogOpen(true)}>Aggiungi il primo asset</Button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -325,6 +333,11 @@ const Dashboard = () => {
       )}
       
       <AddPortfolioDialog open={isAddPortfolioOpen} onOpenChange={setIsAddPortfolioOpen} />
+      
+      <AddAssetDialog 
+        open={isAddAssetDialogOpen} 
+        onOpenChange={setIsAddAssetDialogOpen} 
+      />
       
       <TransferAssetDialog 
         open={isTransferDialogOpen} 

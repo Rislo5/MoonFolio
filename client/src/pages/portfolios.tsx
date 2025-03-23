@@ -28,6 +28,7 @@ type ExtendedPortfolio = {
 
 const Portfolios = () => {
   const { portfolios, activePortfolio, setActivePortfolio, isLoading } = usePortfolio();
+  const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] = useState(false);
   const [_, navigate] = useLocation();
@@ -221,6 +222,11 @@ const Portfolios = () => {
       <AddPortfolioDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
+      />
+      
+      <AddAssetDialog 
+        open={isAddAssetDialogOpen}
+        onOpenChange={setIsAddAssetDialogOpen}
       />
     </div>
   );
