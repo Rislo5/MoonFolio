@@ -151,8 +151,8 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
               symbol: selectedAsset.symbol,
               coinGeckoId: selectedAsset.coinGeckoId,
               balance: values.amount, // La quantità trasferita diventa il bilancio iniziale
-              avgBuyPrice: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : undefined,
-              imageUrl: selectedAsset.imageUrl
+              avgBuyPrice: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "",
+              imageUrl: selectedAsset.imageUrl || ""
             }
           );
           
