@@ -1,215 +1,272 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TimeFrame, timeFrames } from "@shared/schema";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
-import { useTheme } from "@/hooks/use-theme";
-import EnhancedChart from "./enhanced-chart";
+import { TimeFrame } from "@shared/schema";
 import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Area,
+  AreaChart,
   PieChart,
   Pie,
   Cell,
-  Legend,
-  ResponsiveContainer,
-  Tooltip
+  Legend
 } from "recharts";
-import { Sparkles, ArrowUpRight, ArrowDownRight, PieChart as PieChartIcon } from "lucide-react";
 
-// Colors for the pie chart - using vibrant colors to match our new theme
-const ASSET_COLORS = [
-  "#9333EA", // Purple (Primary)
-  "#F97316", // Orange
-  "#10B981", // Emerald
-  "#3B82F6", // Blue
-  "#EC4899", // Pink
-  "#EF4444", // Red
-  "#F59E0B", // Amber
-  "#6366F1", // Indigo
-  "#14B8A6", // Teal
-];
+// Styles for the pie chart
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9E42FF', '#FF4286', '#42C3FF', '#EBFF42'];
 
-const TimeframeSelector = ({ value, onChange }: { value: TimeFrame, onChange: (tf: TimeFrame) => void }) => {
-  return (
-    <div className="flex space-x-1 p-1 bg-muted/50 rounded-lg">
-      {timeFrames.map((timeframe) => (
-        <Button
-          key={timeframe}
-          size="sm"
-          variant={timeframe === value ? "default" : "ghost"}
-          className={timeframe === value 
-            ? "text-white shadow-sm" 
-            : "text-foreground hover:bg-muted"
-          }
-          onClick={() => onChange(timeframe)}
-        >
-          {timeframe}
-        </Button>
-      ))}
-    </div>
-  );
-};
-
-const CustomPieTooltip = ({ active, payload }: any) => {
+// Custom tooltip for line chart
+const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-background p-3 border border-border rounded-lg shadow-md">
-        <p className="font-medium mb-1">{payload[0].name}</p>
-        <p className="text-lg font-bold text-primary">
-          {formatCurrency(payload[0].value)}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {payload[0].payload.percentage.toFixed(1)}% del portfolio
-        </p>
+      <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
+        <p className="text-muted-foreground text-xs mb-1">{label}</p>
+        <p className="font-medium">{formatCurrency(payload[0].value)}</p>
       </div>
     );
   }
   return null;
 };
 
-const PortfolioCharts = () => {
-  const { theme } = useTheme();
+// Custom tooltip for pie chart
+const CustomPieTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
+        <p className="font-medium">{payload[0].name}</p>
+        <p className="text-sm">{formatCurrency(payload[0].value)}</p>
+        <p className="text-xs text-muted-foreground">{payload[0].payload.percentage}% del portafoglio</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// TimeframeSelector component per selezionare il timeframe
+const TimeframeSelector = ({ value, onChange }: { value: TimeFrame, onChange: (tf: TimeFrame) => void }) => {
+  return (
+    <div className="flex items-center space-x-1">
+      {['24h', '7d', '30d', '1y', 'all'].map((tf) => (
+        <button
+          key={tf}
+          onClick={() => onChange(tf as TimeFrame)}
+          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            value === tf 
+              ? 'bg-primary text-primary-foreground' 
+              : 'hover:bg-muted/80 bg-muted/50'
+          }`}
+        >
+          {tf}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+export default function PortfolioCharts() {
   const { 
     assets, 
+    activePortfolio,
+    portfolioOverview,
     portfolioChartData, 
     activeTimeframe, 
-    setActiveTimeframe,
-    portfolioOverview 
+    setActiveTimeframe 
   } = usePortfolio();
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Simuliamo caricamento iniziale per migliorare UX
+  const [pieData, setPieData] = useState<{ name: string; symbol: string; value: number; percentage: number }[]>([]);
+
+  // Prepare data for pie chart
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 600);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Transform assets for the pie chart with memoization
-  const pieChartData = useMemo(() => {
-    if (!assets?.length) return [];
-    
-    const totalValue = assets.reduce((sum, a) => sum + a.value, 0);
-    
-    return assets
-      .filter(asset => asset.value > 0)
-      .map((asset) => ({
-        name: asset.symbol.toUpperCase(),
-        value: asset.value,
-        percentage: (asset.value / totalValue) * 100,
-        color: asset.profitLossPercentage >= 0 ? "#10B981" : "#EF4444",
+    if (assets && assets.length > 0) {
+      // Calculate total value
+      const totalValue = assets.reduce((total, asset) => total + (asset.value || 0), 0);
+      
+      // Prepare data for pie chart
+      const pieChartData = assets.map(asset => ({
+        name: asset.name,
+        symbol: asset.symbol,
+        value: asset.value || 0,
+        percentage: totalValue > 0 ? Math.round((asset.value || 0) / totalValue * 100) : 0
       }))
-      .sort((a, b) => b.value - a.value); // Order by value descending
+      // Filter out assets with 0 value
+      .filter(item => item.value > 0)
+      // Sort by value descending
+      .sort((a, b) => b.value - a.value);
+      
+      setPieData(pieChartData);
+    }
   }, [assets]);
 
-  // Total portfolio value
-  const totalPortfolioValue = useMemo(() => {
-    if (!assets?.length) return 0;
-    return assets.reduce((sum, asset) => sum + asset.value, 0);
-  }, [assets]);
+  // Handle empty or loading state
+  if (!activePortfolio) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Andamento Portafoglio</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Composizione Portafoglio</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Custom formatter for X axis
+  const formatXAxis = (tickItem: string) => {
+    // Format differently based on timeframe
+    if (activeTimeframe === '24h') {
+      // For 24h, show hour
+      return new Date(tickItem).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (activeTimeframe === '7d' || activeTimeframe === '30d') {
+      // For 7d and 30d, show day/month
+      return new Date(tickItem).toLocaleDateString([], { day: 'numeric', month: 'short' });
+    } else {
+      // For 1y and all, show month/year
+      return new Date(tickItem).toLocaleDateString([], { month: 'short', year: '2-digit' });
+    }
+  };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      {/* Enhanced Portfolio Value Chart - takes 2 columns */}
-      <EnhancedChart portfolioValue={totalPortfolioValue} />
-      
-      {/* Asset Allocation Chart */}
-      <Card className="lg:col-span-1 bg-gradient-to-br from-background to-muted/20 backdrop-blur-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* CHART 1: Line Chart for Portfolio Performance */}
+      <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-xl">Allocazione Assets</CardTitle>
-            <Badge variant="outline" className="bg-primary/5">
-              <PieChartIcon className="h-3 w-3 mr-1" />
-              {pieChartData.length} asset
-            </Badge>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="text-lg">Andamento Portafoglio</CardTitle>
+            <TimeframeSelector value={activeTimeframe} onChange={setActiveTimeframe} />
           </div>
-          <CardDescription>
-            {isLoading ? (
-              <span className="block h-5 w-32">
-                <Skeleton className="h-5 w-32" />
-              </span>
-            ) : (
-              `Valore totale: ${formatCurrency(totalPortfolioValue)}`
-            )}
-          </CardDescription>
         </CardHeader>
-        
-        <CardContent>
-          {isLoading ? (
-            <div className="h-[300px] flex items-center justify-center">
-              <div className="space-y-2 w-full">
-                <Skeleton className="h-[300px] w-full rounded-full" />
+        <CardContent className="pt-2">
+          {portfolioOverview && (
+            <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Valore Totale</p>
+                <p className="text-2xl font-bold">{formatCurrency(portfolioOverview.totalValue)}</p>
               </div>
-            </div>
-          ) : pieChartData.length > 0 ? (
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieChartData}
-                    cx="50%"
-                    cy="45%"
-                    labelLine={false}
-                    outerRadius={90}
-                    innerRadius={40}
-                    dataKey="value"
-                    paddingAngle={1}
-                    strokeWidth={2}
-                    stroke={theme === "dark" ? "#1E1E2E" : "#FFFFFF"}
-                  >
-                    {pieChartData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={ASSET_COLORS[index % ASSET_COLORS.length]}
-                        className="drop-shadow-sm hover:opacity-90 transition-opacity"
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomPieTooltip />} />
-                  <Legend 
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    align="center"
-                    iconSize={10}
-                    iconType="circle"
-                    formatter={(value, entry: any, index) => (
-                      <span className="text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis">
-                        {value} ({pieChartData[index].percentage.toFixed(1)}%)
-                      </span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-[300px] flex flex-col gap-2 items-center justify-center">
-              <div className="p-4 rounded-full bg-muted/50">
-                <PieChartIcon className="h-12 w-12 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">Cambiamento (24h)</p>
+                <p className={`text-2xl font-bold ${portfolioOverview.change24hPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {formatPercentage(portfolioOverview.change24hPercentage)}
+                </p>
               </div>
-              <p className="text-muted-foreground">Nessun asset disponibile</p>
-              <Button variant="outline" size="sm">Aggiungi il tuo primo asset</Button>
             </div>
           )}
-          
-          {/* Stats below the chart */}
-          {!isLoading && pieChartData.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Asset più grande</p>
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">{pieChartData[0]?.name}</p>
-                  <p className="text-xs">{pieChartData[0]?.percentage.toFixed(1)}%</p>
-                </div>
+
+          {portfolioChartData && portfolioChartData.values.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart
+                data={portfolioChartData.labels.map((date, index) => ({
+                  date,
+                  value: portfolioChartData.values[index]
+                }))}
+                margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
+              >
+                <defs>
+                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--chart-primary)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="var(--chart-primary)" stopOpacity={0.01} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
+                  tickFormatter={formatXAxis}
+                  axisLine={{ stroke: 'var(--border)' }}
+                  tickLine={{ stroke: 'var(--border)' }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
+                  tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  axisLine={{ stroke: 'var(--border)' }}
+                  tickLine={{ stroke: 'var(--border)' }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="var(--primary)" 
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorValue)"
+                  activeDot={{ r: 6, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--background)' }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] bg-muted/30 rounded-lg">
+              <div className="text-center p-4">
+                <p className="text-muted-foreground">Non ci sono abbastanza dati per visualizzare il grafico</p>
+                <p className="text-xs text-muted-foreground mt-1">Aggiungi asset o transazioni per vedere l'andamento</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Diversificazione</p>
-                <p className="font-medium">
-                  {pieChartData.length > 3 ? "Alta" : pieChartData.length > 1 ? "Media" : "Bassa"}
-                </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* CHART 2: Pie Chart for Portfolio Composition */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Composizione Portafoglio</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+          {pieData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={100}
+                  innerRadius={50}
+                  dataKey="value"
+                  stroke="var(--background)"
+                  strokeWidth={1}
+                  nameKey="name"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomPieTooltip />} />
+                <Legend 
+                  layout="vertical" 
+                  verticalAlign="middle" 
+                  align="right"
+                  formatter={(value, entry, index) => (
+                    <span className="text-sm" style={{color: 'var(--foreground)'}}>
+                      {value} ({pieData[index]?.percentage}%)
+                    </span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] bg-muted/30 rounded-lg">
+              <div className="text-center p-4">
+                <p className="text-muted-foreground">Non hai ancora asset nel portafoglio</p>
+                <p className="text-xs text-muted-foreground mt-1">Aggiungi asset per visualizzare la composizione</p>
               </div>
             </div>
           )}
@@ -217,6 +274,4 @@ const PortfolioCharts = () => {
       </Card>
     </div>
   );
-};
-
-export default PortfolioCharts;
+}
