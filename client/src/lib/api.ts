@@ -263,8 +263,9 @@ export async function generatePortfolioChartData(timeframe: string): Promise<Cha
   const days = timeframeToDays(timeframe);
   const dates = generateDates(days);
   
-  // Generate some plausible looking data with a general upward trend
-  let startValue = 100000 + Math.random() * 20000;
+  // Ottieni il valore attuale del portfolio dal localStorage o usa un valore base più basso
+  const currentValueStr = localStorage.getItem('currentPortfolioValue');
+  let startValue = currentValueStr ? parseFloat(currentValueStr) : 5000 + Math.random() * 1000;
   const values = [startValue];
   
   for (let i = 1; i < dates.length; i++) {

@@ -84,6 +84,13 @@ export default function PortfolioCharts() {
 
   const [pieData, setPieData] = useState<{ name: string; symbol: string; value: number; percentage: number }[]>([]);
 
+  // Salva il valore totale del portfolio nel localStorage per i grafici
+  useEffect(() => {
+    if (portfolioOverview && portfolioOverview.totalValue) {
+      localStorage.setItem('currentPortfolioValue', portfolioOverview.totalValue.toString());
+    }
+  }, [portfolioOverview]);
+
   // Prepare data for pie chart
   useEffect(() => {
     if (assets && assets.length > 0) {
