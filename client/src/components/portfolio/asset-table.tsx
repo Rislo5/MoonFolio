@@ -9,9 +9,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface AssetTableProps {
   assets: Asset[];
   onAddTransaction: () => void;
+  onTransferAsset?: (assetId: number) => void;
+  showTransferButton?: boolean;
 }
 
-export default function AssetTable({ assets, onAddTransaction }: AssetTableProps) {
+export default function AssetTable({ 
+  assets, 
+  onAddTransaction, 
+  onTransferAsset, 
+  showTransferButton = false 
+}: AssetTableProps) {
   // Generate coin IDs for API call
   const coinIds = assets.map(asset => asset.symbol.toLowerCase());
 
@@ -70,6 +77,7 @@ export default function AssetTable({ assets, onAddTransaction }: AssetTableProps
               <TableHead>Value</TableHead>
               <TableHead>24h</TableHead>
               <TableHead>Profit/Loss</TableHead>
+              {showTransferButton && <TableHead>Azioni</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -117,6 +125,22 @@ export default function AssetTable({ assets, onAddTransaction }: AssetTableProps
                   <TableCell className={(asset.profitLoss || 0) >= 0 ? "text-green-500" : "text-red-500"}>
                     {formatCurrency(asset.profitLoss || 0)}
                   </TableCell>
+                  {showTransferButton && onTransferAsset && (
+                    <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => onTransferAsset(asset.id)}
+                        className="flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 8L22 12L18 16" />
+                          <path d="M2 12H22" />
+                        </svg>
+                        Trasferisci
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}
