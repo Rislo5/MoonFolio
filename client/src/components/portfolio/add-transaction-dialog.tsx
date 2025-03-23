@@ -119,12 +119,12 @@ const AddTransactionDialog = ({ open, onOpenChange }: Props) => {
       await addTransaction({
         type: values.type,
         assetId: values.assetId,
-        amount: values.amount,
-        price: values.price,
+        amount: values.amount.toString(), // Convert to string
+        price: values.price ? values.price.toString() : undefined, // Convert to string if defined
         date: values.date,
         toAssetId: values.toAssetId,
-        toAmount: values.toAmount,
-        toPrice: values.toPrice,
+        toAmount: values.toAmount ? values.toAmount.toString() : undefined, // Convert to string if defined
+        toPrice: values.toPrice ? values.toPrice.toString() : undefined, // Convert to string if defined
       });
       onOpenChange(false);
       form.reset({
