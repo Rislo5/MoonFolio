@@ -118,7 +118,7 @@ export default function Sidebar() {
           <Separator className="my-4" />
 
           <div className="px-3 py-2">
-            <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground hidden lg:inline-block">Theme</span>
               <ModeToggle />
             </div>
