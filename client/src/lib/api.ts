@@ -18,11 +18,26 @@ export async function fetchPopularCryptos() {
 }
 
 export async function searchCryptos(query: string) {
-  const response = await fetch(`/api/crypto/search?q=${encodeURIComponent(query)}`);
-  if (!response.ok) {
-    throw new Error("Failed to search cryptocurrencies");
+  if (!query || query.length < 2) {
+    return { coins: [] };
   }
-  return response.json();
+  
+  try {
+    const response = await fetch(`/api/crypto/search?q=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+      if (response.status === 429) {
+        // Troppe richieste - ritorna un array vuoto invece di un errore
+        console.warn("Rate limit exceeded for CoinGecko API");
+        return { coins: [] };
+      }
+      throw new Error("Failed to search cryptocurrencies");
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Search error:", error);
+    // In caso di errore ritorna un array vuoto invece di interrompere il flusso
+    return { coins: [] };
+  }
 }
 
 export async function fetchCryptoPrice(id: string) {
