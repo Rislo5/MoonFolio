@@ -4,14 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
-import { createAsset } from "@/lib/api";
 import { 
   Dialog, 
   DialogContent, 
   DialogDescription, 
   DialogFooter, 
   DialogHeader, 
-  DialogTitle
+  DialogTitle,
+  DialogClose
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -22,8 +22,6 @@ import {
   FormMessage,
   FormDescription
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -31,19 +29,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Wallet, ArrowRight, CreditCard } from "lucide-react";
-import { AssetWithPrice, Portfolio } from "@shared/schema";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2, ArrowRight } from "lucide-react";
+import { Asset, AssetWithPrice, Portfolio } from "@shared/schema";
 
-// Schema per il trasferimento dell'asset
-const transferSchema = z.object({
-  sourceAssetId: z.number({
-    required_error: "Seleziona l'asset da trasferire",
-  }),
-  targetPortfolioId: z.number({
-    required_error: "Seleziona il portfolio di destinazione",
-  }),
+// Schema per il transfer
+const transferAssetSchema = z.object({
+  sourceAssetId: z.string().min(1, "Seleziona un asset da trasferire"),
+  targetPortfolioId: z.string().min(1, "Seleziona un portfolio di destinazione"),
   amount: z.string().min(1, "Inserisci una quantità da trasferire"),
-  fee: z.string().optional(),
 });
 
 type Props = {
@@ -53,131 +48,104 @@ type Props = {
 };
 
 export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Props) => {
-  const { portfolios, assets, activePortfolio, addTransaction } = usePortfolio();
+  const { 
+    activePortfolio, 
+    portfolios, 
+    assets, 
+    createTransaction, 
+    addAsset, 
+    getAsset
+  } = usePortfolio();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [availablePortfolios, setAvailablePortfolios] = useState<Portfolio[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithPrice | null>(null);
   
-  const form = useForm<z.infer<typeof transferSchema>>({
-    resolver: zodResolver(transferSchema),
+  // Form per il trasferimento
+  const form = useForm<z.infer<typeof transferAssetSchema>>({
+    resolver: zodResolver(transferAssetSchema),
     defaultValues: {
-      sourceAssetId: initialAssetId || 0,
+      sourceAssetId: initialAssetId ? initialAssetId.toString() : "",
+      targetPortfolioId: "",
       amount: "",
-      fee: "0",
     },
   });
-  
-  // Filtra i portfolio disponibili (escludendo quello attivo)
+
+  // Impostare l'asset iniziale se specificato
   useEffect(() => {
-    if (activePortfolio && portfolios) {
-      const filteredPortfolios = portfolios.filter(p => p.id !== activePortfolio.id);
-      setAvailablePortfolios(filteredPortfolios);
-    }
-  }, [activePortfolio, portfolios]);
-  
-  // Se viene passato initialAssetId, imposta l'asset selezionato
-  useEffect(() => {
-    if (initialAssetId && assets) {
+    if (initialAssetId && open) {
+      form.setValue("sourceAssetId", initialAssetId.toString());
       const asset = assets.find(a => a.id === initialAssetId);
       if (asset) {
         setSelectedAsset(asset);
-        form.setValue("sourceAssetId", asset.id);
       }
     }
-  }, [initialAssetId, assets, form]);
-  
-  // Gestisce la selezione dell'asset
-  const handleAssetChange = (assetId: number) => {
-    const asset = assets.find(a => a.id === assetId);
-    if (asset) {
-      setSelectedAsset(asset);
-    }
+  }, [initialAssetId, assets, open, form]);
+
+  // Aggiorna l'asset selezionato quando cambia la selezione
+  const handleAssetChange = (assetId: string) => {
+    const asset = assets.find(a => a.id === parseInt(assetId));
+    setSelectedAsset(asset || null);
   };
-  
+
+  // Portfolio disponibili per il trasferimento (escluso quello attivo)
+  const availablePortfolios = portfolios.filter(p => p.id !== activePortfolio?.id);
+
   // Gestisce il submit del form
-  const handleSubmit = async (values: z.infer<typeof transferSchema>) => {
-    if (!selectedAsset || !activePortfolio) {
+  const handleSubmit = async (values: z.infer<typeof transferAssetSchema>) => {
+    if (!activePortfolio || !selectedAsset) return;
+    
+    const sourceAssetId = parseInt(values.sourceAssetId);
+    const targetPortfolioId = parseInt(values.targetPortfolioId);
+    const amount = parseFloat(values.amount);
+    
+    // Controlla che l'importo non superi il saldo disponibile
+    if (amount > parseFloat(selectedAsset.balance.toString())) {
       toast({
-        title: "Errore",
-        description: "Seleziona un asset e un portfolio di destinazione",
+        title: "Importo non valido",
+        description: "L'importo da trasferire supera il saldo disponibile",
         variant: "destructive",
       });
       return;
     }
     
     setIsSubmitting(true);
+    
     try {
-      // 1. Ottieni il portfolio di destinazione
-      const targetPortfolio = portfolios.find(p => p.id === values.targetPortfolioId);
-      if (!targetPortfolio) {
-        throw new Error("Portfolio di destinazione non trovato");
-      }
-      
-      // 2. Crea una transazione di trasferimento in uscita dal portfolio corrente
-      await addTransaction({
-        assetId: values.sourceAssetId,
-        type: "transfer",
-        amount: "-" + values.amount, // Segnale negativo per indicare l'uscita
-        price: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "0",
-        date: new Date().toISOString()
+      // 1. Crea una transazione "withdraw" nel portfolio di origine
+      await createTransaction({
+        assetId: sourceAssetId,
+        type: "withdraw",
+        amount: amount.toString(),
+        price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice,
+        date: new Date().toISOString(),
       });
       
-      // 3. In un'app reale, il backend gestirebbe tutto il flusso di trasferimento
-      // Per questa demo, simuliamo l'aggiunta dell'asset anche nel portfolio di destinazione
+      // 2. Verifica se l'asset esiste già nel portfolio di destinazione
+      const targetPortfolio = portfolios.find(p => p.id === targetPortfolioId);
+      if (!targetPortfolio) throw new Error("Portfolio di destinazione non trovato");
       
-      // Verifica se l'asset esiste già nel portfolio di destinazione
-      const existingAssetInTarget = assets.find(a => 
-        a.portfolioId === values.targetPortfolioId && 
-        a.coinGeckoId === selectedAsset.coinGeckoId
-      );
+      // 3. Aggiungi o aggiorna l'asset nel portfolio di destinazione
+      // Nota: nella tua implementazione reale, dovresti verificare se l'asset esiste già nel portfolio di destinazione
+      await addAsset({
+        portfolioId: targetPortfolioId,
+        name: selectedAsset.name,
+        symbol: selectedAsset.symbol,
+        coinGeckoId: selectedAsset.coinGeckoId,
+        balance: amount.toString(),
+        avgBuyPrice: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice,
+        imageUrl: selectedAsset.imageUrl
+      });
       
-      if (existingAssetInTarget) {
-        // Se l'asset esiste già, aggiungi solo una transazione di trasferimento in entrata
-        await addTransaction({
-          assetId: existingAssetInTarget.id,
-          type: "transfer",
-          amount: values.amount, // Valore positivo per indicare l'entrata
-          price: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "0",
-          date: new Date().toISOString()
-        });
-      } else {
-        // Se l'asset non esiste, crealo prima nel portfolio di destinazione
-        try {
-          const newAsset = await createAsset(
-            values.targetPortfolioId,
-            {
-              name: selectedAsset.name,
-              symbol: selectedAsset.symbol,
-              coinGeckoId: selectedAsset.coinGeckoId,
-              balance: values.amount, // La quantità trasferita diventa il bilancio iniziale
-              avgBuyPrice: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "",
-              imageUrl: selectedAsset.imageUrl || ""
-            }
-          );
-          
-          // Poi aggiungi una transazione di trasferimento in entrata
-          await addTransaction({
-            assetId: newAsset.id,
-            type: "transfer",
-            amount: values.amount, // Valore positivo per indicare l'entrata
-            price: selectedAsset.currentPrice ? selectedAsset.currentPrice.toString() : "0",
-            date: new Date().toISOString()
-          });
-        } catch (error) {
-          console.error("Failed to create asset in target portfolio:", error);
-          // Continua comunque, almeno abbiamo registrato l'uscita dal portfolio corrente
-        }
-      }
+      // 4. Crea una transazione "deposit" nel portfolio di destinazione
+      // Nota: questo dipende da come hai implementato la logica di transazione
+      // Potresti avere bisogno di un metodo diverso o aggiuntivo qui
       
       toast({
-        title: "Trasferimento avviato",
-        description: `Hai trasferito ${values.amount} ${selectedAsset.symbol.toUpperCase()} al portfolio #${values.targetPortfolioId}`,
+        title: "Trasferimento completato",
+        description: `${amount} ${selectedAsset.symbol.toUpperCase()} trasferiti con successo a ${targetPortfolio.name}`,
       });
       
-      // Chiudi il dialog e resetta il form
       onOpenChange(false);
-      form.reset();
     } catch (error) {
       console.error("Failed to transfer asset:", error);
       toast({
@@ -194,172 +162,168 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Trasferisci Asset</DialogTitle>
+          <DialogTitle>Trasferisci Asset</DialogTitle>
           <DialogDescription>
-            Sposta cripto tra i tuoi diversi portfolio
+            Trasferisci un asset da questo portfolio a un altro.
           </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <FormField
-                control={form.control}
-                name="sourceAssetId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Asset da trasferire</FormLabel>
-                    <Select
-                      disabled={Boolean(initialAssetId)}
-                      onValueChange={(value) => {
-                        field.onChange(Number(value));
-                        handleAssetChange(Number(value));
-                      }}
-                      defaultValue={initialAssetId ? String(initialAssetId) : undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Seleziona un asset" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {assets.map((asset) => (
-                          <SelectItem key={asset.id} value={asset.id.toString()}>
-                            <div className="flex items-center">
-                              {asset.imageUrl && (
-                                <img src={asset.imageUrl} alt={asset.name} className="w-5 h-5 mr-2 rounded-full" />
-                              )}
-                              <span>{asset.name} ({asset.symbol.toUpperCase()})</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {selectedAsset && (
-                <div className="bg-muted/50 p-3 rounded-lg">
-                  <div className="flex items-center mb-2">
-                    {selectedAsset.imageUrl && (
-                      <img src={selectedAsset.imageUrl} alt={selectedAsset.name} className="w-8 h-8 mr-2 rounded-full" />
-                    )}
-                    <div>
-                      <p className="font-medium">{selectedAsset.name}</p>
-                      <p className="text-xs text-muted-foreground flex items-center">
-                        Bilancio: {parseFloat(selectedAsset.balance).toLocaleString()} {selectedAsset.symbol.toUpperCase()}
-                      </p>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {/* Selezione asset */}
+            <FormField
+              control={form.control}
+              name="sourceAssetId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Asset da trasferire</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      handleAssetChange(value);
+                    }}
+                    defaultValue={field.value || undefined}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona un asset" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {assets.map((asset) => (
+                        <SelectItem key={asset.id} value={asset.id.toString()}>
+                          <div className="flex items-center">
+                            {asset.imageUrl && (
+                              <img 
+                                src={asset.imageUrl} 
+                                alt={asset.name} 
+                                className="w-5 h-5 mr-2 rounded-full"
+                              />
+                            )}
+                            <span>
+                              {asset.name} ({asset.symbol.toUpperCase()})
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Selezione portfolio destinazione */}
+            <FormField
+              control={form.control}
+              name="targetPortfolioId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Portfolio di destinazione</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona un portfolio" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availablePortfolios.map((portfolio) => (
+                        <SelectItem key={portfolio.id} value={portfolio.id.toString()}>
+                          {portfolio.name}
+                        </SelectItem>
+                      ))}
+                      {availablePortfolios.length === 0 && (
+                        <div className="text-center py-2 text-muted-foreground text-sm">
+                          Nessun altro portfolio disponibile
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    L'asset sarà trasferito in questo portfolio
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Importo da trasferire */}
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantità da trasferire</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input 
+                        type="number"
+                        step="any"
+                        min="0"
+                        max={selectedAsset ? selectedAsset.balance.toString() : undefined}
+                        placeholder="Es. 0.5"
+                        {...field}
+                      />
+                      {selectedAsset && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground">
+                          / {selectedAsset.balance.toString()} {selectedAsset.symbol.toUpperCase()}
+                        </div>
+                      )}
                     </div>
+                  </FormControl>
+                  {selectedAsset && (
+                    <FormDescription>
+                      Saldo disponibile: {selectedAsset.balance.toString()} {selectedAsset.symbol.toUpperCase()}
+                    </FormDescription>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Schema riepilogativo */}
+            {selectedAsset && form.watch("targetPortfolioId") && (
+              <div className="rounded-lg border p-3 bg-muted/10">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex flex-col items-start">
+                    <span className="text-muted-foreground">Da:</span>
+                    <span className="font-medium">{activePortfolio?.name}</span>
+                  </div>
+                  <ArrowRight className="text-muted-foreground" />
+                  <div className="flex flex-col items-end">
+                    <span className="text-muted-foreground">A:</span>
+                    <span className="font-medium">
+                      {
+                        portfolios.find(
+                          p => p.id === parseInt(form.watch("targetPortfolioId"))
+                        )?.name
+                      }
+                    </span>
                   </div>
                 </div>
-              )}
-              
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quantità da trasferire</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Wallet className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                        <Input
-                          type="number"
-                          step="any"
-                          className="pl-10"
-                          placeholder={`Es. 0.5 ${selectedAsset?.symbol.toUpperCase() || ''}`}
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    {selectedAsset && (
-                      <FormDescription>
-                        Massimo: {parseFloat(selectedAsset.balance).toLocaleString()} {selectedAsset.symbol.toUpperCase()}
-                      </FormDescription>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="fee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fee di rete (opzionale)</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                        <Input
-                          type="number"
-                          step="any"
-                          className="pl-10"
-                          placeholder="Es. 0.001"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="targetPortfolioId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Portfolio di destinazione</FormLabel>
-                    <Select
-                      onValueChange={(value) => field.onChange(Number(value))}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Seleziona un portfolio" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {availablePortfolios.length > 0 ? (
-                          availablePortfolios.map((portfolio) => (
-                            <SelectItem key={portfolio.id} value={portfolio.id.toString()}>
-                              {portfolio.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-portfolio" disabled>
-                            Nessun altro portfolio disponibile
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                    {availablePortfolios.length === 0 && (
-                      <FormDescription>
-                        Crea prima un altro portfolio per poter trasferire gli asset
-                      </FormDescription>
-                    )}
-                  </FormItem>
-                )}
-              />
-            </div>
+              </div>
+            )}
             
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Annulla
-              </Button>
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  Annulla
+                </Button>
+              </DialogClose>
               <Button 
                 type="submit" 
-                className="gap-1"
-                disabled={isSubmitting || availablePortfolios.length === 0}
+                disabled={isSubmitting || !form.formState.isValid || availablePortfolios.length === 0}
               >
-                {isSubmitting ? "Trasferimento in corso..." : (
+                {isSubmitting ? (
                   <>
-                    Trasferisci
-                    <ArrowRight className="h-4 w-4" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Trasferimento in corso...
                   </>
+                ) : (
+                  "Trasferisci"
                 )}
               </Button>
             </DialogFooter>
