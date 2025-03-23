@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog
 import AddAssetDialog from "../components/portfolio/add-asset-dialog";
 import PortfolioOverviewSummary from "../components/portfolio/portfolio-overview-summary";
 import { TransferAssetDialog } from "../components/portfolio/transfer-asset-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Define type with runtime properties
 type ExtendedPortfolio = {
@@ -42,13 +43,68 @@ const Portfolios = () => {
     return <WelcomeScreen />;
   }
   
-  const manualPortfolios = portfolios.filter(p => !p.isEns);
-  const ensPortfolios = portfolios.filter(p => p.isEns);
+  // Caricamento async dei dati dei portfolio con overview
+  const [portfoliosWithData, setPortfoliosWithData] = useState<ExtendedPortfolio[]>([]);
+  const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(true);
+  
+  // Funzione per caricare i dati di overview dei portfolio
+  const loadPortfolioData = async () => {
+    setIsLoadingPortfolios(true);
+    try {
+      const updatedPortfolios = await Promise.all(
+        portfolios.map(async (portfolio) => {
+          try {
+            const response = await fetch(`/api/portfolios/${portfolio.id}/overview`);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const overview = await response.json();
+            const assetsResponse = await fetch(`/api/portfolios/${portfolio.id}/assets`);
+            let assetCount = 0;
+            
+            if (assetsResponse.ok) {
+              const assets = await assetsResponse.json();
+              assetCount = assets.length;
+            }
+            
+            return {
+              ...portfolio,
+              totalValue: overview.totalValue || 0,
+              assetCount: assetCount || 0
+            } as ExtendedPortfolio;
+          } catch (error) {
+            console.error(`Errore nel caricamento dei dati per il portfolio ${portfolio.id}:`, error);
+            return {
+              ...portfolio,
+              totalValue: 0,
+              assetCount: 0
+            } as ExtendedPortfolio;
+          }
+        })
+      );
+      
+      setPortfoliosWithData(updatedPortfolios);
+    } catch (error) {
+      console.error("Errore nel caricamento dei dati dei portfolio:", error);
+    } finally {
+      setIsLoadingPortfolios(false);
+    }
+  };
+  
+  // Carica i dati quando cambiano i portfolio
+  useEffect(() => {
+    if (portfolios.length > 0) {
+      loadPortfolioData();
+    }
+  }, [portfolios]);
 
-  // Calculate total value across all portfolios - using a default value of 0 for missing data
-  const totalPortfolioValue = portfolios.reduce((sum, portfolio) => {
-    const extendedPortfolio = portfolio as ExtendedPortfolio;
-    return sum + (extendedPortfolio.totalValue || 0);
+  const manualPortfolios = portfoliosWithData.filter(p => !p.isEns);
+  const ensPortfolios = portfoliosWithData.filter(p => p.isEns);
+
+  // Calculate total value across all portfolios
+  const totalPortfolioValue = portfoliosWithData.reduce((sum, portfolio) => {
+    return sum + (portfolio.totalValue || 0);
   }, 0);
 
   // Funzione per visualizzare i dettagli del portfolio
@@ -143,12 +199,21 @@ const Portfolios = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
-                      {formatCurrency(extendedPortfolio.totalValue || 0)}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {extendedPortfolio.assetCount || 0} asset
-                    </p>
+                    {isLoadingPortfolios ? (
+                      <>
+                        <Skeleton className="h-8 w-32 mb-2" />
+                        <Skeleton className="h-4 w-16" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold">
+                          {formatCurrency(extendedPortfolio.totalValue || 0)}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {extendedPortfolio.assetCount || 0} asset
+                        </p>
+                      </>
+                    )}
                   </CardContent>
                   <CardFooter>
                     <Button 
@@ -195,12 +260,21 @@ const Portfolios = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
-                      {formatCurrency(extendedPortfolio.totalValue || 0)}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {extendedPortfolio.assetCount || 0} asset
-                    </p>
+                    {isLoadingPortfolios ? (
+                      <>
+                        <Skeleton className="h-8 w-32 mb-2" />
+                        <Skeleton className="h-4 w-16" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold">
+                          {formatCurrency(extendedPortfolio.totalValue || 0)}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {extendedPortfolio.assetCount || 0} asset
+                        </p>
+                      </>
+                    )}
                   </CardContent>
                   <CardFooter>
                     <Button 
