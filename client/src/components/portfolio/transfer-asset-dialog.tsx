@@ -126,6 +126,29 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         date: new Date().toISOString(), // Converti in stringa ISO
       });
       
+      // 2b. Aggiorna il saldo dell'asset nel portfolio di origine
+      const currentBalance = parseFloat(selectedAsset.balance.toString());
+      const newBalance = currentBalance - amount;
+      
+      // Se il saldo è 0, elimina l'asset, altrimenti aggiornalo
+      if (newBalance <= 0) {
+        // Elimina l'asset dal portfolio di origine
+        await fetch(`/api/assets/${sourceAssetId}`, {
+          method: 'DELETE',
+        });
+      } else {
+        // Aggiorna l'asset con il nuovo saldo
+        await fetch(`/api/assets/${sourceAssetId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            balance: newBalance.toString(),
+          }),
+        });
+      }
+      
       // 3. Aggiungi o aggiorna l'asset nel portfolio di destinazione usando la API diretta
       const response = await fetch(`/api/portfolios/${targetPortfolioId}/assets`, {
         method: 'POST',
