@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useLocation } from "wouter";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -80,6 +81,7 @@ type CryptoCurrency = {
 export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
   const { createManualPortfolio, addAsset, setActivePortfolio, portfolios } = usePortfolio();
   const { toast } = useToast();
+  const [_, setLocation] = useLocation();
   const [step, setStep] = useState(1);
   const [progress, setProgress] = useState(33);
   const [isSubmitting, setIsSubmitting] = useState(false);
