@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, BookCopy, PlusCircle, CoinsIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog";
-import AddAssetDialog from "../components/portfolio/add-asset-dialog";
-import PortfolioOverviewSummary from "../components/portfolio/portfolio-overview-summary";
+import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
+import AddAssetDialog from "@/components/portfolio/add-asset-dialog";
+import PortfolioOverviewSummary from "@/components/portfolio/portfolio-overview-summary";
 
 // Define type with runtime properties
 type ExtendedPortfolio = {

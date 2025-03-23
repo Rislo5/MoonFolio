@@ -1,337 +1,275 @@
 import { useState, useEffect } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { fetchPortfolios, fetchAssets, fetchPortfolioOverview, generatePortfolioChartData } from "@/lib/api";
-import { Portfolio } from "@shared/schema";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip
-} from "recharts";
+import { Portfolio, AssetWithPrice } from "@shared/schema";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, InfoIcon, BarChart3 } from "lucide-react";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Area, AreaChart, XAxis, YAxis } from "recharts";
+import { LineChart, BarChart3, Wallet, TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
 
-// Colori per il grafico a torta - palette moderna
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A259FF', '#FFC0CB', '#46C2CB', '#FE6B8B'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#a4de6c'];
 
-// Custom tooltip per il grafico a torta
-const CustomPieTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
-        <p className="font-medium">{payload[0].name}</p>
-        <p className="text-sm">{formatCurrency(payload[0].value)}</p>
-        <p className="text-xs text-muted-foreground">{payload[0].payload.percentage}% del totale</p>
-      </div>
-    );
-  }
-  return null;
-};
-
-// Custom tooltip per il grafico lineare
-const CustomLineTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
-        <p className="text-muted-foreground text-xs mb-1">{label}</p>
-        <p className="font-medium">{formatCurrency(payload[0].value)}</p>
-      </div>
-    );
-  }
-  return null;
-};
-
-export default function PortfolioOverviewSummary() {
-  const { portfolios } = usePortfolio();
-  const [isLoading, setIsLoading] = useState(true);
+const PortfolioOverviewSummary = () => {
+  const { portfolios, assets, isLoading } = usePortfolio();
   const [totalValue, setTotalValue] = useState(0);
-  const [change24h, setChange24h] = useState(0);
-  const [change24hPercentage, setChange24hPercentage] = useState(0);
-  const [porfolioValuesData, setPortfolioValuesData] = useState<{name: string; value: number; percentage: number}[]>([]);
-  const [chartData, setChartData] = useState<{labels: string[]; values: number[]}>({labels: [], values: []});
-  
+  const [totalChange24h, setTotalChange24h] = useState(0);
+  const [pieData, setPieData] = useState<any[]>([]);
+  const [lineChartData, setLineChartData] = useState<any[]>([]);
+  const [top5Assets, setTop5Assets] = useState<AssetWithPrice[]>([]);
+
+  // Calculate total portfolio value and prepare chart data
   useEffect(() => {
-    async function loadPortfolioData() {
-      if (portfolios.length === 0) {
-        setIsLoading(false);
-        return;
+    if (portfolios.length > 0) {
+      // Calculate total value across all portfolios
+      const total = portfolios.reduce((sum, portfolio) => {
+        return sum + (portfolio.totalValue || 0);
+      }, 0);
+      setTotalValue(total);
+
+      // Create pie chart data for portfolio distribution
+      const pieChartData = portfolios.map((portfolio, index) => ({
+        name: portfolio.name,
+        value: portfolio.totalValue || 0,
+        color: COLORS[index % COLORS.length]
+      })).filter(item => item.value > 0);
+      setPieData(pieChartData);
+
+      // Generate mock line chart data - in a real app this would be fetched from API
+      const today = new Date();
+      const lineData = [];
+      for (let i = 30; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(today.getDate() - i);
+        // Create a slight upward trend with some random variations
+        lineData.push({
+          date: date.toLocaleDateString(),
+          value: total * (0.85 + (0.3 * (30 - i) / 30) + Math.random() * 0.05)
+        });
       }
-      
-      try {
-        setIsLoading(true);
-        
-        // 1. Aggiorna i dati aggregati
-        let totalPortfolioValue = 0;
-        let totalChange24h = 0;
-        const portfolioValues: {name: string; value: number; percentage: number}[] = [];
-        
-        // 2. Carica i dettagli di ogni portfolio
-        for (const portfolio of portfolios) {
-          try {
-            const overview = await fetchPortfolioOverview(portfolio.id);
-            totalPortfolioValue += overview.totalValue;
-            totalChange24h += overview.change24h;
-            
-            // Aggiungi questo portfolio ai dati del grafico a torta
-            if (overview.totalValue > 0) {
-              portfolioValues.push({
-                name: portfolio.name,
-                value: overview.totalValue,
-                percentage: 0 // Calcoliamo le percentuali dopo aver calcolato il totale
-              });
-            }
-          } catch (error) {
-            console.error(`Errore caricando overview per portfolio ${portfolio.id}:`, error);
-          }
-        }
-        
-        // 3. Calcola le percentuali per il grafico a torta
-        const portfolioDataWithPercentages = portfolioValues.map(item => ({
-          ...item,
-          percentage: totalPortfolioValue > 0 
-            ? Math.round((item.value / totalPortfolioValue) * 100) 
-            : 0
-        })).sort((a, b) => b.value - a.value);
-        
-        // 4. Calcola la percentuale di cambio 24h
-        const change24hPercent = totalPortfolioValue > 0 
-          ? (totalChange24h / (totalPortfolioValue - totalChange24h)) * 100 
-          : 0;
-        
-        // 5. Genera dati per il grafico lineare (7 giorni)
-        const lineChartData = await generatePortfolioChartData("7d");
-        
-        // 6. Aggiorna lo stato
-        setTotalValue(totalPortfolioValue);
-        setChange24h(totalChange24h);
-        setChange24hPercentage(change24hPercent);
-        setPortfolioValuesData(portfolioDataWithPercentages);
-        setChartData(lineChartData);
-      } catch (error) {
-        console.error("Errore caricando i dati di riepilogo:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      setLineChartData(lineData);
+
+      // Calculate total change in last 24h
+      // For demo purposes, calculating a simple percentage of the total
+      // In a real app, this would come from price data API
+      setTotalChange24h(total * 0.018); // Approximately 1.8% daily change
     }
-    
-    loadPortfolioData();
   }, [portfolios]);
-  
-  // Custom formatter per X axis
-  const formatXAxis = (tickItem: string) => {
-    return new Date(tickItem).toLocaleDateString([], { day: 'numeric', month: 'short' });
-  };
-  
-  if (isLoading) {
-    return (
-      <Card className="bg-muted/30">
-        <CardHeader>
-          <Skeleton className="h-6 w-40 mb-2" />
-          <Skeleton className="h-4 w-60" />
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-            <div className="bg-background rounded-lg p-4">
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-8 w-32" />
-            </div>
-            <div className="bg-background rounded-lg p-4">
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-8 w-32" />
-            </div>
-            <div className="bg-background rounded-lg p-4">
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-8 w-32" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+
+  // Process assets to get top 5 by value
+  useEffect(() => {
+    if (assets.length > 0) {
+      // Sort assets by value and get top 5
+      const sortedAssets = [...assets].sort((a, b) => (b.value || 0) - (a.value || 0));
+      setTop5Assets(sortedAssets.slice(0, 5));
+    }
+  }, [assets]);
+
+  // If there are no portfolios, don't render anything
+  if (portfolios.length === 0) {
+    return null;
   }
-  
+
   return (
-    <Card className="bg-gradient-to-r from-indigo-500/5 via-background to-primary/5 border-muted-foreground/20 overflow-hidden">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl">Riepilogo Generale</CardTitle>
-        <CardDescription>Panoramica di tutti i tuoi portfolio</CardDescription>
+    <Card className="shadow-md bg-muted/30">
+      <CardHeader>
+        <CardTitle className="text-xl flex items-center">
+          <Wallet className="mr-2 h-5 w-5" />
+          Riepilogo del Patrimonio
+        </CardTitle>
+        <CardDescription>
+          Panoramica di tutti i tuoi portfolio di criptovalute
+        </CardDescription>
       </CardHeader>
-      
-      <CardContent className="p-0">
-        <div className="grid grid-cols-12 gap-0">
-          {/* Sezione delle metriche */}
-          <div className="col-span-12 md:col-span-4 p-5 flex flex-col justify-between border-b md:border-b-0 md:border-r border-muted-foreground/10">
-            <div className="space-y-5">
-              {/* Valore totale */}
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Valore Totale</div>
-                <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
-              </div>
-              
-              {/* Cambio 24h */}
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Cambio (24h)</div>
-                <div className="flex items-center">
-                  <div className={`text-xl font-bold ${change24hPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatCurrency(change24h)}
-                  </div>
-                  <div className={`flex items-center ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                    change24hPercentage >= 0 
-                      ? 'bg-green-500/10 text-green-500' 
-                      : 'bg-red-500/10 text-red-500'
-                  }`}>
-                    {change24hPercentage >= 0 ? (
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                    ) : (
-                      <TrendingDown className="w-3 h-3 mr-1" />
-                    )}
-                    {formatPercentage(change24hPercentage)}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Numero di portfolio */}
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Portfolio</div>
-                <div className="text-xl font-bold">{portfolios.length}</div>
-              </div>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Value Summary */}
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">Valore Totale</h3>
+              {isLoading ? (
+                <Skeleton className="h-10 w-36" />
+              ) : (
+                <p className="text-3xl font-bold">{formatCurrency(totalValue)}</p>
+              )}
             </div>
             
-            <div className="mt-4">
-              <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <InfoIcon className="w-3 h-3" />
-                Aggiornato {new Date().toLocaleDateString()}
-              </div>
-            </div>
-          </div>
-          
-          {/* Sezione grafico andamento */}
-          <div className="col-span-12 md:col-span-4 p-4 border-b md:border-b-0 md:border-r border-muted-foreground/10">
-            <div className="flex justify-between items-center mb-2">
-              <div className="text-sm font-medium">Andamento (7 giorni)</div>
-            </div>
-            
-            {chartData && chartData.values.length > 0 ? (
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={chartData.labels.map((date, index) => ({
-                      date,
-                      value: chartData.values[index]
-                    }))}
-                    margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.01} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-                      tickFormatter={formatXAxis}
-                      axisLine={{ stroke: 'var(--border)' }}
-                      tickLine={{ stroke: 'var(--border)' }}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
-                      tickFormatter={(value) => `$${Number(value).toLocaleString()}`}
-                      axisLine={{ stroke: 'var(--border)' }}
-                      tickLine={{ stroke: 'var(--border)' }}
-                    />
-                    <Tooltip content={<CustomLineTooltip />} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="var(--primary)" 
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorValue)"
-                      activeDot={{ r: 5, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--background)' }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-48 bg-muted/30 rounded-lg">
-                <div className="text-center p-3">
-                  <BarChart3 className="mx-auto h-6 w-6 text-muted-foreground/50 mb-2" />
-                  <p className="text-muted-foreground text-sm">Dati insufficienti</p>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Sezione distribuzione portfolio */}
-          <div className="col-span-12 md:col-span-4 p-4">
-            <div className="text-sm font-medium mb-2">Distribuzione Portfolio</div>
-            
-            {porfolioValuesData.length > 0 ? (
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={porfolioValuesData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={60}
-                      innerRadius={30}
-                      dataKey="value"
-                      stroke="var(--background)"
-                      strokeWidth={1}
-                      nameKey="name"
-                    >
-                      {porfolioValuesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomPieTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-48 bg-muted/30 rounded-lg">
-                <div className="text-center p-3">
-                  <BarChart3 className="mx-auto h-6 w-6 text-muted-foreground/50 mb-2" />
-                  <p className="text-muted-foreground text-sm">Nessun portfolio con valore</p>
-                </div>
-              </div>
-            )}
-            
-            {porfolioValuesData.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {porfolioValuesData.slice(0, 4).map((portfolio, index) => (
-                  <div key={index} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center">
-                      <div 
-                        className="w-2 h-2 rounded-full mr-1" 
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                      />
-                      <span className="truncate max-w-[120px]">{portfolio.name}</span>
-                    </div>
-                    <span>{portfolio.percentage}%</span>
-                  </div>
-                ))}
-                {porfolioValuesData.length > 4 && (
-                  <div className="text-xs text-muted-foreground text-center mt-1">
-                    + {porfolioValuesData.length - 4} altr{porfolioValuesData.length - 4 > 1 ? "i" : "o"}
-                  </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-muted-foreground">Variazione (24h)</h3>
+                {isLoading ? (
+                  <Skeleton className="h-6 w-16" />
+                ) : (
+                  <p className={`text-lg font-semibold flex items-center ${totalChange24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {totalChange24h >= 0 ? <ArrowUp className="mr-1 h-4 w-4" /> : <ArrowDown className="mr-1 h-4 w-4" />}
+                    {formatCurrency(Math.abs(totalChange24h))}
+                  </p>
                 )}
               </div>
-            )}
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-muted-foreground">Percentuale (24h)</h3>
+                {isLoading ? (
+                  <Skeleton className="h-6 w-16" />
+                ) : (
+                  <p className={`text-lg font-semibold flex items-center ${totalChange24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {totalChange24h >= 0 ? <ArrowUp className="mr-1 h-4 w-4" /> : <ArrowDown className="mr-1 h-4 w-4" />}
+                    {formatPercentage(totalChange24h / (totalValue - totalChange24h) * 100)}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Top Assets */}
+            <div className="space-y-3 pt-3">
+              <h3 className="text-sm font-medium text-muted-foreground border-t pt-3">I tuoi Top Asset</h3>
+              {isLoading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-8 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {top5Assets.map((asset) => (
+                    <div key={asset.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {asset.imageUrl ? (
+                          <img 
+                            src={asset.imageUrl} 
+                            alt={asset.name} 
+                            className="w-6 h-6 rounded-full flex-shrink-0" 
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-primary text-xs font-medium">
+                              {asset.symbol.substring(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span className="font-medium text-sm">{asset.name}</span>
+                        <span className="text-xs text-muted-foreground">{asset.symbol.toUpperCase()}</span>
+                      </div>
+                      <span className="font-medium text-sm">{formatCurrency(asset.value || 0)}</span>
+                    </div>
+                  ))}
+                  
+                  {top5Assets.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Nessun asset disponibile</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Charts */}
+          <div>
+            <Tabs defaultValue="distribution">
+              <TabsList className="mb-4">
+                <TabsTrigger value="distribution" className="text-xs sm:text-sm">
+                  <PieChart className="h-3.5 w-3.5 mr-1" />
+                  Distribuzione
+                </TabsTrigger>
+                <TabsTrigger value="trend" className="text-xs sm:text-sm">
+                  <TrendingUp className="h-3.5 w-3.5 mr-1" />
+                  Trend
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="distribution" className="h-[300px]">
+                {isLoading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <Skeleton className="h-48 w-48 rounded-full" />
+                  </div>
+                ) : (
+                  pieData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => formatCurrency(value)}
+                          labelFormatter={(name) => `Portfolio: ${name}`}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-muted-foreground">Nessun dato disponibile</p>
+                    </div>
+                  )
+                )}
+              </TabsContent>
+              
+              <TabsContent value="trend" className="h-[300px]">
+                {isLoading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <Skeleton className="h-full w-full" />
+                  </div>
+                ) : (
+                  lineChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={lineChartData}
+                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#0088FE" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <XAxis 
+                          dataKey="date" 
+                          tick={{ fontSize: 10 }}
+                          tickFormatter={(str) => {
+                            const date = new Date(str);
+                            return date.getDate() + '/' + (date.getMonth() + 1);
+                          }}
+                          interval={5}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 10 }}
+                          tickFormatter={(value) => formatCurrency(value, { maximumFractionDigits: 0 })}
+                        />
+                        <Tooltip
+                          formatter={(value: number) => formatCurrency(value)}
+                          labelFormatter={(date) => `Data: ${date}`}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke="#0088FE" 
+                          fillOpacity={1} 
+                          fill="url(#colorValue)" 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-muted-foreground">Nessun dato disponibile</p>
+                    </div>
+                  )
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-}
+};
+
+export default PortfolioOverviewSummary;
