@@ -42,9 +42,9 @@ export default function Sidebar() {
           onClick={() => setIsMobileOpen(false)}
         >
           <Icon className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
-          <span className={isCollapsed ? "hidden lg:inline-block" : ""}>
-            {label}
-          </span>
+          {!isCollapsed && (
+            <span>{label}</span>
+          )}
         </Button>
       </Link>
     );
@@ -113,7 +113,7 @@ export default function Sidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleCollapse}
-                className="hidden lg:flex"
+                className="hidden sm:flex"
               >
                 {isCollapsed ? (
                   <ChevronRight className="h-5 w-5" />
