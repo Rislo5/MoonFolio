@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { RocketIcon } from "lucide-react";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import {
 
 const WelcomeScreen = () => {
   const { connectEnsWallet, createManualPortfolio } = usePortfolio();
+  const [_, navigate] = useLocation();
   const [ensAddress, setEnsAddress] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -29,6 +31,8 @@ const WelcomeScreen = () => {
     setIsConnecting(true);
     try {
       await connectEnsWallet(ensAddress);
+      // Reindirizza alla dashboard dopo la connessione riuscita
+      navigate("/dashboard");
     } catch (error) {
       console.error("Failed to connect wallet:", error);
     } finally {
