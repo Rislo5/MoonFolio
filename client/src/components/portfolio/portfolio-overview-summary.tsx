@@ -109,60 +109,67 @@ const PortfolioOverviewSummary = () => {
     value: chartData.values[index]
   })) : [];
 
-  // Calcolo dei dati aggregati per tutti i portfolio
-  useEffect(() => {
+  // Funzione per caricare i dati dei portfolio
+  const loadPortfolioData = async () => {
     if (portfolios && portfolios.length > 0) {
       try {
-        // Cast a ExtendedPortfolio per avere accesso a totalValue
-        const extendedPortfolios = portfolios as ExtendedPortfolio[];
-        
-        // Calcola il valore totale aggregato di tutti i portfolio
         let total = 0;
         let totalChange = 0;
+        const portfolioData = [];
         
-        // Elabora ogni portfolio e calcola i totali
-        extendedPortfolios.forEach(portfolio => {
-          if (portfolio.totalValue) {
-            total += portfolio.totalValue;
+        // Per ogni portfolio, caricheremo i suoi dati dall'API
+        for (const portfolio of portfolios) {
+          try {
+            const overview = await fetch(`/api/portfolios/${portfolio.id}/overview`).then(res => res.json());
             
-            // Aggiungi una stima della variazione 24h (in un'app reale questa info verrebbe dall'API)
-            // Nota: questo è solo un calcolo di esempio, in una vera app dovresti usare valori reali
-            const changePercentage = Math.random() * 0.05 - 0.01; // Valore casuale tra -1% e +4%
-            const portfolioChange = portfolio.totalValue * changePercentage;
-            totalChange += portfolioChange;
+            if (overview) {
+              portfolioData.push({
+                name: portfolio.name,
+                id: portfolio.id,
+                value: overview.totalValue || 0,
+                change24h: overview.change24h || 0,
+                percentage: Math.round((overview.totalValue / (overview.totalValue - overview.change24h) * 100) * 10) / 10,
+                color: COLORS[portfolioData.length % COLORS.length]
+              });
+              
+              // Accumula i valori totali
+              total += overview.totalValue || 0;
+              totalChange += overview.change24h || 0;
+            }
+          } catch (e) {
+            console.error(`Errore nel caricamento dell'overview per il portfolio ${portfolio.id}:`, e);
           }
-        });
+        }
         
+        // Calcola la percentuale di variazione totale
+        const totalChangePercentage = total > 0 ? (totalChange / (total - totalChange)) * 100 : 0;
+        
+        // Calcola le percentuali per ogni portfolio rispetto al totale
+        const pieChartData = portfolioData.map(portfolio => ({
+          ...portfolio,
+          percentage: total > 0 ? Math.round((portfolio.value / total) * 1000) / 10 : 0
+        })).filter(portfolio => portfolio.value > 0)
+          .sort((a, b) => b.value - a.value);
+        
+        // Aggiorna lo stato
         setTotalValue(total);
         setTotalChange24h(totalChange);
-        setTotalChangePercentage(total > 0 ? (totalChange / (total - totalChange)) * 100 : 0);
-        setLastUpdated(new Date());
-
-        // Crea i dati per il grafico a torta (distribuzione dei portfolio)
-        const pieChartData = extendedPortfolios
-          .filter(portfolio => (portfolio.totalValue || 0) > 0) // Filtra i portfolio con valore positivo
-          .map((portfolio, index) => {
-            const portfolioValue = portfolio.totalValue || 0;
-            const percentage = total > 0 ? (portfolioValue / total) * 100 : 0;
-            
-            return {
-              name: portfolio.name,
-              value: portfolioValue,
-              percentage: Math.round(percentage * 10) / 10, // Arrotonda a 1 decimale
-              color: COLORS[index % COLORS.length]
-            };
-          })
-          .sort((a, b) => b.value - a.value); // Ordina per valore decrescente
-          
+        setTotalChangePercentage(totalChangePercentage);
         setPieData(pieChartData);
+        setLastUpdated(new Date());
+        
+        console.log("Dati portafogli caricati:", pieChartData);
+        console.log("Valore totale:", total);
+        
       } catch (error) {
-        console.error("Errore nei calcoli del riepilogo del portfolio:", error);
-        // Valori di fallback
-        setTotalValue(0);
-        setPieData([]);
-        setTotalChange24h(0);
+        console.error("Errore nel caricamento dei dati dei portfolio:", error);
       }
     }
+  };
+  
+  // Carichiamo i dati ogni volta che cambia la lista dei portfolio
+  useEffect(() => {
+    loadPortfolioData();
   }, [portfolios]);
 
   // Processare gli asset per ottenere i top 5 per valore
