@@ -179,36 +179,48 @@ export default function PortfolioCharts() {
             </div>
           )}
 
-          {portfolioChartData && portfolioChartData.values.length > 0 ? (
+          {portfolioChartData && portfolioChartData.values && portfolioChartData.values.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart
                 data={portfolioChartData.labels.map((date, index) => ({
                   date,
                   value: portfolioChartData.values[index]
                 }))}
-                margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
+                margin={{ top: 10, right: 10, left: activeTimeframe === '24h' ? 30 : 10, bottom: 20 }}
               >
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-primary)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--chart-primary)" stopOpacity={0.01} />
+                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.2} />
                 <XAxis 
                   dataKey="date" 
                   tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                   tickFormatter={formatXAxis}
                   axisLine={{ stroke: 'var(--border)' }}
                   tickLine={{ stroke: 'var(--border)' }}
+                  allowDataOverflow={true}
                 />
                 <YAxis 
                   tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  tickFormatter={(value) => formatCurrency(value, 'USD', 0)}
                   axisLine={{ stroke: 'var(--border)' }}
                   tickLine={{ stroke: 'var(--border)' }}
+                  domain={['auto', 'auto']}
+                  allowDataOverflow={true}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip 
+                  content={<CustomTooltip />}
+                  contentStyle={{ 
+                    backgroundColor: 'var(--background)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '0.375rem',
+                    boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                  wrapperStyle={{ outline: 'none' }}
+                />
                 <Area 
                   type="monotone" 
                   dataKey="value" 
@@ -217,6 +229,8 @@ export default function PortfolioCharts() {
                   fillOpacity={1}
                   fill="url(#colorValue)"
                   activeDot={{ r: 6, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--background)' }}
+                  isAnimationActive={true}
+                  animationDuration={1000}
                 />
               </AreaChart>
             </ResponsiveContainer>
