@@ -120,7 +120,7 @@ const AddAssetDialog = ({ open, onOpenChange }: Props) => {
           name: crypto.name || 'Unknown',
           symbol: crypto.symbol || '???',
           image: crypto.large || crypto.thumb || '',
-        })).filter(c => c.id && c.name && c.symbol); // Filtra risultati non validi
+        })).filter((c: { id: string; name: string; symbol: string }) => c.id && c.name && c.symbol); // Filtra risultati non validi
         
         setSearchResults(cryptos);
       } catch (error) {
