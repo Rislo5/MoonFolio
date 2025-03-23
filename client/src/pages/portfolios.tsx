@@ -36,19 +36,14 @@ const Portfolios = () => {
   const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] = useState(false);
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
   const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
-  const [_, navigate] = useLocation();
-  
-  // If no portfolios exist, show welcome screen
-  if (portfolios.length === 0) {
-    return <WelcomeScreen />;
-  }
-  
-  // Caricamento async dei dati dei portfolio con overview
   const [portfoliosWithData, setPortfoliosWithData] = useState<ExtendedPortfolio[]>([]);
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(true);
+  const [_, navigate] = useLocation();
   
   // Funzione per caricare i dati di overview dei portfolio
   const loadPortfolioData = async () => {
+    if (portfolios.length === 0) return;
+    
     setIsLoadingPortfolios(true);
     try {
       const updatedPortfolios = await Promise.all(
@@ -98,6 +93,11 @@ const Portfolios = () => {
       loadPortfolioData();
     }
   }, [portfolios]);
+  
+  // If no portfolios exist, show welcome screen
+  if (portfolios.length === 0) {
+    return <WelcomeScreen />;
+  }
 
   const manualPortfolios = portfoliosWithData.filter(p => !p.isEns);
   const ensPortfolios = portfoliosWithData.filter(p => p.isEns);
