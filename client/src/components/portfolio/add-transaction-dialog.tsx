@@ -48,9 +48,10 @@ const formSchema = z.object({
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultAssetId?: number;
 };
 
-const AddTransactionDialog = ({ open, onOpenChange }: Props) => {
+const AddTransactionDialog = ({ open, onOpenChange, defaultAssetId }: Props) => {
   const { assets, addTransaction } = usePortfolio();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,7 +60,7 @@ const AddTransactionDialog = ({ open, onOpenChange }: Props) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       type: "buy",
-      assetId: undefined,
+      assetId: defaultAssetId,
       amount: undefined,
       price: undefined,
       date: new Date().toISOString().split('T')[0],
