@@ -149,7 +149,9 @@ export async function createAsset(
 }
 
 export async function fetchAssets(portfolioId: number): Promise<AssetWithPrice[]> {
-  const response = await fetch(`/api/portfolios/${portfolioId}/assets`);
+  // Force cache refresh by adding a timestamp to the URL
+  const timestamp = new Date().getTime();
+  const response = await fetch(`/api/portfolios/${portfolioId}/assets?_t=${timestamp}`);
   if (!response.ok) {
     throw new Error("Failed to fetch assets");
   }
@@ -211,7 +213,9 @@ export async function createTransaction(
 }
 
 export async function fetchTransactions(portfolioId: number): Promise<TransactionWithDetails[]> {
-  const response = await fetch(`/api/portfolios/${portfolioId}/transactions`);
+  // Force cache refresh by adding a timestamp to the URL
+  const timestamp = new Date().getTime();
+  const response = await fetch(`/api/portfolios/${portfolioId}/transactions?_t=${timestamp}`);
   if (!response.ok) {
     throw new Error("Failed to fetch transactions");
   }
@@ -250,7 +254,9 @@ export async function deleteTransaction(id: number): Promise<void> {
 
 // Portfolio overview
 export async function fetchPortfolioOverview(id: number): Promise<PortfolioOverview> {
-  const response = await fetch(`/api/portfolios/${id}/overview`);
+  // Force cache refresh by adding a timestamp to the URL
+  const timestamp = new Date().getTime();
+  const response = await fetch(`/api/portfolios/${id}/overview?_t=${timestamp}`);
   if (!response.ok) {
     throw new Error("Failed to fetch portfolio overview");
   }
