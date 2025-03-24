@@ -107,44 +107,60 @@ const PortfolioOverviewSummary = () => {
   })) : [];
 
   // Usa React Query per ottenere i dati di overview solo dei portfolio che devono essere inclusi nel riepilogo
+  // Memorizza la lista filtrata di portfolio per evitare cambiamenti continui
+  const filteredPortfolios = useMemo(() => 
+    portfolios.filter(portfolio => portfolio.showInSummary !== false),
+    [portfolios]
+  );
+  
+  // Assegna colori stabili ai portfolio
+  const portfolioColors = useMemo(() => {
+    const colors: Record<number, string> = {};
+    filteredPortfolios.forEach((portfolio, index) => {
+      colors[portfolio.id] = COLORS[index % COLORS.length];
+    });
+    return colors;
+  }, [filteredPortfolios]);
+  
+  // Ottieni i dati dai portfolio
   const portfolioQueries = useQueries({
-    queries: portfolios
-      .filter(portfolio => portfolio.showInSummary !== false) // Includi solo i portfolio che non hanno showInSummary=false
-      .map(portfolio => ({
-        queryKey: [`portfolio-overview-${portfolio.id}`],
-        queryFn: async () => {
-          try {
-            const response = await fetch(`/api/portfolios/${portfolio.id}/overview`);
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            return {
-              id: portfolio.id,
-              name: portfolio.name,
-              value: data.totalValue || 0,
-              change24h: data.change24h || 0,
-              color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
-              isEns: portfolio.isEns,
-              showInSummary: portfolio.showInSummary
-            };
-          } catch (error) {
-            console.error(`Error fetching overview for portfolio ${portfolio.id}:`, error);
-            return {
-              id: portfolio.id,
-              name: portfolio.name,
-              value: 0,
-              change24h: 0,
-              color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
-              isEns: portfolio.isEns,
-              showInSummary: portfolio.showInSummary
-            };
+    queries: filteredPortfolios.map(portfolio => ({
+      queryKey: [`portfolio-overview-${portfolio.id}`, 'overview'],
+      queryFn: async () => {
+        try {
+          // Forza l'aggiornamento con timestamp
+          const timestamp = new Date().getTime();
+          const response = await fetch(`/api/portfolios/${portfolio.id}/overview?_t=${timestamp}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
-        },
-        staleTime: 1000 * 30, // 30 secondi
-        retry: 2,
-        retryDelay: 1000
-      }))
+          const data = await response.json();
+          return {
+            id: portfolio.id,
+            name: portfolio.name,
+            value: data.totalValue || 0,
+            change24h: data.change24h || 0,
+            color: portfolioColors[portfolio.id] || COLORS[0],
+            isEns: portfolio.isEns,
+            showInSummary: portfolio.showInSummary
+          };
+        } catch (error) {
+          console.error(`Error fetching overview for portfolio ${portfolio.id}:`, error);
+          return {
+            id: portfolio.id,
+            name: portfolio.name,
+            value: 0,
+            change24h: 0,
+            color: portfolioColors[portfolio.id] || COLORS[0],
+            isEns: portfolio.isEns,
+            showInSummary: portfolio.showInSummary
+          };
+        }
+      },
+      staleTime: 1000 * 30, // 30 secondi
+      retry: 2,
+      retryDelay: 1000
+    }))
   });
 
   // Controlla se i dati dei portfolio sono in caricamento
@@ -187,20 +203,10 @@ const PortfolioOverviewSummary = () => {
     if (!isPortfolioQueriesLoading) {
       setLastUpdated(new Date());
     }
-  }, [isPortfolioQueriesLoading, portfolioData]);
+  }, [isPortfolioQueriesLoading]);
   
   // Invalida le query quando i portfolio cambiano
-  useEffect(() => {
-    if (portfolios.length > 0) {
-      // Invalida tutte le query esistenti correlate ai portfolio quando la lista cambia
-      portfolios.forEach(portfolio => {
-        queryClient.invalidateQueries({ queryKey: [`portfolio-overview-${portfolio.id}`] });
-      });
-      
-      // Invalida i dati del grafico
-      queryClient.invalidateQueries({ queryKey: ['/overview-chart'] });
-    }
-  }, [portfolios, queryClient]);
+  // Nota: rimossa invalidazione automatica per evitare loop infiniti
 
   // Custom formatter per X axis
   const formatXAxis = (tickItem: string) => {
