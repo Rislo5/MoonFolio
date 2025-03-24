@@ -30,6 +30,29 @@ const provider = new ethers.JsonRpcProvider(INFURA_URL);
 let clients: Set<WebSocket> = new Set();
 let popularCryptos: CryptoCurrency[] = [];
 
+// Cache per i prezzi delle criptovalute
+interface PriceCache {
+  prices: {
+    [coinId: string]: {
+      price: number;
+      percentChange24h: number;
+    };
+  };
+  lastUpdated: number;
+}
+
+// Cache globale per i prezzi
+const priceCache: PriceCache = {
+  prices: {},
+  lastUpdated: 0
+};
+
+// Durata della cache (1 ora)
+const CACHE_DURATION = 60 * 60 * 1000;
+
+// Flag per indicare se un aggiornamento dei prezzi è in corso
+let isPriceUpdateInProgress = false;
+
 // Definisce la funzione di recupero criptovalute popolari per riutilizzarla
 async function fetchPopularCryptocurrencies(): Promise<CryptoCurrency[]> {
   try {
