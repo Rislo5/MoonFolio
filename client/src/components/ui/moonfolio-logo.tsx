@@ -10,7 +10,7 @@ export function MoonfolioLogo({
   variant = 'default',
   className,
 }: MoonfolioLogoProps) {
-  // Mezzaluna piena blu
+  // Mezzaluna elegante e moderna
   if (variant === 'icon') {
     return (
       <div className={cn('inline-flex items-center justify-center', className)}>
@@ -22,9 +22,18 @@ export function MoonfolioLogo({
           xmlns="http://www.w3.org/2000/svg"
           className="h-9 w-9"
         >
-          <rect width="80" height="80" rx="16" fill="#0055FF" fillOpacity="0.1"/>
-          <path d="M40 70C56.5685 70 70 56.5685 70 40C70 23.4315 56.5685 10 40 10C23.4315 10 10 23.4315 10 40C10 56.5685 23.4315 70 40 70Z" fill="#0055FF"/>
-          <path d="M50 25C42.5 25 36.5 30 33 36C36.5 32 42 30 46.5 30C55.6127 30 63 37.3873 63 46.5C63 51 61 55.5 57 59C63 54.5 66.5 48 66.5 40.5C66.5 31.9396 59.0604 25 50 25Z" fill="white"/>
+          <circle cx="40" cy="40" r="36" fill="url(#gradient_moon)" />
+          <path 
+            d="M52 20C65.8 26.5 72 42.5 65.5 56.5C59 70.5 43 76.5 29 70C44.5 73.5 59.5 63.5 63 47.5C66.5 31.5 56.5 20 52 20Z" 
+            fill="white" 
+            fillOpacity="0.85"
+          />
+          <defs>
+            <linearGradient id="gradient_moon" x1="15" y1="15" x2="65" y2="65" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#0066FF" />
+              <stop offset="1" stopColor="#004CBA" />
+            </linearGradient>
+          </defs>
         </svg>
       </div>
     );
@@ -40,9 +49,18 @@ export function MoonfolioLogo({
         xmlns="http://www.w3.org/2000/svg"
         className="h-7 w-7 mr-2"
       >
-        <rect width="80" height="80" rx="16" fill="#0055FF" fillOpacity="0.1"/>
-        <path d="M40 70C56.5685 70 70 56.5685 70 40C70 23.4315 56.5685 10 40 10C23.4315 10 10 23.4315 10 40C10 56.5685 23.4315 70 40 70Z" fill="#0055FF"/>
-        <path d="M50 25C42.5 25 36.5 30 33 36C36.5 32 42 30 46.5 30C55.6127 30 63 37.3873 63 46.5C63 51 61 55.5 57 59C63 54.5 66.5 48 66.5 40.5C66.5 31.9396 59.0604 25 50 25Z" fill="white"/>
+        <circle cx="40" cy="40" r="36" fill="url(#gradient_moon_full)" />
+        <path 
+          d="M52 20C65.8 26.5 72 42.5 65.5 56.5C59 70.5 43 76.5 29 70C44.5 73.5 59.5 63.5 63 47.5C66.5 31.5 56.5 20 52 20Z" 
+          fill="white" 
+          fillOpacity="0.85"
+        />
+        <defs>
+          <linearGradient id="gradient_moon_full" x1="15" y1="15" x2="65" y2="65" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#0066FF" />
+            <stop offset="1" stopColor="#004CBA" />
+          </linearGradient>
+        </defs>
       </svg>
       <span className="font-bold text-xl">Moonfolio</span>
     </div>
