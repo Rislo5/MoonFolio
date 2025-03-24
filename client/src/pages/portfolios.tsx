@@ -15,13 +15,15 @@ import {
   Trash, 
   PlusSquare, 
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  Network
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog";
 import AddAssetDialog from "../components/portfolio/add-asset-dialog";
 import PortfolioOverviewSummary from "../components/portfolio/portfolio-overview-summary";
 import { TransferAssetDialog } from "../components/portfolio/transfer-asset-dialog";
+import { ConnectEnsWalletDialog } from "../components/portfolio/connect-ens-wallet-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   DropdownMenu,
@@ -75,6 +77,7 @@ const Portfolios = () => {
   const [_, navigate] = useLocation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
+  const [isEnsDialogOpen, setIsEnsDialogOpen] = useState(false);
   const [portfolioToAction, setPortfolioToAction] = useState<ExtendedPortfolio | null>(null);
   
   // Funzione per caricare i dati di overview dei portfolio
@@ -271,6 +274,10 @@ const Portfolios = () => {
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Nuovo Portfolio
+          </Button>
+          <Button onClick={() => setIsEnsDialogOpen(true)} variant="outline">
+            <Network className="mr-2 h-4 w-4" />
+            Connetti Wallet ENS
           </Button>
         </div>
       </div>
@@ -513,6 +520,12 @@ const Portfolios = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Dialog per connettere wallet ENS con l'opzione includeInSummary */}
+      <ConnectEnsWalletDialog
+        open={isEnsDialogOpen}
+        onOpenChange={setIsEnsDialogOpen}
+      />
     </div>
   );
 };
