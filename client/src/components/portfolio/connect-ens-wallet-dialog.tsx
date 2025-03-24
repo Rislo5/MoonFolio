@@ -24,11 +24,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Switch
+} from "@/components/ui/switch";
 import { 
   Search, 
   Wallet, 
   Loader2,
-  AlertCircle
+  AlertCircle,
+  PlusCircle,
+  Eye
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
@@ -45,7 +50,8 @@ const connectWalletSchema = z.object({
       {
         message: "Inserisci un indirizzo Ethereum valido (0x...) o un nome ENS (esempio.eth)"
       }
-    )
+    ),
+  includeInSummary: z.boolean().default(true)
 });
 
 type ConnectWalletFormValues = z.infer<typeof connectWalletSchema>;
@@ -65,7 +71,8 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
   const form = useForm<ConnectWalletFormValues>({
     resolver: zodResolver(connectWalletSchema),
     defaultValues: {
-      addressOrEns: ""
+      addressOrEns: "",
+      includeInSummary: true
     }
   });
 
@@ -74,10 +81,13 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
     setError(null);
 
     try {
-      await connectEnsWallet(values.addressOrEns);
+      // Passiamo anche il parametro includeInSummary
+      await connectEnsWallet(values.addressOrEns, values.includeInSummary);
       toast({
         title: t("common.success"),
-        description: `Wallet ${values.addressOrEns} connesso con successo`,
+        description: values.includeInSummary 
+          ? `Wallet ${values.addressOrEns} connesso e aggiunto al riepilogo`
+          : `Wallet ${values.addressOrEns} connesso in modalità visualizzazione`,
       });
       onOpenChange(false); // Chiude il dialog dopo la connessione
     } catch (error) {
@@ -127,6 +137,39 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
                     {t("portfolio.address_or_ens_description")}
                   </FormDescription>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="includeInSummary"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">
+                      {t("portfolio.include_in_summary")}
+                    </FormLabel>
+                    <FormDescription>
+                      {field.value ? (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          {t("portfolio.wallet_will_be_included")}
+                        </div>
+                      ) : (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Eye className="mr-2 h-4 w-4" />
+                          {t("portfolio.wallet_readonly_mode")}
+                        </div>
+                      )}
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />
