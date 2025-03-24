@@ -66,20 +66,8 @@ export default function Sidebar() {
         </div>
         <div className="flex items-center gap-2">
           <ModeToggle />
-          {/* Selettore lingua per mobile */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              const currLang = i18n.language;
-              const newLang = currLang === 'it' ? 'en' : 'it';
-              i18n.changeLanguage(newLang);
-              localStorage.setItem('language', newLang);
-            }}
-            className="h-8 w-8"
-          >
-            <Globe className="h-4 w-4" />
-          </Button>
+          {/* Selettore lingua per mobile - usiamo una versione collassata */}
+          <LanguageSelector isCollapsed={true} />
         </div>
       </header>
 
@@ -181,9 +169,9 @@ export default function Sidebar() {
             </div>
           </div>
           
-          {/* Language Selector - sempre visibile e semplificato */}
+          {/* Language Selector - mostra versione condensata o completa in base alla sidebar */}
           <div className="px-3 py-2 mt-2">
-            <LanguageSelector />
+            <LanguageSelector isCollapsed={isCollapsed} />
           </div>
         </nav>
       </aside>
