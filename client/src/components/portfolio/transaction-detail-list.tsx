@@ -47,13 +47,16 @@ type SortOption = {
 };
 
 export default function TransactionDetailList() {
-  const { transactions, removeTransaction } = usePortfolio();
+  const { transactions, removeTransaction, activePortfolio } = usePortfolio();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>({ column: 'date', direction: 'desc' });
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  
+  // Verifica se il portfolio attuale è di tipo ENS (sola lettura)
+  const isEnsPortfolio = activePortfolio?.isEns || false;
 
   // Gestisce l'eliminazione di una transazione
   const handleDeleteTransaction = async (transactionId: number) => {
@@ -192,10 +195,12 @@ export default function TransactionDetailList() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="default" size="sm" className="h-9" onClick={() => setShowAddTransactionDialog(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('transaction.new_transaction')}
-          </Button>
+          {!isEnsPortfolio && (
+            <Button variant="default" size="sm" className="h-9" onClick={() => setShowAddTransactionDialog(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('transaction.new_transaction')}
+            </Button>
+          )}
         </div>
       </div>
 
