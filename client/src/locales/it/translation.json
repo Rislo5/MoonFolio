@@ -96,5 +96,26 @@
     "30d": "30d",
     "1y": "1y",
     "all": "Tutti"
+  },
+  "transaction": {
+    "transaction_history": "Storico Transazioni",
+    "total_transactions": "transazioni totali",
+    "search_transactions": "Cerca transazioni...",
+    "type": "Tipo",
+    "date": "Data",
+    "new_transaction": "Nuova Transazione",
+    "no_matching_transactions": "Nessuna transazione corrisponde alla ricerca",
+    "no_transactions_yet": "Non hai ancora nessuna transazione in questo portfolio",
+    "add_first_transaction": "Aggiungi la prima transazione",
+    "edit_transaction": "Modifica transazione",
+    "delete_transaction": "Elimina transazione",
+    "confirm_delete": "Sei sicuro di voler eliminare questa transazione? Questa azione non può essere annullata.",
+    "transaction_deleted": "Transazione eliminata",
+    "transaction_removed": "La transazione è stata rimossa dal portfolio",
+    "delete_error": "Impossibile eliminare la transazione",
+    "type_buy": "Acquisto",
+    "type_sell": "Vendita",
+    "type_swap": "Scambio",
+    "type_transfer": "Trasferimento"
   }
 }
