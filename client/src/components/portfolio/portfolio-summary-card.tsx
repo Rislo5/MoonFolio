@@ -147,8 +147,8 @@ export default function PortfolioSummaryCard() {
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl">{t('common.portfolio_summary')}</CardTitle>
-            <CardDescription>{t('common.portfolio_overview')}</CardDescription>
+            <CardTitle className="text-xl">Portfolio Summary</CardTitle>
+            <CardDescription>Overview of all your cryptocurrency portfolios</CardDescription>
           </div>
           <Badge variant="outline" className="bg-primary/10 text-primary font-medium">
             {pieData.length} {t('common.assets')}
@@ -163,13 +163,13 @@ export default function PortfolioSummaryCard() {
             <div className="space-y-5">
               {/* Valore totale */}
               <div>
-                <div className="text-sm text-muted-foreground mb-1">{t('common.total_value')}</div>
+                <div className="text-sm text-muted-foreground mb-1">Total Value</div>
                 <div className="text-2xl font-bold">{formatCurrency(portfolioOverview.totalValue)}</div>
               </div>
               
               {/* Cambio 24h */}
               <div>
-                <div className="text-sm text-muted-foreground mb-1">{t('common.change_24h')}</div>
+                <div className="text-sm text-muted-foreground mb-1">Change (24h)</div>
                 <div className="flex items-center">
                   <div className={`text-xl font-bold ${portfolioOverview.change24hPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {formatCurrency(portfolioOverview.change24h)}
@@ -193,7 +193,7 @@ export default function PortfolioSummaryCard() {
             <div className="mt-4">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 <InfoIcon className="w-3 h-3" />
-                {t('common.updated')} {formatDate(new Date())}
+                Updated {formatDate(new Date())}
               </div>
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function PortfolioSummaryCard() {
           {/* Sezione grafico andamento */}
           <div className="col-span-12 md:col-span-4 p-4 border-b md:border-b-0 md:border-r border-muted-foreground/10">
             <div className="flex justify-between items-center mb-2">
-              <div className="text-sm font-medium">{t('common.performance')}</div>
+              <div className="text-sm font-medium">Performance</div>
               <TimeframeSelector value={activeTimeframe} onChange={setActiveTimeframe} />
             </div>
             
@@ -251,7 +251,7 @@ export default function PortfolioSummaryCard() {
             ) : (
               <div className="flex items-center justify-center h-36 bg-muted/30 rounded-lg">
                 <div className="text-center p-2">
-                  <p className="text-muted-foreground text-xs">{t('common.no_data')}</p>
+                  <p className="text-muted-foreground text-xs">No data available</p>
                 </div>
               </div>
             )}
@@ -259,7 +259,7 @@ export default function PortfolioSummaryCard() {
           
           {/* Sezione composizione portfolio */}
           <div className="col-span-12 md:col-span-4 p-4">
-            <div className="text-sm font-medium mb-2">{t('common.distribution')}</div>
+            <div className="text-sm font-medium mb-2">Asset Distribution</div>
             
             {pieData.length > 0 ? (
               <div className="h-36">
@@ -288,7 +288,7 @@ export default function PortfolioSummaryCard() {
             ) : (
               <div className="flex items-center justify-center h-36 bg-muted/30 rounded-lg">
                 <div className="text-center p-2">
-                  <p className="text-muted-foreground text-xs">{t('common.add_assets')}</p>
+                  <p className="text-muted-foreground text-xs">Add assets to view distribution</p>
                 </div>
               </div>
             )}
