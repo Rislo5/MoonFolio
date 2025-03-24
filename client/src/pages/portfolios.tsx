@@ -6,13 +6,40 @@ import WelcomeScreen from "@/components/welcome-screen";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, BookCopy, PlusCircle, CoinsIcon } from "lucide-react";
+import { 
+  Wallet, 
+  BookCopy, 
+  PlusCircle, 
+  CoinsIcon,
+  MoreVertical, 
+  Trash, 
+  PlusSquare, 
+  LogOut,
+  AlertTriangle
+} from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { AddPortfolioDialog } from "../components/portfolio/add-portfolio-dialog";
 import AddAssetDialog from "../components/portfolio/add-asset-dialog";
 import PortfolioOverviewSummary from "../components/portfolio/portfolio-overview-summary";
 import { TransferAssetDialog } from "../components/portfolio/transfer-asset-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Define type with runtime properties
 type ExtendedPortfolio = {
@@ -30,7 +57,14 @@ type ExtendedPortfolio = {
 };
 
 const Portfolios = () => {
-  const { portfolios, activePortfolio, setActivePortfolio, isLoading } = usePortfolio();
+  const { 
+    portfolios, 
+    activePortfolio, 
+    setActivePortfolio, 
+    isLoading, 
+    deletePortfolio, 
+    disconnect 
+  } = usePortfolio();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] = useState(false);
@@ -39,6 +73,9 @@ const Portfolios = () => {
   const [portfoliosWithData, setPortfoliosWithData] = useState<ExtendedPortfolio[]>([]);
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(true);
   const [_, navigate] = useLocation();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
+  const [portfolioToAction, setPortfolioToAction] = useState<ExtendedPortfolio | null>(null);
   
   // Funzione per caricare i dati di overview dei portfolio
   const loadPortfolioData = async () => {
@@ -115,8 +152,11 @@ const Portfolios = () => {
     navigate(`/portfolios/${portfolioId}`);
   };
   
-  const handleAddAsset = () => {
-    if (activePortfolio) {
+  const handleAddAsset = (portfolioId?: number) => {
+    if (portfolioId) {
+      setActivePortfolio(portfolioId);
+      setIsAddAssetDialogOpen(true);
+    } else if (activePortfolio) {
       setIsAddAssetDialogOpen(true);
     } else {
       toast({
@@ -124,6 +164,71 @@ const Portfolios = () => {
         description: "Seleziona prima un portfolio per aggiungere asset",
         variant: "destructive",
       });
+    }
+  };
+  
+  // Gestisce il click sul menu a tre puntini per evitare propagazione al card
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+  
+  // Apre il dialogo di conferma per l'eliminazione
+  const handleDeleteClick = (e: React.MouseEvent, portfolio: ExtendedPortfolio) => {
+    e.stopPropagation();
+    setPortfolioToAction(portfolio);
+    setShowDeleteDialog(true);
+  };
+  
+  // Apre il dialogo di conferma per la disconnessione
+  const handleDisconnectClick = (e: React.MouseEvent, portfolio: ExtendedPortfolio) => {
+    e.stopPropagation();
+    setPortfolioToAction(portfolio);
+    setShowDisconnectDialog(true);
+  };
+  
+  // Elimina effettivamente il portfolio
+  const confirmDelete = async () => {
+    if (!portfolioToAction) return;
+    
+    try {
+      await deletePortfolio(portfolioToAction.id);
+      toast({
+        title: "Portfolio eliminato",
+        description: `Il portfolio "${portfolioToAction.name}" è stato eliminato con successo.`
+      });
+    } catch (error) {
+      console.error("Errore durante l'eliminazione del portfolio:", error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'eliminazione del portfolio.",
+        variant: "destructive"
+      });
+    } finally {
+      setShowDeleteDialog(false);
+      setPortfolioToAction(null);
+    }
+  };
+  
+  // Disconnette effettivamente il wallet ENS
+  const confirmDisconnect = async () => {
+    if (!portfolioToAction) return;
+    
+    try {
+      await disconnect();
+      toast({
+        title: "Wallet disconnesso",
+        description: `Il wallet "${portfolioToAction.name}" è stato disconnesso con successo.`
+      });
+    } catch (error) {
+      console.error("Errore durante la disconnessione del wallet:", error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante la disconnessione del wallet.",
+        variant: "destructive"
+      });
+    } finally {
+      setShowDisconnectDialog(false);
+      setPortfolioToAction(null);
     }
   };
 
@@ -187,16 +292,46 @@ const Portfolios = () => {
                 >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <CardTitle>{portfolio.name}</CardTitle>
-                      {activePortfolio?.id === portfolio.id && (
-                        <Badge variant="default" className="ml-2">Attivo</Badge>
-                      )}
+                      <div>
+                        <CardTitle>{portfolio.name}</CardTitle>
+                        <CardDescription>
+                          Creato il {portfolio.createdAt 
+                            ? new Date(portfolio.createdAt).toLocaleDateString() 
+                            : 'data non disponibile'}
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {activePortfolio?.id === portfolio.id && (
+                          <Badge variant="default">Attivo</Badge>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={handleMenuClick}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                handleMenuClick(e);
+                                handleAddAsset(portfolio.id);
+                              }}
+                            >
+                              <PlusSquare className="mr-2 h-4 w-4" />
+                              <span>Aggiungi Asset</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={(e) => handleDeleteClick(e, portfolio)}
+                              className="text-red-600"
+                            >
+                              <Trash className="mr-2 h-4 w-4" />
+                              <span>Elimina Portfolio</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                    <CardDescription>
-                      Creato il {portfolio.createdAt 
-                        ? new Date(portfolio.createdAt).toLocaleDateString() 
-                        : 'data non disponibile'}
-                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {isLoadingPortfolios ? (
@@ -250,14 +385,34 @@ const Portfolios = () => {
                 >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <CardTitle>{portfolio.name}</CardTitle>
-                      {activePortfolio?.id === portfolio.id && (
-                        <Badge variant="default" className="ml-2">Attivo</Badge>
-                      )}
+                      <div>
+                        <CardTitle>{portfolio.name}</CardTitle>
+                        <CardDescription>
+                          {portfolio.ensName || portfolio.walletAddress?.substring(0, 10) + '...'}
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {activePortfolio?.id === portfolio.id && (
+                          <Badge variant="default">Attivo</Badge>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={handleMenuClick}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={(e) => handleDisconnectClick(e, portfolio)}
+                              className="text-red-600"
+                            >
+                              <LogOut className="mr-2 h-4 w-4" />
+                              <span>Disconnetti Wallet</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                    <CardDescription>
-                      {portfolio.ensName || portfolio.walletAddress?.substring(0, 10) + '...'}
-                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {isLoadingPortfolios ? (
