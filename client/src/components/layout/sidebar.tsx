@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight, HelpCircle, Info } from "lucide-react";
+import { MoonfolioMoonIcon, MoonfolioTextIcon } from "@/assets/logo";
+import { FaqDialog } from "@/components/faq";
+import { AboutUsDialog } from "@/components/about-us";
 
 export default function Sidebar() {
   const [location] = useLocation();
