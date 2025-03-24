@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight, HelpCircle, Info } from "lucide-react";
-import { MoonfolioMoonIcon, MoonfolioTextIcon } from "@/assets/logo";
+import { MoonfolioLogo } from "@/components/ui/moonfolio-logo";
 import { FaqDialog } from "@/components/faq";
 import { AboutUsDialog } from "@/components/about-us";
 
@@ -81,10 +81,7 @@ export default function Sidebar() {
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-3">
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="font-bold text-xl text-primary flex items-center">
-            <MoonfolioMoonIcon className="h-6 w-6 text-primary mr-2" />
-            Moonfolio
-          </div>
+          <MoonfolioLogo className="h-8" />
         </div>
         <div className="flex items-center gap-2">
           <ModeToggle />
@@ -115,15 +112,12 @@ export default function Sidebar() {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 h-16">
           <div className="flex items-center space-x-2">
-            {/* Logo display logic: Moon icon when collapsed, full logo when expanded */}
+            {/* Logo display logic: Icon when collapsed, full logo when expanded */}
             {isCollapsed ? (
-              <MoonfolioMoonIcon className="h-8 w-8 text-primary" />
+              <MoonfolioLogo variant="icon" className="h-8 w-8" />
             ) : (
               <div className="flex items-center">
-                <MoonfolioMoonIcon className="h-7 w-7 text-primary" />
-                <h1 className="font-bold text-xl hidden lg:block ml-2">
-                  Moonfolio
-                </h1>
+                <MoonfolioLogo className="h-8" />
               </div>
             )}
           </div>

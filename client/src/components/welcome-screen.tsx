@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RocketIcon, Wallet, Coins } from "lucide-react";
+import { Wallet, Coins } from "lucide-react";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
 import { ConnectEnsWalletDialog } from "@/components/portfolio/connect-ens-wallet-dialog";
-import { MoonfolioMoonIcon } from "@/assets/logo";
 
 const WelcomeScreen = () => {
   const { connectEnsWallet } = usePortfolio();
@@ -25,8 +24,8 @@ const WelcomeScreen = () => {
   const renderMainScreen = () => (
     <div className="w-full max-w-lg p-8 bg-background rounded-xl shadow-lg border border-border/50">
       <div className="flex flex-col items-center justify-center mb-8">
-        <div className="bg-primary/10 rounded-full p-4 mb-4">
-          <MoonfolioMoonIcon className="h-16 w-16 text-primary" />
+        <div className="mb-6 w-32 h-32 flex items-center justify-center">
+          <img src="/images/moonfolio-logo.png" alt="Moonfolio Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-3xl font-bold text-center mb-3 text-foreground">
           Welcome to Moonfolio
@@ -93,37 +92,42 @@ const WelcomeScreen = () => {
   );
 
   const renderEnsScreen = () => (
-    <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+    <div className="w-full max-w-lg p-8 bg-background rounded-xl shadow-lg border border-border/50">
       <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" size="sm" onClick={() => setViewMode("main")}>
           ← Back
         </Button>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-          Connect ENS Wallet
-        </h2>
-        <div className="w-10"></div> {/* Spacer for alignment */}
+        <div className="h-10 w-10"></div> {/* Spacer for alignment */}
       </div>
       
-      <div className="mb-6">
-        <p className="text-gray-600 dark:text-gray-300 mb-4">
+      <div className="flex flex-col items-center justify-center mb-8">
+        <div className="mb-6 w-28 h-28 flex items-center justify-center">
+          <img src="/images/moonfolio-logo.png" alt="Moonfolio Logo" className="w-full h-full object-contain" />
+        </div>
+        <h2 className="text-2xl font-bold text-center mb-3 text-foreground">
+          Connect ENS Wallet
+        </h2>
+        <p className="text-center text-muted-foreground max-w-md mb-6">
           Enter your ENS domain (like 'vitalik.eth') or Ethereum address to view your portfolio data.
         </p>
         
         <Button 
-          className="w-full"
+          className="w-full max-w-sm"
           onClick={() => setIsEnsDialogOpen(true)}
         >
           Connect Wallet with ENS
         </Button>
       </div>
       
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-          What is ENS?
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          Ethereum Name Service (ENS) is like a domain name for your Ethereum address. It allows you to use human-readable names instead of long hexadecimal addresses.
-        </p>
+      <div className="border-t border-border pt-6 mt-6">
+        <div className="bg-muted/50 rounded-lg p-4">
+          <h3 className="text-sm font-semibold mb-2">
+            What is ENS?
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Ethereum Name Service (ENS) is like a domain name for your Ethereum address. It allows you to use human-readable names instead of long hexadecimal addresses.
+          </p>
+        </div>
       </div>
     </div>
   );
