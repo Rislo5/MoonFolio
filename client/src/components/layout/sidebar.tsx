@@ -15,6 +15,10 @@ export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isMobile = useIsMobile();
+  
+  // State for dialogs
+  const [isFaqOpen, setIsFaqOpen] = useState(false);
+  const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
 
   // Keep sidebar expanded on large screens by default
   useEffect(() => {
@@ -52,6 +56,22 @@ export default function Sidebar() {
       </Link>
     );
   };
+  
+  // Button for dialogs (FAQ and About Us)
+  const DialogButton = ({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) => {
+    return (
+      <Button
+        variant="ghost"
+        className="w-full justify-start hover:bg-muted"
+        onClick={onClick}
+      >
+        <Icon className={cn("h-5 w-5", isCollapsed ? "" : "mr-2")} />
+        {!isCollapsed && (
+          <span>{label}</span>
+        )}
+      </Button>
+    );
+  };
 
   return (
     <>
@@ -61,7 +81,10 @@ export default function Sidebar() {
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-3">
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="font-bold text-xl text-primary">Moonfolio</div>
+          <div className="font-bold text-xl text-primary flex items-center">
+            <MoonfolioMoonIcon className="h-6 w-6 text-primary mr-2" />
+            Moonfolio
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <ModeToggle />
@@ -92,25 +115,17 @@ export default function Sidebar() {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 h-16">
           <div className="flex items-center space-x-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6 text-primary"
-            >
-              <path d="M12 3a9 9 0 1 0 9 9" />
-              <path d="M12 3v9l5-5" />
-              <circle cx="12" cy="12" r="4" />
-            </svg>
-            <h1 className={cn("font-bold text-xl", 
-              isCollapsed ? "hidden" : "hidden lg:block"
-            )}>
-              Moonfolio
-            </h1>
+            {/* Logo display logic: Moon icon when collapsed, full logo when expanded */}
+            {isCollapsed ? (
+              <MoonfolioMoonIcon className="h-8 w-8 text-primary" />
+            ) : (
+              <div className="flex items-center">
+                <MoonfolioMoonIcon className="h-7 w-7 text-primary" />
+                <h1 className="font-bold text-xl hidden lg:block ml-2">
+                  Moonfolio
+                </h1>
+              </div>
+            )}
           </div>
           <div className="flex">
             {!isMobile && (
@@ -161,6 +176,22 @@ export default function Sidebar() {
           <div className="space-y-2 mt-auto pt-4">
             <Separator className="mb-4" />
             
+            {/* Help & Info section */}
+            <div className="space-y-1 mb-4">
+              <DialogButton 
+                icon={HelpCircle} 
+                label="FAQ" 
+                onClick={() => setIsFaqOpen(true)}
+              />
+              <DialogButton 
+                icon={Info} 
+                label="About Us" 
+                onClick={() => setIsAboutUsOpen(true)}
+              />
+            </div>
+            
+            <Separator className="mb-4" />
+            
             {/* Theme Toggle */}
             <div className={cn(
               "flex items-center px-3 py-2 rounded-md",
@@ -176,6 +207,10 @@ export default function Sidebar() {
           </div>
         </nav>
       </aside>
+      
+      {/* Modals/Dialogs */}
+      <FaqDialog open={isFaqOpen} onOpenChange={setIsFaqOpen} />
+      <AboutUsDialog open={isAboutUsOpen} onOpenChange={setIsAboutUsOpen} />
     </>
   );
 }
