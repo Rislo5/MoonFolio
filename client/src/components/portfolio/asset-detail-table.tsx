@@ -77,18 +77,18 @@ export default function AssetDetailTable() {
 
   // Gestisce l'eliminazione di un asset
   const handleDeleteAsset = async (assetId: number) => {
-    if (window.confirm(t('common.confirm_delete'))) {
+    if (window.confirm('Are you sure you want to delete this asset?')) {
       setIsDeleting(assetId);
       try {
         await removeAsset(assetId);
         toast({
-          title: t('common.asset_deleted'),
-          description: t('common.asset_removed'),
+          title: "Asset Deleted",
+          description: "The asset has been successfully removed from your portfolio.",
         });
       } catch (error) {
         toast({
-          title: t('common.error'),
-          description: t('common.delete_error'),
+          title: "Error",
+          description: "Failed to delete the asset. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -152,16 +152,16 @@ export default function AssetDetailTable() {
     <Card className="overflow-hidden">
       <div className="p-4 border-b flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col">
-          <h3 className="text-lg font-semibold">{t('common.assets_held')}</h3>
+          <h3 className="text-lg font-semibold">Assets Held</h3>
           <p className="text-sm text-muted-foreground">
-            {assets.length} {t('common.assets')} {t('common.total_assets_value')} {formatCurrency(totalValue)}
+            {assets.length} assets • Total value: {formatCurrency(totalValue)}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <div className="relative flex-1 sm:flex-initial">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder={t('common.search_assets')}
+              placeholder="Search assets..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-8 h-9"
@@ -171,23 +171,23 @@ export default function AssetDetailTable() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-9">
                 <ListFilter className="mr-2 h-4 w-4" />
-                {t('common.filters')}
+                Filters
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>{t('common.sort_by')}</DropdownMenuLabel>
+              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleSort('name')}>
-                {t('common.asset_name')} {sortOption.column === 'name' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                Asset Name {sortOption.column === 'name' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleSort('value')}>
-                {t('common.asset_value')} {sortOption.column === 'value' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                Asset Value {sortOption.column === 'value' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleSort('profitLossPercentage')}>
-                {t('common.profit_loss')} {sortOption.column === 'profitLossPercentage' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                Profit/Loss {sortOption.column === 'profitLossPercentage' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleSort('priceChange24h')}>
-                {t('common.change_24h_variation')} {sortOption.column === 'priceChange24h' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                24h Change {sortOption.column === 'priceChange24h' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -199,7 +199,7 @@ export default function AssetDetailTable() {
               onClick={() => setShowAddAssetDialog(true)}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              {t('common.new_asset')}
+              Add New Asset
             </Button>
           )}
         </div>
@@ -211,7 +211,7 @@ export default function AssetDetailTable() {
             <TableRow>
               <TableHead className="w-[180px]">
                 <div className="flex items-center">
-                  {t('common.assets')}
+                  Assets
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('name')}
@@ -220,12 +220,12 @@ export default function AssetDetailTable() {
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  {t('common.quantity')}
+                  Quantity
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  {t('common.avg_price')}
+                  Avg. Price
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('avgBuyPrice')}
@@ -234,7 +234,7 @@ export default function AssetDetailTable() {
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  {t('common.current_price')}
+                  Current Price
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('currentPrice')}
@@ -243,7 +243,7 @@ export default function AssetDetailTable() {
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  {t('common.change_24h')}
+                  24h Change
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('priceChange24h')}
@@ -252,7 +252,7 @@ export default function AssetDetailTable() {
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  {t('common.total_value_column')}
+                  Total Value
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('value')}
@@ -261,14 +261,14 @@ export default function AssetDetailTable() {
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  {t('common.profit_loss')}
+                  Profit/Loss
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('profitLossPercentage')}
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-[80px] text-right">{t('common.actions')}</TableHead>
+              <TableHead className="w-[80px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -277,21 +277,21 @@ export default function AssetDetailTable() {
                 <TableCell colSpan={8} className="text-center py-8">
                   {searchTerm ? (
                     <div>
-                      <p className="text-muted-foreground mb-2">{t('common.no_matching_assets')} "{searchTerm}"</p>
+                      <p className="text-muted-foreground mb-2">No matching assets for "{searchTerm}"</p>
                       <Button variant="outline" size="sm" onClick={() => setSearchTerm("")}>
-                        {t('common.clear_search')}
+                        Clear Search
                       </Button>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-muted-foreground mb-2">{t('common.no_assets_yet')}</p>
+                      <p className="text-muted-foreground mb-2">No assets in this portfolio yet</p>
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => setShowAddAssetDialog(true)}
                       >
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        {t('common.add_first_asset')}
+                        Add Your First Asset
                       </Button>
                     </div>
                   )}
@@ -323,7 +323,7 @@ export default function AssetDetailTable() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      {Number(asset.balance).toLocaleString('it-IT', {
+                      {Number(asset.balance).toLocaleString('en-US', {
                         maximumFractionDigits: 8,
                       })}
                     </div>
@@ -377,7 +377,7 @@ export default function AssetDetailTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         
                         {isEnsPortfolio ? (
@@ -386,24 +386,24 @@ export default function AssetDetailTable() {
                               <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
-                            {t('common.read_only')}
+                            Read Only
                           </DropdownMenuItem>
                         ) : (
                           <>
                             <DropdownMenuItem onClick={() => handleAddTransaction(asset)}>
                               <PlusCircle className="h-4 w-4 mr-2" />
-                              {t('common.add_transaction')}
+                              Add Transaction
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => {
                               setSelectedAsset(asset);
                               setShowEditAssetDialog(true);
                             }}>
                               <RefreshCcw className="h-4 w-4 mr-2" />
-                              {t('common.edit_asset')}
+                              Edit Asset
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleTransferAsset(asset)}>
                               <ExternalLink className="h-4 w-4 mr-2" />
-                              {t('common.transfer_asset_action')}
+                              Transfer Asset
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -414,12 +414,12 @@ export default function AssetDetailTable() {
                               {isDeleting === asset.id ? (
                                 <>
                                   <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
-                                  {t('common.deleting', 'Eliminazione...')}
+                                  Deleting...
                                 </>
                               ) : (
                                 <>
                                   <Trash2 className="h-4 w-4 mr-2" />
-                                  {t('common.delete_asset')}
+                                  Delete Asset
                                 </>
                               )}
                             </DropdownMenuItem>
@@ -435,7 +435,7 @@ export default function AssetDetailTable() {
         </Table>
       </div>
 
-      {/* Dialog per aggiungere transazioni */}
+      {/* Dialog for adding transactions */}
       {selectedAsset && (
         <AddTransactionDialog
           open={showAddTransactionDialog}
@@ -444,13 +444,13 @@ export default function AssetDetailTable() {
         />
       )}
 
-      {/* Dialog per aggiungere asset */}
+      {/* Dialog for adding assets */}
       <AddAssetDialog
         open={showAddAssetDialog} 
         onOpenChange={setShowAddAssetDialog}
       />
       
-      {/* Dialog per trasferire asset */}
+      {/* Dialog for transferring assets */}
       {selectedAsset && (
         <TransferAssetDialog
           open={showTransferAssetDialog}
@@ -459,7 +459,7 @@ export default function AssetDetailTable() {
         />
       )}
       
-      {/* Dialog per modificare asset */}
+      {/* Dialog for editing assets */}
       {selectedAsset && (
         <EditAssetDialog
           open={showEditAssetDialog}
