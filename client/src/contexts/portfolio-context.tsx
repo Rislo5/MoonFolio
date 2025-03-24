@@ -249,13 +249,27 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     },
     onSuccess: (portfolio) => {
       queryClient.invalidateQueries({ queryKey: ["/api/portfolios"] });
+      // Impostazione immediata del portfolio attivo
       setActivePortfolioId(portfolio.id);
+      
+      // Forza il recupero dei dati del nuovo portfolio
+      queryClient.fetchQuery({ 
+        queryKey: [`/api/portfolios/${portfolio.id}/assets`] 
+      });
+      queryClient.fetchQuery({ 
+        queryKey: [`/api/portfolios/${portfolio.id}/transactions`] 
+      });
+      queryClient.fetchQuery({ 
+        queryKey: [`/api/portfolios/${portfolio.id}/overview`] 
+      });
+      
       toast({
         title: "Portfolio created successfully",
         description: "You can now add assets to your portfolio.",
       });
     },
     onError: (error: Error) => {
+      console.error("Failed to create portfolio or add asset:", error);
       toast({
         title: "Failed to create portfolio",
         description: error.message,
