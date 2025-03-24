@@ -239,12 +239,12 @@ const PortfolioOverviewSummary = () => {
           <div>
             <CardTitle className="text-xl flex items-center">
               <Wallet className="mr-2 h-5 w-5" />
-              Riepilogo del Patrimonio
+              Portfolio Summary
             </CardTitle>
-            <CardDescription>Panoramica di tutti i tuoi portfolio di criptovalute</CardDescription>
+            <CardDescription>Overview of all your cryptocurrency portfolios</CardDescription>
           </div>
           <Badge variant="outline" className="bg-primary/10 text-primary font-medium">
-            {portfolios.length} Portfolio
+            {portfolios.length} Portfolios
           </Badge>
         </div>
       </CardHeader>
