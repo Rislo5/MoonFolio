@@ -142,36 +142,48 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="p-2 space-y-2">
-          <NavItem
-            href="/"
-            icon={LayoutDashboard}
-            label={t("sidebar.dashboard")}
-            current={location === "/" || location === "/dashboard"}
-          />
-          <NavItem
-            href="/portfolios"
-            icon={Wallet}
-            label={t("sidebar.portfolios")}
-            current={location === "/portfolios" || location.startsWith("/portfolios/")}
-          />
+        <nav className="flex flex-col h-full p-2">
+          <div className="space-y-2">
+            <NavItem
+              href="/"
+              icon={LayoutDashboard}
+              label={t("sidebar.dashboard")}
+              current={location === "/" || location === "/dashboard"}
+            />
+            <NavItem
+              href="/portfolios"
+              icon={Wallet}
+              label={t("sidebar.portfolios")}
+              current={location === "/portfolios" || location.startsWith("/portfolios/")}
+            />
+          </div>
 
-          <Separator className="my-4" />
-
-          <div className="px-3 py-2">
-            <div className="flex items-center justify-between">
-              <span className={cn("text-sm text-muted-foreground", 
-                isCollapsed ? "hidden" : "hidden lg:inline-block"
-              )}>
-                Theme
-              </span>
+          {/* Flex spacer per spingere i controlli in fondo */}
+          <div className="flex-grow"></div>
+          
+          <div className="space-y-2 mt-auto pt-4">
+            <Separator className="mb-4" />
+            
+            {/* Theme Toggle */}
+            <div className={cn(
+              "flex items-center px-3 py-2 rounded-md",
+              isCollapsed ? "justify-center" : "justify-between"
+            )}>
+              {!isCollapsed && (
+                <span className="text-sm text-muted-foreground hidden lg:inline-block">
+                  Theme
+                </span>
+              )}
               <ModeToggle />
             </div>
-          </div>
-          
-          {/* Language Selector - mostra versione condensata o completa in base alla sidebar */}
-          <div className="px-3 py-2 mt-2">
-            <LanguageSelector isCollapsed={isCollapsed} />
+            
+            {/* Language Selector */}
+            <div className={cn(
+              "px-3 py-2",
+              isCollapsed ? "flex justify-center" : ""
+            )}>
+              <LanguageSelector isCollapsed={isCollapsed} />
+            </div>
           </div>
         </nav>
       </aside>

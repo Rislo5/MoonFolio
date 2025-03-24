@@ -55,9 +55,9 @@ export default function LanguageSelector({ isCollapsed = false }: LanguageSelect
   if (isCollapsed) {
     return (
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
-        className="h-8 w-8 mx-auto"
+        className="h-9 w-9"
         onClick={handleLanguageChange}
         title={currentLang === 'it' ? 'Change to English' : 'Cambia in Italiano'}
       >
@@ -68,15 +68,25 @@ export default function LanguageSelector({ isCollapsed = false }: LanguageSelect
   
   // Versione completa con testo
   return (
-    <Button 
-      variant="outline"
-      size="sm" 
-      onClick={handleLanguageChange}
-      className="w-full justify-start"
-      title={currentLang === 'it' ? 'Change to English' : 'Cambia in Italiano'}
-    >
-      <Globe className="mr-2 h-4 w-4" />
-      {currentLang === 'it' ? '🇮🇹 Italiano' : '🇬🇧 English'}
-    </Button>
+    <div className="flex flex-col space-y-1 w-full">
+      <p className="text-sm font-medium leading-none text-muted-foreground">
+        {currentLang === 'it' ? 'Lingua' : 'Language'}
+      </p>
+      <Button 
+        variant="outline"
+        size="sm" 
+        onClick={handleLanguageChange}
+        className="w-full justify-between"
+        title={currentLang === 'it' ? 'Change to English' : 'Cambia in Italiano'}
+      >
+        <div className="flex items-center">
+          <Globe className="mr-2 h-4 w-4" />
+          {currentLang === 'it' ? 'Italiano' : 'English'}
+        </div>
+        <span>
+          {currentLang === 'it' ? '🇮🇹' : '🇬🇧'}
+        </span>
+      </Button>
+    </div>
   );
 }
