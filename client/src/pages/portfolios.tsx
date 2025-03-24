@@ -214,7 +214,12 @@ const Portfolios = () => {
     if (!portfolioToAction) return;
     
     try {
-      await disconnect();
+      // Prima elimina il portfolio, poi disconnetti
+      await deletePortfolio(portfolioToAction.id);
+      
+      // Aggiorna anche lo stato locale
+      disconnect();
+      
       toast({
         title: "Wallet disconnesso",
         description: `Il wallet "${portfolioToAction.name}" è stato disconnesso con successo.`
