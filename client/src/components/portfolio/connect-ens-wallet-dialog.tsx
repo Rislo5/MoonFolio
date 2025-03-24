@@ -108,7 +108,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            {t("portfolio.connect_ens_wallet")}
+            Connect ENS Wallet
           </DialogTitle>
           <DialogDescription>
             Enter an Ethereum address or ENS name to view the tokens in the wallet.
@@ -122,7 +122,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
               name="addressOrEns"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("portfolio.address_or_ens")}</FormLabel>
+                  <FormLabel>Ethereum Address or ENS</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -134,7 +134,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
                     </div>
                   </FormControl>
                   <FormDescription>
-                    {t("portfolio.address_or_ens_description")}
+                    Enter a valid Ethereum address (0x...) or ENS domain name (name.eth)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -177,7 +177,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>{t("common.error")}</AlertTitle>
+                <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -187,10 +187,10 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
                 {isConnecting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t("common.connecting")}
+                    Connecting...
                   </>
                 ) : (
-                  t("portfolio.connect_wallet")
+                  "Connect Wallet"
                 )}
               </Button>
             </DialogFooter>
