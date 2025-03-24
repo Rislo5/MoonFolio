@@ -45,7 +45,7 @@ const CustomPieTooltip = ({ active, payload }: any) => {
       <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
         <p className="font-medium">{payload[0].name}</p>
         <p className="text-sm">{formatCurrency(payload[0].value)}</p>
-        <p className="text-xs text-muted-foreground">{payload[0].payload.percentage}% del patrimonio</p>
+        <p className="text-xs text-muted-foreground">{payload[0].payload.percentage}% of portfolio</p>
       </div>
     );
   }
