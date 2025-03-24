@@ -271,7 +271,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-            {/* SEZIONE NOME PORTFOLIO */}
+            {/* PORTFOLIO NAME SECTION */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="px-2 py-1 rounded-md bg-primary/5">1</Badge>
@@ -321,17 +321,17 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
             
             <Separator />
             
-            {/* SEZIONE AGGIUNGI CRYPTO (OPZIONALE) */}
+            {/* ADD CRYPTOCURRENCY SECTION (OPTIONAL) */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="px-2 py-1 rounded-md bg-primary/5">2</Badge>
-                  <h3 className="text-lg font-medium">Aggiungi Crypto (Opzionale)</h3>
+                  <h3 className="text-lg font-medium">Add Cryptocurrencies (Optional)</h3>
                 </div>
-                <Badge variant="secondary">Facoltativo</Badge>
+                <Badge variant="secondary">Optional</Badge>
               </div>
               
-              {/* Tabs per popolari/cerca */}
+              {/* Tabs for popular/search */}
               <div className="space-y-4">
                 <div className="flex space-x-2">
                   <Button
@@ -341,7 +341,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                     onClick={() => setActiveTab("popular")}
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Popolari
+                    Popular
                   </Button>
                   <Button
                     type="button"
@@ -354,7 +354,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                   </Button>
                 </div>
                 
-                {/* Contenuto tab popolari */}
+                {/* Popular tab content */}
                 {activeTab === "popular" && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {isLoadingPopular ? (
@@ -371,7 +371,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                         </div>
                       ))
                     ) : popularCryptos && popularCryptos.length > 0 ? (
-                      // Elenco delle cryptos popolari
+                      // List of popular cryptocurrencies
                       popularCryptos.slice(0, 6).map((crypto: any) => renderCryptoCard(crypto))
                     ) : (
                       <div className="col-span-full text-center p-4 text-muted-foreground">
@@ -381,7 +381,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                   </div>
                 )}
                 
-                {/* Contenuto tab ricerca */}
+                {/* Search tab content */}
                 {activeTab === "search" && (
                   <div className="space-y-4">
                     <div className="relative">
@@ -431,7 +431,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                 )}
               </div>
               
-              {/* Lista delle crypto selezionate */}
+              {/* List of selected cryptocurrencies */}
               {selectedCryptos.length > 0 && (
                 <div className="space-y-3 mt-4">
                   <h4 className="text-sm font-medium">Crypto selezionate</h4>
