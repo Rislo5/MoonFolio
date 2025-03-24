@@ -51,7 +51,7 @@ const connectWalletSchema = z.object({
         message: "Inserisci un indirizzo Ethereum valido (0x...) o un nome ENS (esempio.eth)"
       }
     ),
-  includeInSummary: z.boolean().default(true)
+  includeInSummary: z.boolean().default(false) // Modificato: false di default
 });
 
 type ConnectWalletFormValues = z.infer<typeof connectWalletSchema>;
@@ -72,7 +72,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
     resolver: zodResolver(connectWalletSchema),
     defaultValues: {
       addressOrEns: "",
-      includeInSummary: true
+      includeInSummary: false // Modificato: false di default per coerenza con lo schema
     }
   });
 
@@ -111,7 +111,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
             {t("portfolio.connect_ens_wallet")}
           </DialogTitle>
           <DialogDescription>
-            {t("portfolio.connect_ens_description")}
+            Inserisci un indirizzo Ethereum o un nome ENS per visualizzare i token nel wallet.
           </DialogDescription>
         </DialogHeader>
 
@@ -145,21 +145,21 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
               control={form.control}
               name="includeInSummary"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <FormItem className={`flex flex-row items-center justify-between rounded-lg border p-4 ${field.value ? 'border-primary' : 'border-muted'}`}>
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">
-                      {t("portfolio.include_in_summary")}
+                    <FormLabel className="text-base font-medium">
+                      {field.value ? 'Aggiungi al riepilogo generale' : 'Modalità sola visualizzazione'}
                     </FormLabel>
                     <FormDescription>
                       {field.value ? (
                         <div className="flex items-center text-sm text-muted-foreground">
-                          <PlusCircle className="mr-2 h-4 w-4" />
-                          {t("portfolio.wallet_will_be_included")}
+                          <PlusCircle className="mr-2 h-4 w-4 text-primary" />
+                          Questo wallet sarà incluso nel calcolo del valore totale del tuo portfolio
                         </div>
                       ) : (
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Eye className="mr-2 h-4 w-4" />
-                          {t("portfolio.wallet_readonly_mode")}
+                          Questo wallet sarà visibile ma non sarà incluso nel calcolo del valore totale
                         </div>
                       )}
                     </FormDescription>
