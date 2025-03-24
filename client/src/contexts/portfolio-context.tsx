@@ -477,6 +477,53 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [activePortfolioId]);
   
+  // Configura WebSocket per aggiornamenti in tempo reale dei prezzi
+  useEffect(() => {
+    // Determina il protocollo corretto (ws o wss)
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    // Crea la connessione WebSocket
+    const socket = new WebSocket(wsUrl);
+    
+    socket.onopen = () => {
+      console.log("WebSocket connesso");
+    };
+    
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        
+        if (message.type === 'priceUpdate' && Array.isArray(message.data)) {
+          console.log("Aggiornamento prezzi ricevuto via WebSocket");
+          
+          // Aggiorna i dati relativi al portfolio se necessario
+          // Questo attiverà una ri-renderizzazione delle componenti che mostrano i prezzi
+          if (activePortfolioId) {
+            invalidatePortfolioData();
+          }
+        }
+      } catch (error) {
+        console.error("Errore nell'elaborazione del messaggio WebSocket:", error);
+      }
+    };
+    
+    socket.onerror = (error) => {
+      console.error("Errore WebSocket:", error);
+    };
+    
+    socket.onclose = () => {
+      console.log("WebSocket disconnesso");
+    };
+    
+    // Cleanup alla disconnessione
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, []);
+  
   return (
     <PortfolioContext.Provider
       value={{

@@ -1,12 +1,14 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import fetch from "node-fetch";
 import { z } from "zod";
+import { WebSocketServer, WebSocket } from 'ws';
 import {
   insertPortfolioSchema,
   insertAssetSchema,
   insertTransactionSchema,
+  CryptoCurrency,
 } from "@shared/schema";
 
 // Environment variables
@@ -23,6 +25,31 @@ import { ethers } from 'ethers';
 
 // Provider Ethereum per reverse lookup
 const provider = new ethers.JsonRpcProvider(INFURA_URL);
+
+// Funzione per inviare aggiornamenti di prezzo in tempo reale tramite WebSocket
+let clients: Set<WebSocket> = new Set();
+let popularCryptos: CryptoCurrency[] = [];
+
+async function broadcastPriceUpdates() {
+  try {
+    // Aggiorna i prezzi popolari ogni 30 secondi
+    popularCryptos = await fetchPopularCryptocurrencies();
+    
+    // Invia i dati aggiornati a tutti i client connessi
+    const message = JSON.stringify({
+      type: 'priceUpdate',
+      data: popularCryptos
+    });
+    
+    clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  } catch (error) {
+    console.error('Error broadcasting price updates:', error);
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
@@ -933,5 +960,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Configura il WebSocket server
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Gestisci connessioni WebSocket
+  wss.on('connection', (ws) => {
+    console.log('New WebSocket client connected');
+    clients.add(ws);
+    
+    // Invia i dati iniziali al client
+    if (popularCryptos.length > 0) {
+      ws.send(JSON.stringify({
+        type: 'priceUpdate',
+        data: popularCryptos
+      }));
+    }
+    
+    // Gestisci disconnessione
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+      clients.delete(ws);
+    });
+  });
+  
+  // Avvia aggiornamenti periodici dei prezzi (ogni 30 secondi)
+  // Definisce la funzione di recupero criptovalute popolari per riutilizzarla
+  async function fetchPopularCryptocurrencies(): Promise<CryptoCurrency[]> {
+    try {
+      const response = await fetch(
+        `${COINMARKETCAP_API_URL}/cryptocurrency/listings/latest?limit=50&convert=USD`, {
+          headers: {
+            'X-CMC_PRO_API_KEY': COINMARKETCAP_API_KEY,
+            'Accept': 'application/json'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`CoinMarketCap API error: ${response.statusText}`);
+      }
+      
+      const responseData = await response.json();
+      
+      // Transform the data to match the format expected by the frontend
+      return responseData.data.map((coin: any) => ({
+        id: coin.slug,
+        symbol: coin.symbol.toLowerCase(),
+        name: coin.name,
+        image: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`,
+        current_price: coin.quote.USD.price,
+        price_change_percentage_24h: coin.quote.USD.percent_change_24h
+      }));
+    } catch (error) {
+      console.error("Error fetching popular cryptocurrencies:", error);
+      return [];
+    }
+  }
+  
+  // Inizializza i dati popolari e avvia il broadcast periodico
+  fetchPopularCryptocurrencies().then(data => {
+    popularCryptos = data;
+    
+    // Broadcast every 30 seconds
+    setInterval(broadcastPriceUpdates, 30000);
+  });
+  
   return httpServer;
 }
