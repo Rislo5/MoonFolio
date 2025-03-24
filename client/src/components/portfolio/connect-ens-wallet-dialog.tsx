@@ -38,20 +38,20 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
 
-// Schema per la connessione al wallet ENS
+// Schema for ENS wallet connection
 const connectWalletSchema = z.object({
   addressOrEns: z.string()
-    .min(1, "Inserisci un indirizzo Ethereum o nome ENS")
+    .min(1, "Enter an Ethereum address or ENS name")
     .refine(
       value => (
-        /^0x[a-fA-F0-9]{40}$/.test(value) || // Indirizzo Ethereum
-        /^[a-zA-Z0-9]+(\.eth)$/.test(value)  // Nome ENS
+        /^0x[a-fA-F0-9]{40}$/.test(value) || // Ethereum address
+        /^[a-zA-Z0-9]+(\.eth)$/.test(value)  // ENS name
       ), 
       {
-        message: "Inserisci un indirizzo Ethereum valido (0x...) o un nome ENS (esempio.eth)"
+        message: "Enter a valid Ethereum address (0x...) or an ENS name (example.eth)"
       }
     ),
-  includeInSummary: z.boolean().default(false) // Modificato: false di default
+  includeInSummary: z.boolean().default(false) // Modified: default is false
 });
 
 type ConnectWalletFormValues = z.infer<typeof connectWalletSchema>;
@@ -72,7 +72,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
     resolver: zodResolver(connectWalletSchema),
     defaultValues: {
       addressOrEns: "",
-      includeInSummary: false // Modificato: false di default per coerenza con lo schema
+      includeInSummary: false // Modified: default is false for consistency with the schema
     }
   });
 
@@ -81,21 +81,21 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
     setError(null);
 
     try {
-      // Passiamo anche il parametro includeInSummary
+      // Also pass the includeInSummary parameter
       await connectEnsWallet(values.addressOrEns, values.includeInSummary);
       toast({
         title: t("common.success"),
         description: values.includeInSummary 
-          ? `Wallet ${values.addressOrEns} connesso e aggiunto al riepilogo`
-          : `Wallet ${values.addressOrEns} connesso in modalità visualizzazione`,
+          ? `Wallet ${values.addressOrEns} connected and added to the summary`
+          : `Wallet ${values.addressOrEns} connected in view-only mode`,
       });
-      onOpenChange(false); // Chiude il dialog dopo la connessione
+      onOpenChange(false); // Close the dialog after connection
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Errore durante la connessione al wallet");
+      setError(error instanceof Error ? error.message : "Error connecting to wallet");
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Errore durante la connessione al wallet",
+        description: error instanceof Error ? error.message : "Error connecting to wallet",
       });
     } finally {
       setIsConnecting(false);
@@ -111,7 +111,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
             {t("portfolio.connect_ens_wallet")}
           </DialogTitle>
           <DialogDescription>
-            Inserisci un indirizzo Ethereum o un nome ENS per visualizzare i token nel wallet.
+            Enter an Ethereum address or ENS name to view the tokens in the wallet.
           </DialogDescription>
         </DialogHeader>
 
@@ -127,7 +127,7 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        placeholder="vitalik.eth o 0x123..." 
+                        placeholder="vitalik.eth or 0x123..." 
                         className="pl-10" 
                         {...field} 
                       />
@@ -148,18 +148,18 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
                 <FormItem className={`flex flex-row items-center justify-between rounded-lg border p-4 ${field.value ? 'border-primary' : 'border-muted'}`}>
                   <div className="space-y-0.5">
                     <FormLabel className="text-base font-medium">
-                      {field.value ? 'Aggiungi al riepilogo generale' : 'Modalità sola visualizzazione'}
+                      {field.value ? 'Add to general summary' : 'View-only mode'}
                     </FormLabel>
                     <FormDescription>
                       {field.value ? (
                         <div className="flex items-center text-sm text-muted-foreground">
                           <PlusCircle className="mr-2 h-4 w-4 text-primary" />
-                          Questo wallet sarà incluso nel calcolo del valore totale del tuo portfolio
+                          This wallet will be included in the calculation of your portfolio's total value
                         </div>
                       ) : (
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Eye className="mr-2 h-4 w-4" />
-                          Questo wallet sarà visibile ma non sarà incluso nel calcolo del valore totale
+                          This wallet will be visible but will not be included in the total value calculation
                         </div>
                       )}
                     </FormDescription>
