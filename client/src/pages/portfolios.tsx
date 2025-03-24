@@ -80,7 +80,7 @@ const Portfolios = () => {
   const [isEnsDialogOpen, setIsEnsDialogOpen] = useState(false);
   const [portfolioToAction, setPortfolioToAction] = useState<ExtendedPortfolio | null>(null);
   
-  // Funzione per caricare i dati di overview dei portfolio
+  // Function to load portfolio overview data
   const loadPortfolioData = async () => {
     if (portfolios.length === 0) return;
     
@@ -109,7 +109,7 @@ const Portfolios = () => {
               assetCount: assetCount || 0
             } as ExtendedPortfolio;
           } catch (error) {
-            console.error(`Errore nel caricamento dei dati per il portfolio ${portfolio.id}:`, error);
+            console.error(`Error loading data for portfolio ${portfolio.id}:`, error);
             return {
               ...portfolio,
               totalValue: 0,
@@ -244,9 +244,9 @@ const Portfolios = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">I tuoi Portfolio</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Your Portfolios</h1>
           <p className="text-muted-foreground">
-            Gestisci e visualizza tutti i tuoi portfolio di criptovalute
+            Manage and view all your cryptocurrency portfolios
           </p>
         </div>
         <div className="flex space-x-2">
@@ -254,7 +254,7 @@ const Portfolios = () => {
             <>
               <Button onClick={handleAddAsset} variant="outline">
                 <CoinsIcon className="mr-2 h-4 w-4" />
-                Aggiungi Asset
+                Add Asset
               </Button>
               
               {portfolios.length > 1 && (
@@ -266,18 +266,18 @@ const Portfolios = () => {
                     <path d="M18 8L22 12L18 16" />
                     <path d="M2 12H22" />
                   </svg>
-                  Trasferisci Asset
+                  Transfer Asset
                 </Button>
               )}
             </>
           )}
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Nuovo Portfolio
+            New Portfolio
           </Button>
           <Button onClick={() => setIsEnsDialogOpen(true)} variant="outline">
             <Network className="mr-2 h-4 w-4" />
-            Connetti Wallet ENS
+            Connect ENS Wallet
           </Button>
         </div>
       </div>
@@ -289,7 +289,7 @@ const Portfolios = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Wallet className="mr-2 h-5 w-5" /> 
-            Portfolio Manuali
+            Manual Portfolios
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {manualPortfolios.map(portfolio => {
@@ -382,7 +382,7 @@ const Portfolios = () => {
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <BookCopy className="mr-2 h-5 w-5" /> 
-            Wallet ENS
+            ENS Wallets
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {ensPortfolios.map(portfolio => {
