@@ -20,46 +20,46 @@ interface AboutUsDialogProps {
 // Team member data - professionally structured
 const teamMembers = [
   {
-    name: "Loris Pisano",
+    name: "Alessandro Rossi",
     role: "Project Lead",
     avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5",
-    linkedin: "https://www.linkedin.com/in/lorispisano5/",
+    github: "https://github.com/alexrossi",
+    linkedin: "https://linkedin.com/in/alexrossi",
   },
   {
-    name: "Daniel Graditi",
+    name: "Marco Bianchi",
     role: "Frontend Developer",
     avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "https://www.linkedin.com/in/danielgraditi/",
+    github: "https://github.com/marcobianchi",
+    linkedin: "https://linkedin.com/in/marcobianchi",
   },
   {
-    name: "Angela Mantia",
+    name: "Giulia Verdi",
     role: "Backend Developer",
     avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "https://www.linkedin.com/in/angelamantia/",
+    github: "https://github.com/giuliaverdi",
+    linkedin: "https://linkedin.com/in/giuliaverdi",
   },
   {
-    name: "Stefano Schieppati",
+    name: "Luca Ferrari",
     role: "Blockchain Specialist",
     avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "",
+    github: "https://github.com/lucaferrari",
+    linkedin: "https://linkedin.com/in/lucaferrari",
   },
   {
-    name: "Caterine Viccarone",
+    name: "Sofia Ricci",
     role: "UX Designer",
     avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "https://www.linkedin.com/in/caterine-viccarone-86b424147/",
+    github: "https://github.com/sofiaricci",
+    linkedin: "https://linkedin.com/in/sofiaricci",
   },
   {
-    name: "Rinaldo Festa",
+    name: "Davide Marino",
     role: "QA Engineer",
     avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "https://www.linkedin.com/in/rinaldofesta/",
+    github: "https://github.com/davidemarino",
+    linkedin: "https://linkedin.com/in/davidemarino",
   }
 ];
 
@@ -116,7 +116,7 @@ export function AboutUsDialog({ open, onOpenChange }: AboutUsDialogProps) {
                 contribute to future development.
               </p>
               <Button variant="outline" className="flex items-center gap-2 self-start md:self-center whitespace-nowrap" asChild>
-                <a href="https://github.com/Rislo5/MoonFolio" target="_blank" rel="noopener noreferrer">
+                <a href="https://github.com/moonfolio/crypto-tracker" target="_blank" rel="noopener noreferrer">
                   <SiGithub className="h-4 w-4" /> View on GitHub
                 </a>
               </Button>
