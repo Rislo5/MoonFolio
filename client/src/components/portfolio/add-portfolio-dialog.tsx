@@ -262,10 +262,10 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
-            Crea Portfolio in un Solo Passaggio
+            Create Portfolio in One Step
           </DialogTitle>
           <DialogDescription>
-            Crea un wallet e aggiungi subito la tua prima criptovaluta
+            Create a wallet and add your first cryptocurrency right away
           </DialogDescription>
         </DialogHeader>
         
@@ -275,7 +275,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="px-2 py-1 rounded-md bg-primary/5">1</Badge>
-                <h3 className="text-lg font-medium">Informazioni Portfolio</h3>
+                <h3 className="text-lg font-medium">Portfolio Information</h3>
               </div>
               
               <FormField
@@ -283,7 +283,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome Portfolio</FormLabel>
+                    <FormLabel>Portfolio Name</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
@@ -510,7 +510,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                   </>
                 ) : (
                   <>
-                    Crea Portfolio
+                    Create Portfolio
                   </>
                 )}
               </Button>
