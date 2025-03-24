@@ -100,7 +100,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
       if (searchTerm.trim().length > 2) {
         try {
           const results = await searchCryptos(searchTerm);
-          // Aggiungi flag selected per quelli già selezionati
+          // Add selected flag for already selected items
           const resultsWithSelected = results.map((crypto: CryptoCurrency) => ({
             ...crypto,
             selected: selectedCryptos.some(selected => selected.id === crypto.id)
@@ -115,13 +115,13 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     return () => clearTimeout(delaySearch);
   }, [searchTerm, selectedCryptos]);
   
-  // Gestisce la selezione/deselezione di una criptovaluta
+  // Handles selection/deselection of a cryptocurrency
   const toggleCryptoSelection = (crypto: CryptoCurrency) => {
     if (selectedCryptos.some(selected => selected.id === crypto.id)) {
-      // Se già selezionato, rimuovilo
+      // If already selected, remove it
       setSelectedCryptos(prev => prev.filter(item => item.id !== crypto.id));
     } else {
-      // Altrimenti aggiungilo
+      // Otherwise add it
       setSelectedCryptos(prev => [...prev, { 
         ...crypto, 
         balance: "", 
@@ -130,7 +130,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     }
   };
   
-  // Gestisce l'aggiornamento del balance di una crypto selezionata
+  // Handles updating the balance of a selected cryptocurrency
   const updateCryptoBalance = (id: string, balance: string) => {
     setSelectedCryptos(prev => 
       prev.map(crypto => 
