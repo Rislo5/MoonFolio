@@ -189,7 +189,7 @@ const Portfolios = () => {
     setShowDisconnectDialog(true);
   };
   
-  // Elimina effettivamente il portfolio
+  // Delete effettivamente il portfolio
   const confirmDelete = async () => {
     if (!portfolioToAction) return;
     
@@ -330,7 +330,7 @@ const Portfolios = () => {
                               }}
                             >
                               <PlusSquare className="mr-2 h-4 w-4" />
-                              <span>Aggiungi Asset</span>
+                              <span>Add Asset</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
@@ -338,7 +338,7 @@ const Portfolios = () => {
                               className="text-red-600"
                             >
                               <Trash className="mr-2 h-4 w-4" />
-                              <span>Elimina Portfolio</span>
+                              <span>Delete Portfolio</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -368,7 +368,7 @@ const Portfolios = () => {
                       className="w-full" 
                       onClick={(e) => handleViewPortfolio(e, portfolio.id)}
                     >
-                      Visualizza Dettagli
+                      View Details
                     </Button>
                   </CardFooter>
                 </Card>
@@ -419,7 +419,7 @@ const Portfolios = () => {
                               className="text-red-600"
                             >
                               <LogOut className="mr-2 h-4 w-4" />
-                              <span>Disconnetti Wallet</span>
+                              <span>Disconnect Wallet</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -449,7 +449,7 @@ const Portfolios = () => {
                       className="w-full" 
                       onClick={(e) => handleViewPortfolio(e, portfolio.id)}
                     >
-                      Visualizza Dettagli
+                      View Details
                     </Button>
                   </CardFooter>
                 </Card>
@@ -479,20 +479,20 @@ const Portfolios = () => {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sei sicuro di voler eliminare questo portfolio?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this portfolio?</AlertDialogTitle>
             <AlertDialogDescription>
-              Questa azione eliminerà permanentemente il portfolio "{portfolioToAction?.name}" 
-              e tutti i suoi asset e transazioni. Questa azione non può essere annullata.
+              This action will permanently delete the portfolio "{portfolioToAction?.name}" 
+              and all its assets and transactions. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
               <Trash className="h-4 w-4 mr-2" />
-              Elimina
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -509,7 +509,7 @@ const Portfolios = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDisconnect}
               className="bg-red-600 hover:bg-red-700"
