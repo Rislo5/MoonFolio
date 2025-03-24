@@ -48,7 +48,7 @@ type SortOption = {
 };
 
 export default function AssetDetailTable() {
-  const { assets, removeAsset } = usePortfolio();
+  const { assets, removeAsset, activePortfolio } = usePortfolio();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,6 +59,9 @@ export default function AssetDetailTable() {
   const [showEditAssetDialog, setShowEditAssetDialog] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithPrice | null>(null);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  
+  // Verifica se il portfolio attuale è di tipo ENS (sola lettura)
+  const isEnsPortfolio = activePortfolio?.isEns || false;
 
   // Apre il dialog per aggiungere una transazione per un asset specifico
   const handleAddTransaction = (asset: AssetWithPrice) => {
@@ -188,15 +191,17 @@ export default function AssetDetailTable() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="h-9"
-            onClick={() => setShowAddAssetDialog(true)}
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {t('common.new_asset')}
-          </Button>
+          {!isEnsPortfolio && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="h-9"
+              onClick={() => setShowAddAssetDialog(true)}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('common.new_asset')}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -374,39 +379,52 @@ export default function AssetDetailTable() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleAddTransaction(asset)}>
-                          <PlusCircle className="h-4 w-4 mr-2" />
-                          {t('common.add_transaction')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                          setSelectedAsset(asset);
-                          setShowEditAssetDialog(true);
-                        }}>
-                          <RefreshCcw className="h-4 w-4 mr-2" />
-                          {t('common.edit_asset')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleTransferAsset(asset)}>
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          {t('common.transfer_asset_action')}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => handleDeleteAsset(asset.id)}
-                          disabled={isDeleting === asset.id}
-                        >
-                          {isDeleting === asset.id ? (
-                            <>
-                              <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
-                              {t('common.deleting', 'Eliminazione...')}
-                            </>
-                          ) : (
-                            <>
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              {t('common.delete_asset')}
-                            </>
-                          )}
-                        </DropdownMenuItem>
+                        
+                        {isEnsPortfolio ? (
+                          <DropdownMenuItem disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            {t('common.read_only')}
+                          </DropdownMenuItem>
+                        ) : (
+                          <>
+                            <DropdownMenuItem onClick={() => handleAddTransaction(asset)}>
+                              <PlusCircle className="h-4 w-4 mr-2" />
+                              {t('common.add_transaction')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedAsset(asset);
+                              setShowEditAssetDialog(true);
+                            }}>
+                              <RefreshCcw className="h-4 w-4 mr-2" />
+                              {t('common.edit_asset')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTransferAsset(asset)}>
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              {t('common.transfer_asset_action')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => handleDeleteAsset(asset.id)}
+                              disabled={isDeleting === asset.id}
+                            >
+                              {isDeleting === asset.id ? (
+                                <>
+                                  <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                                  {t('common.deleting', 'Eliminazione...')}
+                                </>
+                              ) : (
+                                <>
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  {t('common.delete_asset')}
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
