@@ -494,11 +494,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Infura API key not configured" });
       }
       
-      // Usa il servizio Ethereum per risolvere il nome ENS
+      console.log(`Attempting to resolve ENS name: ${name}`);
+      
+      // Use Ethereum service to resolve the ENS name
       const result = await ethereumService.resolveEnsName(name);
+      console.log(`Successfully resolved ENS name: ${name} to address: ${result.address}`);
+      
+      // Return the result
       res.json(result);
     } catch (error) {
       console.error(`Error resolving ENS name ${req.params.name}:`, error);
+      
+      // Provide more specific error messages based on the type of error
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid ENS name')) {
+          return res.status(400).json({
+            message: "Invalid ENS name format",
+            error: error.message
+          });
+        } else if (error.message.includes('ENS name not found')) {
+          return res.status(404).json({
+            message: "ENS name not found",
+            error: error.message
+          });
+        } else if (error.message.includes('Infura API')) {
+          return res.status(500).json({
+            message: "Infura API configuration error",
+            error: error.message
+          });
+        }
+      }
+      
+      // Generic error response
       res.status(500).json({
         message: "Failed to resolve ENS name",
         error: error instanceof Error ? error.message : String(error),

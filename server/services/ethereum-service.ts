@@ -95,30 +95,39 @@ export class EthereumService {
    */
   async resolveEnsName(ensName: string): Promise<{ address: string; ensName: string | null }> {
     try {
-      // Verifica se è già un indirizzo Ethereum
+      // Check if it's already an Ethereum address
       if (ethers.isAddress(ensName)) {
         return { address: ensName, ensName: null };
       }
 
-      // Verifica validità nome ENS
+      // Validate ENS name format
       if (typeof ensName === 'string') {
         if (!ensName.endsWith('.eth')) {
-          throw new Error('Nome ENS non valido');
+          throw new Error('Invalid ENS name. Must end with .eth');
         }
       } else {
-        throw new Error('Il parametro ensName deve essere una stringa');
+        throw new Error('The ensName parameter must be a string');
       }
 
-      // Risolvi il nome ENS in un indirizzo
+      console.log(`Attempting to resolve ENS name: ${ensName} using Infura`);
+      
+      // Resolve the ENS name to an address
       const address = await provider.resolveName(ensName);
       
       if (!address) {
-        throw new Error('Nome ENS non trovato');
+        throw new Error('ENS name not found');
       }
 
+      console.log(`Successfully resolved ENS name ${ensName} to address ${address}`);
       return { address, ensName };
     } catch (error) {
-      console.error(`Errore nella risoluzione del nome ENS ${ensName}:`, error);
+      console.error(`Error resolving ENS name ${ensName}:`, error);
+      
+      // Enhance error reporting
+      if (error.message && error.message.includes('DOCTYPE')) {
+        throw new Error('Invalid response from Infura API. Please check your INFURA_API_KEY configuration.');
+      }
+      
       throw error;
     }
   }
@@ -133,16 +142,16 @@ export class EthereumService {
       const balance = await provider.getBalance(address);
       return parseFloat(ethers.formatEther(balance));
     } catch (error) {
-      console.error(`Errore nell'ottenere il saldo ETH per ${address}:`, error);
+      console.error(`Error getting ETH balance for ${address}:`, error);
       throw error;
     }
   }
 
   /**
-   * Ottiene il saldo di un token ERC20 per un indirizzo
-   * @param tokenAddress Indirizzo del contratto del token
-   * @param ownerAddress Indirizzo del proprietario
-   * @returns Saldo formattato
+   * Gets the balance of an ERC20 token for an address
+   * @param tokenAddress Contract address of the token
+   * @param ownerAddress Owner address
+   * @returns Formatted balance
    */
   async getTokenBalance(tokenAddress: string, ownerAddress: string): Promise<{ 
     balance: number; 
@@ -169,15 +178,15 @@ export class EthereumService {
         decimals
       };
     } catch (error) {
-      console.error(`Errore nell'ottenere il saldo del token ${tokenAddress} per ${ownerAddress}:`, error);
+      console.error(`Error getting token balance for ${tokenAddress} (owner: ${ownerAddress}):`, error);
       throw error;
     }
   }
 
   /**
-   * Ottiene tutti i saldi dei token ERC20 comunemente utilizzati per un indirizzo
-   * @param address Indirizzo Ethereum
-   * @returns Array di token con i rispettivi saldi
+   * Gets all balances of commonly used ERC20 tokens for an address
+   * @param address Ethereum address
+   * @returns Array of tokens with their balances
    */
   async getCommonTokenBalances(address: string): Promise<any[]> {
     try {
@@ -187,7 +196,7 @@ export class EthereumService {
           const balance = await tokenContract.balanceOf(address);
           const formattedBalance = parseFloat(ethers.formatUnits(balance, token.decimals));
           
-          // Restituisce solo token con saldo > 0
+          // Only return tokens with balance > 0
           if (formattedBalance > 0) {
             return {
               name: token.name,
@@ -199,25 +208,25 @@ export class EthereumService {
           }
           return null;
         } catch (error) {
-          console.error(`Errore nell'ottenere il saldo del token ${token.symbol}:`, error);
+          console.error(`Error getting balance for token ${token.symbol}:`, error);
           return null;
         }
       });
 
       const results = await Promise.all(balancePromises);
       
-      // Filtra i risultati nulli (token con saldo 0 o errori)
+      // Filter out null results (tokens with 0 balance or errors)
       return results.filter(result => result !== null);
     } catch (error) {
-      console.error(`Errore nell'ottenere i saldi dei token per ${address}:`, error);
+      console.error(`Error getting token balances for ${address}:`, error);
       throw error;
     }
   }
 
   /**
-   * Ottiene tutti gli asset di un wallet (ETH e token ERC20 comuni)
-   * @param address Indirizzo Ethereum
-   * @returns Dati del wallet con tutti gli asset
+   * Gets all assets of a wallet (ETH and common ERC20 tokens)
+   * @param address Ethereum address
+   * @returns Wallet data with all assets
    */
   async getWalletAssets(address: string): Promise<{ 
     address: string; 
@@ -225,13 +234,17 @@ export class EthereumService {
     assets: any[];
   }> {
     try {
-      // Ottiene il saldo di ETH
+      console.log(`Getting wallet assets for address: ${address}`);
+      
+      // Get ETH balance
       const ethBalance = await this.getEthBalance(address);
+      console.log(`ETH balance for ${address}: ${ethBalance}`);
       
-      // Ottiene i saldi dei token ERC20 comuni
+      // Get balances of ERC20 tokens
       const tokenBalances = await this.getCommonTokenBalances(address);
+      console.log(`Found ${tokenBalances.length} ERC20 tokens with non-zero balance for ${address}`);
       
-      // Crea un array di tutti gli asset (ETH + token ERC20)
+      // Create array of all assets (ETH + ERC20 tokens)
       const assets = [
         {
           name: "Ethereum",
@@ -241,14 +254,20 @@ export class EthereumService {
           imageUrl: "https://cryptologos.cc/logos/ethereum-eth-logo.png"
         },
         ...tokenBalances
-      ].filter(asset => asset.balance > 0); // Filtra solo asset con saldo > 0
+      ].filter(asset => asset.balance > 0); // Filter only assets with balance > 0
       
       return {
         address,
         assets
       };
     } catch (error) {
-      console.error(`Errore nell'ottenere gli asset del wallet ${address}:`, error);
+      console.error(`Error getting wallet assets for ${address}:`, error);
+      
+      // Enhance error reporting
+      if (error.message && error.message.includes('DOCTYPE')) {
+        throw new Error('Invalid response from Infura API. Please check your INFURA_API_KEY configuration.');
+      }
+      
       throw error;
     }
   }
