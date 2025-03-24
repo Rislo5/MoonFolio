@@ -17,49 +17,49 @@ interface AboutUsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Team member data - professionally structured
+// Team member data - with exact roles as provided
 const teamMembers = [
   {
     name: "Loris Pisano",
-    role: "Project Lead",
+    role: "Full Stack Developer & Crypto SME | Project Concept Lead",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5",
     linkedin: "https://www.linkedin.com/in/lorispisano5/",
   },
   {
+    name: "Stefano Schieppati",
+    role: "Testing & Debugging Engineer | CI/CD & Design Specialist",
+    avatar: "", // Avatar image URL
+    github: "https://github.com/Rislo5/MoonFolio",
+    linkedin: "#",
+  },
+  {
     name: "Daniel Graditi",
-    role: "Frontend Developer",
+    role: "Full Stack Developer & Crypto Subject Matter Expert",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5/MoonFolio",
     linkedin: "https://www.linkedin.com/in/danielgraditi/",
   },
   {
-    name: "Angela Mantia",
-    role: "Backend Developer",
-    avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "https://www.linkedin.com/in/angelamantia/",
-  },
-  {
-    name: "Stefano Schieppati",
-    role: "Blockchain Specialist",
-    avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "",
-  },
-  {
     name: "Caterine Viccarone",
-    role: "UX Designer",
+    role: "Design & Project Presentation Specialist",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5/MoonFolio",
     linkedin: "https://www.linkedin.com/in/caterine-viccarone-86b424147/",
   },
   {
     name: "Rinaldo Festa",
-    role: "QA Engineer",
+    role: "Full Stack Development Engineer",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5/MoonFolio",
     linkedin: "https://www.linkedin.com/in/rinaldofesta/",
+  },
+  {
+    name: "Angela Mantia",
+    role: "Project Management Lead | Team Coordination & Planning",
+    avatar: "", // Avatar image URL
+    github: "https://github.com/Rislo5/MoonFolio",
+    linkedin: "https://www.linkedin.com/in/angelamantia/",
   }
 ];
 

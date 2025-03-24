@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
 import { ConnectEnsWalletDialog } from "@/components/portfolio/connect-ens-wallet-dialog";
+import { MoonfolioLogo } from "@/components/ui/moonfolio-logo";
 
 const WelcomeScreen = () => {
   const { connectEnsWallet } = usePortfolio();
@@ -25,7 +26,7 @@ const WelcomeScreen = () => {
     <div className="w-full max-w-lg p-8 bg-background rounded-xl shadow-lg border border-border/50">
       <div className="flex flex-col items-center justify-center mb-8">
         <div className="mb-6 w-32 h-32 flex items-center justify-center">
-          <img src="/images/moonfolio-logo.png" alt="Moonfolio Logo" className="w-full h-full object-contain" />
+          <MoonfolioLogo variant="icon" className="w-24 h-24" />
         </div>
         <h1 className="text-3xl font-bold text-center mb-3 text-foreground">
           Welcome to Moonfolio
@@ -102,7 +103,7 @@ const WelcomeScreen = () => {
       
       <div className="flex flex-col items-center justify-center mb-8">
         <div className="mb-6 w-28 h-28 flex items-center justify-center">
-          <img src="/images/moonfolio-logo.png" alt="Moonfolio Logo" className="w-full h-full object-contain" />
+          <MoonfolioLogo variant="icon" className="w-20 h-20" />
         </div>
         <h2 className="text-2xl font-bold text-center mb-3 text-foreground">
           Connect ENS Wallet
