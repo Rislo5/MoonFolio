@@ -89,15 +89,17 @@ export default function PortfolioDetails() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button 
-            variant="outline" 
-            size={isMobile ? "sm" : "default"}
-            onClick={() => setIsAddAssetDialogOpen(true)}
-          >
-            <PlusCircle className="h-4 w-4 mr-1 sm:mr-2" />
-            Aggiungi Asset
-          </Button>
-          {portfolios.length > 1 && (
+          {!activePortfolio.isEns && (
+            <Button 
+              variant="outline" 
+              size={isMobile ? "sm" : "default"}
+              onClick={() => setIsAddAssetDialogOpen(true)}
+            >
+              <PlusCircle className="h-4 w-4 mr-1 sm:mr-2" />
+              Aggiungi Asset
+            </Button>
+          )}
+          {portfolios.length > 1 && !activePortfolio.isEns && (
             <Button 
               variant="outline" 
               size={isMobile ? "sm" : "default"}
@@ -108,6 +110,18 @@ export default function PortfolioDetails() {
                 <path d="M2 12H22" />
               </svg>
               Trasferisci
+            </Button>
+          )}
+          {activePortfolio.isEns && (
+            <Button
+              variant="outline"
+              size={isMobile ? "sm" : "default"}
+              disabled
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 sm:mr-2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Sola lettura
             </Button>
           )}
         </div>
@@ -134,13 +148,21 @@ export default function PortfolioDetails() {
             {assets.length === 0 ? (
               <div className="text-center py-12 bg-muted/20 rounded-lg">
                 <h3 className="text-lg font-medium mb-2">Nessun asset presente</h3>
-                <p className="text-muted-foreground mb-6">
-                  Aggiungi il tuo primo asset per iniziare a tracciare il tuo portfolio
-                </p>
-                <Button onClick={() => setIsAddAssetDialogOpen(true)}>
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Aggiungi Asset
-                </Button>
+                {activePortfolio.isEns ? (
+                  <p className="text-muted-foreground mb-6">
+                    Nessun asset rilevato in questo wallet ENS
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground mb-6">
+                      Aggiungi il tuo primo asset per iniziare a tracciare il tuo portfolio
+                    </p>
+                    <Button onClick={() => setIsAddAssetDialogOpen(true)}>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Aggiungi Asset
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <AssetDetailTable />
