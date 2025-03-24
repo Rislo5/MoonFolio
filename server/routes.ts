@@ -17,6 +17,13 @@ const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY || "";
 const INFURA_URL = `https://mainnet.infura.io/v3/${INFURA_API_KEY}`;
 const COINMARKETCAP_API_URL = "https://pro-api.coinmarketcap.com/v1";
 
+// Import ethereum service
+import { ethereumService } from './services/ethereum-service';
+import { ethers } from 'ethers';
+
+// Provider Ethereum per reverse lookup
+const provider = new ethers.JsonRpcProvider(INFURA_URL);
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", (_req: Request, res: Response) => {
@@ -301,59 +308,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { name } = req.params;
       
-      // Check if it's already an Ethereum address
-      if (/^0x[a-fA-F0-9]{40}$/.test(name)) {
-        return res.json({ address: name, ensName: null });
-      }
-      
-      // Check if it's a valid ENS name
-      if (!name.endsWith('.eth')) {
-        return res.status(400).json({ message: "Invalid ENS name format" });
-      }
-      
       if (!INFURA_API_KEY) {
         return res.status(500).json({ message: "Infura API key not configured" });
       }
       
-      // ENS resolver ABI for name resolution
-      const response = await fetch(INFURA_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_call',
-          params: [
-            {
-              to: '0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41', // ENS resolver
-              data: `0x0178b8bf${Buffer.from(
-                name.substring(0, name.lastIndexOf('.')),
-                'utf8'
-              ).toString('hex').padStart(64, '0')}` // Resolve method
-            },
-            'latest'
-          ]
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Infura API error: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(`Infura API error: ${data.error.message}`);
-      }
-      
-      const address = data.result === '0x0000000000000000000000000000000000000000000000000000000000000000' 
-        ? null 
-        : `0x${data.result.substring(26)}`;
-        
-      if (!address) {
-        return res.status(404).json({ message: "ENS name not found" });
-      }
-      
-      res.json({ address, ensName: name });
+      // Usa il servizio Ethereum per risolvere il nome ENS
+      const result = await ethereumService.resolveEnsName(name);
+      res.json(result);
     } catch (error) {
       console.error(`Error resolving ENS name ${req.params.name}:`, error);
       res.status(500).json({
@@ -363,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get wallet assets (using ETH balances for demo)
+  // Get wallet assets (ETH e token ERC20)
   app.get("/api/wallet/:address", async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -377,45 +338,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid Ethereum address format" });
       }
       
-      // Get ETH balance
-      const response = await fetch(INFURA_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_getBalance',
-          params: [address, 'latest']
-        })
-      });
+      // Usa il servizio Ethereum per ottenere gli asset del wallet
+      const walletData = await ethereumService.getWalletAssets(address);
       
-      if (!response.ok) {
-        throw new Error(`Infura API error: ${response.statusText}`);
+      // Cerca se esiste un nome ENS per questo indirizzo (reverse lookup)
+      try {
+        const ensName = await provider.lookupAddress(address);
+        if (ensName) {
+          walletData.ensName = ensName;
+        }
+      } catch (lookupError) {
+        console.error(`Error performing reverse ENS lookup for ${address}:`, lookupError);
+        // Non fallire l'intero endpoint se il lookup reverse ENS fallisce
       }
       
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(`Infura API error: ${data.error.message}`);
-      }
-      
-      // Convert hex balance to ETH units (wei to ETH)
-      const balanceInWei = parseInt(data.result, 16);
-      const balanceInEth = balanceInWei / 1e18;
-      
-      // In a real app, we would fetch token balances as well
-      // This is a simplified version just showing ETH balance
-      res.json({
-        address,
-        assets: [
-          {
-            name: "Ethereum",
-            symbol: "ETH",
-            coinGeckoId: "ethereum",
-            balance: balanceInEth,
-            imageUrl: "https://cryptologos.cc/logos/ethereum-eth-logo.png"
-          }
-        ]
-      });
+      res.json(walletData);
     } catch (error) {
       console.error(`Error fetching wallet assets for ${req.params.address}:`, error);
       res.status(500).json({
