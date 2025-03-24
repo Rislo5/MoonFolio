@@ -5,11 +5,14 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import translationEN from './locales/en/translation.json';
 import translationIT from './locales/it/translation.json';
 
-// Ottieni la lingua preferita dal documento HTML (impostata in main.tsx)
-// Questo garantisce coerenza tra il tag HTML e le traduzioni
-const documentLang = document.documentElement.lang || 'it';
+// Reset di localStorage per forzare l'utilizzo dell'inglese
+localStorage.removeItem('language');
+localStorage.setItem('language', 'en');
 
-// the translations
+// Forza l'attributo lang del documento HTML in inglese
+document.documentElement.lang = 'en';
+
+// Resource per le traduzioni
 const resources = {
   en: {
     translation: translationEN
@@ -19,27 +22,35 @@ const resources = {
   }
 };
 
-i18n
-  // pass the i18n instance to react-i18next.
-  .use(initReactI18next)
-  // init i18next
-  .init({
-    resources,
-    lng: documentLang, // Usa la lingua dal tag HTML
-    fallbackLng: 'it',
-    debug: false,
+// Inizializza i18next solo se non è già stato inizializzato
+if (!i18n.isInitialized) {
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: 'en', // Forza l'inglese come predefinito
+      fallbackLng: 'en',
+      debug: false,
 
-    interpolation: {
-      escapeValue: false, // not needed for react as it escapes by default
-    },
+      interpolation: {
+        escapeValue: false,
+      },
 
-    // react i18next special options
-    react: {
-      useSuspense: true,
-    }
+      react: {
+        useSuspense: true,
+      }
+    });
+
+  // Aggiunge un listener per i cambiamenti di lingua
+  i18n.on('languageChanged', (lng) => {
+    // Aggiorna l'attributo lang del documento HTML
+    document.documentElement.lang = lng;
+    // Salva la preferenza nel localStorage
+    localStorage.setItem('language', lng);
+    console.log(`Language changed to: ${lng}`);
   });
 
-// Log per debug
-console.log(`i18n initialized with language: ${i18n.language}`);
+  console.log(`i18n initialized with language: ${i18n.language}`);
+}
 
 export default i18n;
