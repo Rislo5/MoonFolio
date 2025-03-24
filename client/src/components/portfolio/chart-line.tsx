@@ -41,9 +41,9 @@ interface CustomTooltipProps extends TooltipProps<number, string> {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white dark:bg-dark-card p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
-        <p className="text-gray-600 dark:text-gray-400 text-sm">{label}</p>
-        <p className="font-bold text-primary">{formatCurrency(payload[0].value)}</p>
+      <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
+        <p className="text-gray-600 dark:text-gray-300 text-sm">{label}</p>
+        <p className="font-bold text-primary-600 dark:text-primary-400">{formatCurrency(payload[0].value)}</p>
       </div>
     );
   }
@@ -110,7 +110,11 @@ export default function PortfolioChart({ portfolioValue }: PortfolioChartProps) 
         <div className="h-64 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(107, 114, 128, 0.2)" />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="rgba(107, 114, 128, 0.2)" 
+                vertical={false} 
+              />
               <XAxis 
                 dataKey="date" 
                 tickFormatter={(value) => {
@@ -119,20 +123,24 @@ export default function PortfolioChart({ portfolioValue }: PortfolioChartProps) 
                   }
                   return new Date(value).toLocaleDateString([], { month: 'short', day: 'numeric' });
                 }}
-                tick={{ fill: '#9CA3AF' }}
+                tick={{ fill: 'var(--foreground)' }}
+                axisLine={{ stroke: 'var(--border)' }}
+                tickLine={{ stroke: 'var(--border)' }}
               />
               <YAxis 
                 tickFormatter={(value) => `$${Number(value).toLocaleString()}`}
-                tick={{ fill: '#9CA3AF' }}
+                tick={{ fill: 'var(--foreground)' }}
+                axisLine={{ stroke: 'var(--border)' }}
+                tickLine={{ stroke: 'var(--border)' }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Line 
                 type="monotone" 
                 dataKey="value" 
-                stroke="#3B82F6" 
-                strokeWidth={2}
+                stroke="var(--primary)" 
+                strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 6 }}
+                activeDot={{ r: 6, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--background)' }}
                 isAnimationActive={true}
                 animationDuration={1000}
               />

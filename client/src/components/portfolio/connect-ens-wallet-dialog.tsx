@@ -182,20 +182,15 @@ export const ConnectEnsWalletDialog = ({ open, onOpenChange }: Props) => {
               </Alert>
             )}
 
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline" type="button">
-                  {t("common.cancel")}
-                </Button>
-              </DialogClose>
-              <Button type="submit" disabled={isConnecting}>
+            <DialogFooter className="flex justify-end">
+              <Button type="submit" disabled={isConnecting} className="w-full sm:w-auto">
                 {isConnecting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {t("common.connecting")}
                   </>
                 ) : (
-                  t("common.connect")
+                  t("portfolio.connect_wallet")
                 )}
               </Button>
             </DialogFooter>
