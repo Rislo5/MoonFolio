@@ -141,7 +141,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     );
   };
   
-  // Gestisce l'aggiornamento del prezzo medio di una crypto selezionata
+  // Handles updating the average price of a selected cryptocurrency
   const updateCryptoAvgPrice = (id: string, avgPrice: string) => {
     setSelectedCryptos(prev => 
       prev.map(crypto => 
@@ -152,7 +152,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     );
   };
   
-  // Gestisce il submit del form
+  // Handles form submission
   const handleFormSubmit = async (values: z.infer<typeof createPortfolioSchema>) => {
     if (!values.name.trim()) {
       toast({
@@ -166,16 +166,16 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     setIsSubmitting(true);
     
     try {
-      // Crea il portfolio
+      // Create the portfolio
       const newPortfolio = await createManualPortfolio(values.name);
       
-      // Attiva subito il portfolio appena creato
+      // Immediately activate the newly created portfolio
       setActivePortfolio(newPortfolio.id);
       
-      // Aggiungi tutti gli asset selezionati se presenti
+      // Add all selected assets if present
       if (selectedCryptos.length > 0) {
         for (const crypto of selectedCryptos) {
-          // Aggiungi solo se balance e avgPrice sono stati compilati
+          // Add only if balance and avgPrice have been filled
           if (crypto.balance && crypto.avgPrice) {
             await addAsset({
               name: crypto.name,
@@ -199,14 +199,14 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
         });
       }
       
-      // Invalida tutte le query relative ai portfolio per aggiornare la UI
+      // Invalidate all portfolio-related queries to update the UI
       queryClient.invalidateQueries({ queryKey: ['/api/portfolios'] });
       queryClient.invalidateQueries({ queryKey: ['/overview-chart'] });
       
-      // Chiudi il dialog
+      // Close the dialog
       onOpenChange(false);
       
-      // Reindirizza alla pagina del portfolio
+      // Redirect to the portfolio page
       setLocation('/portfolios');
     } catch (error) {
       console.error("Failed to create portfolio or add asset:", error);
@@ -220,7 +220,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     }
   };
   
-  // Quando il dialog viene chiuso, resetta tutto
+  // When the dialog is closed, reset everything
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       form.reset();
@@ -232,7 +232,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     onOpenChange(open);
   };
   
-  // Renderizza una crypto card
+  // Renders a crypto card
   const renderCryptoCard = (crypto: CryptoCurrency) => {
     const isSelected = selectedCryptos.some(selected => selected.id === crypto.id);
     
@@ -358,7 +358,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                 {activeTab === "popular" && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {isLoadingPopular ? (
-                      // Placeholders mentre carica
+                      // Placeholders while loading
                       Array(6).fill(0).map((_, i) => (
                         <div key={i} className="border rounded-lg p-3 animate-pulse">
                           <div className="flex items-center space-x-2">
