@@ -81,6 +81,7 @@ export async function createPortfolio(data: {
   walletAddress?: string;
   isEns?: boolean;
   ensName?: string;
+  showInSummary?: boolean;
 }): Promise<Portfolio> {
   const response = await apiRequest("POST", "/api/portfolios", data);
   if (!response.ok) {
