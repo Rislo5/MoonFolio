@@ -290,8 +290,13 @@ export async function generatePortfolioChartData(timeframe: string, specificPort
           throw new Error("Nessun portfolio trovato");
         }
         
-        // Calcola la somma di tutti i portfolios 
+        // Calcola la somma solo dei portfolios che devono essere inclusi nel riepilogo
         for (const portfolio of portfolios) {
+          // Se showInSummary è false, salta questo portfolio
+          if (portfolio.showInSummary === false) {
+            continue;
+          }
+          
           try {
             const overviewResponse = await fetch(`/api/portfolios/${portfolio.id}/overview`);
             if (!overviewResponse.ok) {

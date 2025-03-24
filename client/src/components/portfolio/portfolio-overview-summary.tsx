@@ -27,6 +27,7 @@ type ExtendedPortfolio = {
   walletAddress: string | null;
   isEns: boolean | null;
   ensName: string | null;
+  showInSummary?: boolean;
   createdAt: Date | string | null;
   updatedAt: Date | string | null;
   // Proprietà di runtime aggiunte dalla API
@@ -105,41 +106,45 @@ const PortfolioOverviewSummary = () => {
     value: chartData.values[index]
   })) : [];
 
-  // Usa React Query per ottenere i dati di overview di tutti i portfolio
+  // Usa React Query per ottenere i dati di overview solo dei portfolio che devono essere inclusi nel riepilogo
   const portfolioQueries = useQueries({
-    queries: portfolios.map(portfolio => ({
-      queryKey: [`portfolio-overview-${portfolio.id}`],
-      queryFn: async () => {
-        try {
-          const response = await fetch(`/api/portfolios/${portfolio.id}/overview`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    queries: portfolios
+      .filter(portfolio => portfolio.showInSummary !== false) // Includi solo i portfolio che non hanno showInSummary=false
+      .map(portfolio => ({
+        queryKey: [`portfolio-overview-${portfolio.id}`],
+        queryFn: async () => {
+          try {
+            const response = await fetch(`/api/portfolios/${portfolio.id}/overview`);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            return {
+              id: portfolio.id,
+              name: portfolio.name,
+              value: data.totalValue || 0,
+              change24h: data.change24h || 0,
+              color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
+              isEns: portfolio.isEns,
+              showInSummary: portfolio.showInSummary
+            };
+          } catch (error) {
+            console.error(`Error fetching overview for portfolio ${portfolio.id}:`, error);
+            return {
+              id: portfolio.id,
+              name: portfolio.name,
+              value: 0,
+              change24h: 0,
+              color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
+              isEns: portfolio.isEns,
+              showInSummary: portfolio.showInSummary
+            };
           }
-          const data = await response.json();
-          return {
-            id: portfolio.id,
-            name: portfolio.name,
-            value: data.totalValue || 0,
-            change24h: data.change24h || 0,
-            color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
-            isEns: portfolio.isEns
-          };
-        } catch (error) {
-          console.error(`Error fetching overview for portfolio ${portfolio.id}:`, error);
-          return {
-            id: portfolio.id,
-            name: portfolio.name,
-            value: 0,
-            change24h: 0,
-            color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
-            isEns: portfolio.isEns
-          };
-        }
-      },
-      staleTime: 1000 * 30, // 30 secondi
-      retry: 2,
-      retryDelay: 1000
-    }))
+        },
+        staleTime: 1000 * 30, // 30 secondi
+        retry: 2,
+        retryDelay: 1000
+      }))
   });
 
   // Controlla se i dati dei portfolio sono in caricamento
