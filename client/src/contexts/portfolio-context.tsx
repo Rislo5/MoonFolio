@@ -276,8 +276,21 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
       if (!activePortfolioId) throw new Error("No active portfolio");
       return createAsset(activePortfolioId, asset);
     },
-    onSuccess: () => {
-      invalidatePortfolioData();
+    onSuccess: (asset) => {
+      // Invalida le query per gli asset, i portafogli e le panoramiche
+      if (activePortfolioId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolioId}/assets`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolioId}/overview`] });
+        queryClient.invalidateQueries({ queryKey: [`/portfolio-chart`, activePortfolioId, activeTimeframe] });
+        
+        // Forza anche il refetch dei dati immediatamente
+        queryClient.fetchQuery({ queryKey: [`/api/portfolios/${activePortfolioId}/assets`] });
+        queryClient.fetchQuery({ queryKey: [`/api/portfolios/${activePortfolioId}/overview`] });
+      }
+      
+      // Invalida anche tutti i portafogli
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolios"] });
+      
       toast({
         title: "Asset added successfully",
         description: "Your portfolio has been updated.",
@@ -353,7 +366,7 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
       if (!activePortfolioId) throw new Error("No active portfolio");
       return createTransaction(activePortfolioId, transaction);
     },
-    onSuccess: () => {
+    onSuccess: (transaction) => {
       // Assicurarsi che tutte le query vengano invalidate
       if (activePortfolioId) {
         // Invalida i dati di portafoglio
@@ -377,7 +390,13 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
         queryClient.fetchQuery({ 
           queryKey: [`/api/portfolios/${activePortfolioId}/assets`] 
         });
+        queryClient.fetchQuery({ 
+          queryKey: [`/api/portfolios/${activePortfolioId}/overview`] 
+        });
       }
+      
+      // Invalida anche tutti i portafogli
+      queryClient.invalidateQueries({ queryKey: ["/api/portfolios"] });
       
       toast({
         title: "Transaction added successfully",
