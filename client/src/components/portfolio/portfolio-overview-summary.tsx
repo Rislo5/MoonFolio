@@ -6,7 +6,7 @@ import { AssetWithPrice, TimeFrame } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries, useQueryClient } from "@tanstack/react-query";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Area, AreaChart, XAxis, YAxis, CartesianGrid } from "recharts";
 import { 
   BarChart3, 
@@ -86,12 +86,8 @@ const TimeframeSelector = ({ value, onChange }: { value: TimeFrame, onChange: (t
 };
 
 const PortfolioOverviewSummary = () => {
-  const { portfolios, assets, isLoading, activeTimeframe, setActiveTimeframe } = usePortfolio();
-  const [totalValue, setTotalValue] = useState(0);
-  const [totalChange24h, setTotalChange24h] = useState(0);
-  const [totalChangePercentage, setTotalChangePercentage] = useState(0);
-  const [pieData, setPieData] = useState<any[]>([]);
-  const [top5Assets, setTop5Assets] = useState<AssetWithPrice[]>([]);
+  const { portfolios, assets, isLoading: isPortfolioCtxLoading, activeTimeframe, setActiveTimeframe } = usePortfolio();
+  const queryClient = useQueryClient();
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   
   // Ottieni i dati del grafico usando React Query
@@ -109,77 +105,97 @@ const PortfolioOverviewSummary = () => {
     value: chartData.values[index]
   })) : [];
 
-  // Funzione per caricare i dati dei portfolio
-  const loadPortfolioData = async () => {
-    if (portfolios && portfolios.length > 0) {
-      try {
-        let total = 0;
-        let totalChange = 0;
-        const portfolioData = [];
-        
-        // Per ogni portfolio, caricheremo i suoi dati dall'API
-        for (const portfolio of portfolios) {
-          try {
-            const overview = await fetch(`/api/portfolios/${portfolio.id}/overview`).then(res => res.json());
-            
-            if (overview) {
-              portfolioData.push({
-                name: portfolio.name,
-                id: portfolio.id,
-                value: overview.totalValue || 0,
-                change24h: overview.change24h || 0,
-                percentage: Math.round((overview.totalValue / (overview.totalValue - overview.change24h) * 100) * 10) / 10,
-                color: COLORS[portfolioData.length % COLORS.length]
-              });
-              
-              // Accumula i valori totali
-              total += overview.totalValue || 0;
-              totalChange += overview.change24h || 0;
-            }
-          } catch (e) {
-            console.error(`Errore nel caricamento dell'overview per il portfolio ${portfolio.id}:`, e);
+  // Usa React Query per ottenere i dati di overview di tutti i portfolio
+  const portfolioQueries = useQueries({
+    queries: portfolios.map(portfolio => ({
+      queryKey: [`portfolio-overview-${portfolio.id}`],
+      queryFn: async () => {
+        try {
+          const response = await fetch(`/api/portfolios/${portfolio.id}/overview`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
+          const data = await response.json();
+          return {
+            id: portfolio.id,
+            name: portfolio.name,
+            value: data.totalValue || 0,
+            change24h: data.change24h || 0,
+            color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
+            isEns: portfolio.isEns
+          };
+        } catch (error) {
+          console.error(`Error fetching overview for portfolio ${portfolio.id}:`, error);
+          return {
+            id: portfolio.id,
+            name: portfolio.name,
+            value: 0,
+            change24h: 0,
+            color: COLORS[portfolios.indexOf(portfolio) % COLORS.length],
+            isEns: portfolio.isEns
+          };
         }
-        
-        // Calcola la percentuale di variazione totale
-        const totalChangePercentage = total > 0 ? (totalChange / (total - totalChange)) * 100 : 0;
-        
-        // Calcola le percentuali per ogni portfolio rispetto al totale
-        const pieChartData = portfolioData.map(portfolio => ({
-          ...portfolio,
-          percentage: total > 0 ? Math.round((portfolio.value / total) * 1000) / 10 : 0
-        })).filter(portfolio => portfolio.value > 0)
-          .sort((a, b) => b.value - a.value);
-        
-        // Aggiorna lo stato
-        setTotalValue(total);
-        setTotalChange24h(totalChange);
-        setTotalChangePercentage(totalChangePercentage);
-        setPieData(pieChartData);
-        setLastUpdated(new Date());
-        
-        console.log("Dati portafogli caricati:", pieChartData);
-        console.log("Valore totale:", total);
-        
-      } catch (error) {
-        console.error("Errore nel caricamento dei dati dei portfolio:", error);
-      }
-    }
-  };
-  
-  // Carichiamo i dati ogni volta che cambia la lista dei portfolio
-  useEffect(() => {
-    loadPortfolioData();
-  }, [portfolios]);
+      },
+      staleTime: 1000 * 30, // 30 secondi
+      retry: 2,
+      retryDelay: 1000
+    }))
+  });
 
-  // Processare gli asset per ottenere i top 5 per valore
+  // Controlla se i dati dei portfolio sono in caricamento
+  const isPortfolioQueriesLoading = portfolioQueries.some(query => query.isLoading);
+  
+  // Calcola i dati per i grafici e i riepiloghi dai risultati delle query
+  const portfolioData = portfolioQueries
+    .filter(query => query.data)
+    .map(query => query.data as any);
+  
+  // Calcola il valore totale di tutti i portfolio
+  const totalValue = portfolioData.reduce((sum, portfolio) => sum + (portfolio?.value || 0), 0);
+  
+  // Calcola il cambio nelle ultime 24h
+  const totalChange24h = portfolioData.reduce((sum, portfolio) => sum + (portfolio?.change24h || 0), 0);
+  
+  // Calcola la percentuale di variazione totale
+  const totalChangePercentage = totalValue > 0 
+    ? (totalChange24h / (totalValue - totalChange24h)) * 100 
+    : 0;
+  
+  // Calcola le percentuali per ogni portfolio rispetto al totale per il grafico a torta
+  const pieData = portfolioData
+    .map(portfolio => ({
+      ...portfolio,
+      percentage: totalValue > 0 ? Math.round((portfolio.value / totalValue) * 1000) / 10 : 0
+    }))
+    .filter(portfolio => portfolio.value > 0)
+    .sort((a, b) => b.value - a.value);
+  
+  // Ordina gli asset per valore e prendi i primi 5
+  const top5Assets = assets.length > 0
+    ? [...assets]
+        .sort((a, b) => (b.value || 0) - (a.value || 0))
+        .slice(0, 5)
+    : [];
+  
+  // Aggiorna la data dell'ultimo aggiornamento
   useEffect(() => {
-    if (assets.length > 0) {
-      // Ordina gli asset per valore e prendi i primi 5
-      const sortedAssets = [...assets].sort((a, b) => (b.value || 0) - (a.value || 0));
-      setTop5Assets(sortedAssets.slice(0, 5));
+    if (!isPortfolioQueriesLoading) {
+      setLastUpdated(new Date());
     }
-  }, [assets]);
+  }, [isPortfolioQueriesLoading, portfolioData]);
+  
+  // Invalida le query quando i portfolio cambiano
+  useEffect(() => {
+    if (portfolios.length > 0) {
+      // Invalida tutte le query esistenti correlate ai portfolio quando la lista cambia
+      portfolios.forEach(portfolio => {
+        queryClient.invalidateQueries({ queryKey: [`portfolio-overview-${portfolio.id}`] });
+      });
+      
+      // Invalida i dati del grafico
+      queryClient.invalidateQueries({ queryKey: ['/overview-chart'] });
+    }
+  }, [portfolios, queryClient]);
 
   // Custom formatter per X axis
   const formatXAxis = (tickItem: string) => {
@@ -231,14 +247,14 @@ const PortfolioOverviewSummary = () => {
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Valore Totale</div>
                 <div className="text-2xl font-bold">
-                  {isLoading ? <Skeleton className="h-8 w-32" /> : formatCurrency(totalValue)}
+                  {isPortfolioQueriesLoading || isPortfolioCtxLoading ? <Skeleton className="h-8 w-32" /> : formatCurrency(totalValue)}
                 </div>
               </div>
               
               {/* Cambio 24h */}
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Cambio (24h)</div>
-                {isLoading ? (
+                {isPortfolioQueriesLoading || isPortfolioCtxLoading ? (
                   <Skeleton className="h-6 w-32" />
                 ) : (
                   <div className="flex items-center">
@@ -264,7 +280,7 @@ const PortfolioOverviewSummary = () => {
               {/* Top Assets */}
               <div>
                 <div className="text-sm text-muted-foreground mb-2 border-t pt-3">I tuoi Top Asset</div>
-                {isLoading ? (
+                {isPortfolioQueriesLoading || isPortfolioCtxLoading ? (
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => (
                       <Skeleton key={i} className="h-6 w-full" />
@@ -324,7 +340,7 @@ const PortfolioOverviewSummary = () => {
               <TimeframeSelector value={activeTimeframe} onChange={setActiveTimeframe} />
             </div>
             
-            {isLoading || isChartLoading ? (
+            {isPortfolioQueriesLoading || isPortfolioCtxLoading || isChartLoading ? (
               <div className="h-48 flex items-center justify-center">
                 <Skeleton className="h-full w-full" />
               </div>
@@ -381,7 +397,7 @@ const PortfolioOverviewSummary = () => {
           <div className="col-span-12 md:col-span-4 p-4">
             <div className="text-sm font-medium mb-3">Distribuzione Portfolio</div>
             
-            {isLoading ? (
+            {isPortfolioQueriesLoading || isPortfolioCtxLoading ? (
               <div className="h-48 flex items-center justify-center">
                 <Skeleton className="h-[120px] w-[120px] rounded-full mx-auto" />
               </div>
