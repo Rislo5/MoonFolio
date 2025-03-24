@@ -30,6 +30,39 @@ const provider = new ethers.JsonRpcProvider(INFURA_URL);
 let clients: Set<WebSocket> = new Set();
 let popularCryptos: CryptoCurrency[] = [];
 
+// Definisce la funzione di recupero criptovalute popolari per riutilizzarla
+async function fetchPopularCryptocurrencies(): Promise<CryptoCurrency[]> {
+  try {
+    const response = await fetch(
+      `${COINMARKETCAP_API_URL}/cryptocurrency/listings/latest?limit=50&convert=USD`, {
+        headers: {
+          'X-CMC_PRO_API_KEY': COINMARKETCAP_API_KEY,
+          'Accept': 'application/json'
+        }
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`CoinMarketCap API error: ${response.statusText}`);
+    }
+    
+    const responseData = await response.json();
+    
+    // Transform the data to match the format expected by the frontend
+    return responseData.data.map((coin: any) => ({
+      id: coin.slug,
+      symbol: coin.symbol.toLowerCase(),
+      name: coin.name,
+      image: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`,
+      current_price: coin.quote.USD.price,
+      price_change_percentage_24h: coin.quote.USD.percent_change_24h
+    }));
+  } catch (error) {
+    console.error("Error fetching popular cryptocurrencies:", error);
+    return [];
+  }
+}
+
 async function broadcastPriceUpdates() {
   try {
     // Aggiorna i prezzi popolari ogni 30 secondi
@@ -1023,7 +1056,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     popularCryptos = data;
     
     // Broadcast every 30 seconds
-    setInterval(broadcastPriceUpdates, 30000);
+    setTimeout(() => {
+      broadcastPriceUpdates();
+      setInterval(broadcastPriceUpdates, 30000);
+    }, 5000);
   });
   
   return httpServer;
