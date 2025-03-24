@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
 import i18n from '../i18n';
+import { useTranslation } from 'react-i18next';
 
 interface LanguageSelectorProps {
   isCollapsed?: boolean;
@@ -11,6 +12,9 @@ interface LanguageSelectorProps {
  * Selettore di lingua migliorato che utilizza direttamente l'API i18n.
  */
 export default function LanguageSelector({ isCollapsed = false }: LanguageSelectorProps) {
+  // Usa useTranslation per accedere a i18n e alle traduzioni
+  const { t, i18n: i18nHook } = useTranslation();
+  
   // Usare lo stato locale per tracciare la lingua corrente
   const [currentLang, setCurrentLang] = useState(i18n.language);
 
@@ -39,7 +43,17 @@ export default function LanguageSelector({ isCollapsed = false }: LanguageSelect
       console.log(`Switching language from ${currentLang} to ${newLang}`);
       
       // Cambia la lingua in i18n
-      i18n.changeLanguage(newLang);
+      i18n.changeLanguage(newLang)
+        .then(() => {
+          console.log(`Language successfully changed to ${newLang}`);
+          
+          // Forza aggiornamento della pagina dopo il cambio lingua
+          // Questo è un workaround temporaneo, in un'app reale dovrebbe essere gestito meglio
+          window.location.reload();
+        })
+        .catch(error => {
+          console.error('Error changing language:', error);
+        });
       
       // Salva la preferenza nel localStorage
       localStorage.setItem('language', newLang);
