@@ -350,7 +350,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                     onClick={() => setActiveTab("search")}
                   >
                     <Search className="h-4 w-4 mr-2" />
-                    Cerca
+                    Search
                   </Button>
                 </div>
                 
@@ -375,7 +375,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                       popularCryptos.slice(0, 6).map((crypto: any) => renderCryptoCard(crypto))
                     ) : (
                       <div className="col-span-full text-center p-4 text-muted-foreground">
-                        Nessuna criptovaluta popolare disponibile
+                        No popular cryptocurrencies available
                       </div>
                     )}
                   </div>
@@ -388,7 +388,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
                       <Input
                         className="pl-10"
-                        placeholder="Cerca una criptovaluta (es. Bitcoin, Ethereum...)"
+                        placeholder="Search for a cryptocurrency (e.g. Bitcoin, Ethereum...)"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
@@ -418,11 +418,11 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                           </div>
                         ) : searchTerm.trim().length > 2 ? (
                           <div className="p-4 text-center text-muted-foreground">
-                            Nessun risultato trovato per "{searchTerm}"
+                            No results found for "{searchTerm}"
                           </div>
                         ) : (
                           <div className="p-4 text-center text-muted-foreground">
-                            Digita almeno 3 caratteri per iniziare la ricerca
+                            Type at least 3 characters to start searching
                           </div>
                         )}
                       </div>
@@ -434,7 +434,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
               {/* List of selected cryptocurrencies */}
               {selectedCryptos.length > 0 && (
                 <div className="space-y-3 mt-4">
-                  <h4 className="text-sm font-medium">Crypto selezionate</h4>
+                  <h4 className="text-sm font-medium">Selected Cryptocurrencies</h4>
                   
                   {selectedCryptos.map((crypto) => (
                     <div key={crypto.id} className="border rounded-lg p-3 bg-muted/10">
@@ -453,25 +453,25 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                           className="h-7 px-2"
                           onClick={() => toggleCryptoSelection(crypto)}
                         >
-                          Rimuovi
+                          Remove
                         </Button>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-xs font-medium block mb-1">Quantità</label>
+                          <label className="text-xs font-medium block mb-1">Quantity</label>
                           <Input 
                             type="number" 
                             step="any" 
                             min="0"
-                            placeholder="Es. 0.25" 
+                            placeholder="e.g. 0.25" 
                             value={crypto.balance || ""}
                             onChange={(e) => updateCryptoBalance(crypto.id, e.target.value)}
                             className="h-8 text-sm"
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium block mb-1">Prezzo acquisto ($)</label>
+                          <label className="text-xs font-medium block mb-1">Purchase price ($)</label>
                           <Input 
                             type="number" 
                             step="any" 
