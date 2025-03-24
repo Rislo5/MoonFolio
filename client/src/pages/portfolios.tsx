@@ -121,13 +121,13 @@ const Portfolios = () => {
       
       setPortfoliosWithData(updatedPortfolios);
     } catch (error) {
-      console.error("Errore nel caricamento dei dati dei portfolio:", error);
+      console.error("Error loading portfolio data:", error);
     } finally {
       setIsLoadingPortfolios(false);
     }
   };
   
-  // Carica i dati quando cambiano i portfolio
+  // Load data when portfolios change
   useEffect(() => {
     if (portfolios.length > 0) {
       loadPortfolioData();
@@ -147,11 +147,11 @@ const Portfolios = () => {
     return sum + (portfolio.totalValue || 0);
   }, 0);
 
-  // Funzione per visualizzare i dettagli del portfolio
+  // Function to view portfolio details
   const handleViewPortfolio = (e: React.MouseEvent, portfolioId: number) => {
     e.stopPropagation();
     setActivePortfolio(portfolioId);
-    // Se siamo già alla pagina del dettaglio del portfolio corretto, non fare nulla
+    // If we're already on the correct portfolio detail page, don't do anything
     navigate(`/portfolios/${portfolioId}`);
   };
   
@@ -163,8 +163,8 @@ const Portfolios = () => {
       setIsAddAssetDialogOpen(true);
     } else {
       toast({
-        title: "Nessun portfolio attivo",
-        description: "Seleziona prima un portfolio per aggiungere asset",
+        title: "No active portfolio",
+        description: "Select a portfolio first to add assets",
         variant: "destructive",
       });
     }
@@ -196,14 +196,14 @@ const Portfolios = () => {
     try {
       await deletePortfolio(portfolioToAction.id);
       toast({
-        title: "Portfolio eliminato",
-        description: `Il portfolio "${portfolioToAction.name}" è stato eliminato con successo.`
+        title: "Portfolio deleted",
+        description: `The portfolio "${portfolioToAction.name}" has been successfully deleted.`
       });
     } catch (error) {
-      console.error("Errore durante l'eliminazione del portfolio:", error);
+      console.error("Error during portfolio deletion:", error);
       toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante l'eliminazione del portfolio.",
+        title: "Error",
+        description: "An error occurred while deleting the portfolio.",
         variant: "destructive"
       });
     } finally {
@@ -224,14 +224,14 @@ const Portfolios = () => {
       disconnect();
       
       toast({
-        title: "Wallet disconnesso",
-        description: `Il wallet "${portfolioToAction.name}" è stato disconnesso con successo.`
+        title: "Wallet disconnected",
+        description: `The wallet "${portfolioToAction.name}" has been successfully disconnected.`
       });
     } catch (error) {
-      console.error("Errore durante la disconnessione del wallet:", error);
+      console.error("Error during wallet disconnection:", error);
       toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante la disconnessione del wallet.",
+        title: "Error",
+        description: "An error occurred while disconnecting the wallet.",
         variant: "destructive"
       });
     } finally {
