@@ -99,6 +99,7 @@ export const PortfolioContext = createContext<PortfolioContextType>({
     walletAddress: null,
     isEns: null,
     ensName: null,
+    showInSummary: true,
     createdAt: null,
     updatedAt: null,
   }),
@@ -494,8 +495,14 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
         createManualPortfolio: (name) => createManualPortfolioMutation.mutateAsync(name),
         setActivePortfolio: (portfolioId) => setActivePortfolioId(portfolioId),
         disconnect: () => {
-          setActivePortfolioId(null);
-          localStorage.removeItem("activePortfolioId");
+          // Se il portfolio attivo è un ENS wallet, lo eliminiamo completamente quando disconnettiamo
+          if (activePortfolio && activePortfolio.isEns) {
+            deletePortfolioMutation.mutate(activePortfolio.id);
+          } else {
+            // Se non è un ENS wallet, semplicemente deseleziona il portfolio attivo
+            setActivePortfolioId(null);
+            localStorage.removeItem("activePortfolioId");
+          }
         },
         deletePortfolio: (portfolioId) => deletePortfolioMutation.mutateAsync(portfolioId),
         
