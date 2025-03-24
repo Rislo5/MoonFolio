@@ -5,17 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight, Globe } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import i18n from "@/i18n";
-import LanguageSelector from "@/components/language-selector";
+import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isMobile = useIsMobile();
-  const { t } = useTranslation();
 
   // Keep sidebar expanded on large screens by default
   useEffect(() => {
@@ -66,8 +62,6 @@ export default function Sidebar() {
         </div>
         <div className="flex items-center gap-2">
           <ModeToggle />
-          {/* Selettore lingua per mobile - usiamo una versione collassata */}
-          <LanguageSelector isCollapsed={true} />
         </div>
       </header>
 
@@ -147,18 +141,18 @@ export default function Sidebar() {
             <NavItem
               href="/"
               icon={LayoutDashboard}
-              label={t("sidebar.dashboard")}
+              label="Dashboard"
               current={location === "/" || location === "/dashboard"}
             />
             <NavItem
               href="/portfolios"
               icon={Wallet}
-              label={t("sidebar.portfolios")}
+              label="Portfolios"
               current={location === "/portfolios" || location.startsWith("/portfolios/")}
             />
           </div>
 
-          {/* Flex spacer per spingere i controlli in fondo */}
+          {/* Flex spacer to push controls to the bottom */}
           <div className="flex-grow"></div>
           
           <div className="space-y-2 mt-auto pt-4">
@@ -175,14 +169,6 @@ export default function Sidebar() {
                 </span>
               )}
               <ModeToggle />
-            </div>
-            
-            {/* Language Selector */}
-            <div className={cn(
-              "px-3 py-2",
-              isCollapsed ? "flex justify-center" : ""
-            )}>
-              <LanguageSelector isCollapsed={isCollapsed} />
             </div>
           </div>
         </nav>

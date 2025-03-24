@@ -44,7 +44,7 @@ const CustomPieTooltip = ({ active, payload }: any) => {
       <div className="bg-gray-900 border border-gray-700 shadow-sm rounded-lg p-2 text-sm">
         <p className="font-medium text-white">{payload[0].name}</p>
         <p className="text-sm text-white">{formatCurrency(payload[0].value)}</p>
-        <p className="text-xs text-gray-400">{payload[0].payload.percentage}% del portafoglio</p>
+        <p className="text-xs text-gray-400">{payload[0].payload.percentage}% of portfolio</p>
       </div>
     );
   }
@@ -119,7 +119,7 @@ export default function PortfolioCharts() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Andamento Portafoglio</CardTitle>
+            <CardTitle className="text-lg">Portfolio Performance</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <Skeleton className="h-[300px] w-full" />
@@ -128,7 +128,7 @@ export default function PortfolioCharts() {
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Composizione Portafoglio</CardTitle>
+            <CardTitle className="text-lg">Portfolio Composition</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <Skeleton className="h-[300px] w-full" />
@@ -159,7 +159,7 @@ export default function PortfolioCharts() {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <CardTitle className="text-lg">Andamento Portafoglio</CardTitle>
+            <CardTitle className="text-lg">Portfolio Performance</CardTitle>
             <TimeframeSelector value={activeTimeframe} onChange={setActiveTimeframe} />
           </div>
         </CardHeader>
@@ -167,11 +167,11 @@ export default function PortfolioCharts() {
           {portfolioOverview && (
             <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
               <div>
-                <p className="text-sm text-muted-foreground">Valore Totale</p>
+                <p className="text-sm text-muted-foreground">Total Value</p>
                 <p className="text-2xl font-bold">{formatCurrency(portfolioOverview.totalValue)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Cambiamento (24h)</p>
+                <p className="text-sm text-muted-foreground">Change (24h)</p>
                 <p className={`text-2xl font-bold ${portfolioOverview.change24hPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {formatPercentage(portfolioOverview.change24hPercentage)}
                 </p>
@@ -237,8 +237,8 @@ export default function PortfolioCharts() {
           ) : (
             <div className="flex items-center justify-center h-[300px] bg-muted/30 rounded-lg">
               <div className="text-center p-4">
-                <p className="text-muted-foreground">Non ci sono abbastanza dati per visualizzare il grafico</p>
-                <p className="text-xs text-muted-foreground mt-1">Aggiungi asset o transazioni per vedere l'andamento</p>
+                <p className="text-muted-foreground">Not enough data to display the chart</p>
+                <p className="text-xs text-muted-foreground mt-1">Add assets or transactions to see the performance</p>
               </div>
             </div>
           )}
@@ -248,7 +248,7 @@ export default function PortfolioCharts() {
       {/* CHART 2: Pie Chart for Portfolio Composition */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Composizione Portafoglio</CardTitle>
+          <CardTitle className="text-lg">Portfolio Composition</CardTitle>
         </CardHeader>
         <CardContent className="pt-2">
           {pieData.length > 0 ? (
@@ -262,7 +262,7 @@ export default function PortfolioCharts() {
                   outerRadius={100}
                   innerRadius={50}
                   dataKey="value"
-                  stroke="#111827"
+                  stroke="#ffffff"
                   strokeWidth={1}
                   nameKey="name"
                 >
@@ -276,7 +276,7 @@ export default function PortfolioCharts() {
                   verticalAlign="middle" 
                   align="right"
                   formatter={(value, entry, index) => (
-                    <span className="text-sm" style={{color: '#E5E7EB'}}>
+                    <span className="text-sm" style={{color: '#ffffff'}}>
                       {value} ({pieData[index]?.percentage}%)
                     </span>
                   )}
@@ -286,8 +286,8 @@ export default function PortfolioCharts() {
           ) : (
             <div className="flex items-center justify-center h-[300px] bg-muted/30 rounded-lg">
               <div className="text-center p-4">
-                <p className="text-muted-foreground">Non hai ancora asset nel portafoglio</p>
-                <p className="text-xs text-muted-foreground mt-1">Aggiungi asset per visualizzare la composizione</p>
+                <p className="text-muted-foreground">No assets in portfolio yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Add assets to see portfolio composition</p>
               </div>
             </div>
           )}
