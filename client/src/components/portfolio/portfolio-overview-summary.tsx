@@ -462,7 +462,7 @@ const PortfolioOverviewSummary = () => {
                 ))}
                 {pieData.length > 3 && (
                   <div className="text-xs text-muted-foreground text-center mt-1">
-                    + {pieData.length - 3} altr{pieData.length - 3 > 1 ? "i" : "o"} portfolio
+                    + {pieData.length - 3} more {pieData.length - 3 > 1 ? "portfolios" : "portfolio"}
                   </div>
                 )}
               </div>

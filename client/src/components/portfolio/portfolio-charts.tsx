@@ -51,7 +51,7 @@ const CustomPieTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// TimeframeSelector component per selezionare il timeframe
+// TimeframeSelector component for selecting the timeframe
 const TimeframeSelector = ({ value, onChange }: { value: TimeFrame, onChange: (tf: TimeFrame) => void }) => {
   return (
     <div className="flex items-center space-x-1">
@@ -84,7 +84,7 @@ export default function PortfolioCharts() {
 
   const [pieData, setPieData] = useState<{ name: string; symbol: string; value: number; percentage: number }[]>([]);
 
-  // Salva il valore totale del portfolio nel localStorage per i grafici
+  // Save the total portfolio value in localStorage for charts
   useEffect(() => {
     if (portfolioOverview && portfolioOverview.totalValue) {
       localStorage.setItem('currentPortfolioValue', portfolioOverview.totalValue.toString());
