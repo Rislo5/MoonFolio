@@ -17,49 +17,49 @@ interface AboutUsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Team member data - correct information
+// Team member data - with updated roles
 const teamMembers = [
   {
     name: "Loris Pisano",
-    role: "Project Lead",
+    role: "Full Stack Developer & Crypto SME / Project Ideator",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5",
     linkedin: "https://www.linkedin.com/in/lorispisano5/",
   },
   {
-    name: "Daniel Graditi",
-    role: "Frontend Developer",
-    avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "https://www.linkedin.com/in/danielgraditi/",
-  },
-  {
-    name: "Angela Mantia",
-    role: "UX Designer",
-    avatar: "", // Avatar image URL
-    github: "https://github.com/Rislo5/MoonFolio",
-    linkedin: "https://www.linkedin.com/in/angelamantia/",
-  },
-  {
     name: "Stefano Schieppati",
-    role: "Backend Developer",
+    role: "Test & Debugging (CI/CD), Designer",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5/MoonFolio",
     linkedin: "#",
   },
   {
+    name: "Daniel Graditi",
+    role: "Full Stack Developer & Crypto SME",
+    avatar: "", // Avatar image URL
+    github: "https://github.com/Rislo5/MoonFolio",
+    linkedin: "https://www.linkedin.com/in/danielgraditi/",
+  },
+  {
     name: "Caterine Viccarone",
-    role: "QA Engineer",
+    role: "Design & Project Presentation Specialist",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5/MoonFolio",
     linkedin: "https://www.linkedin.com/in/caterine-viccarone-86b424147/",
   },
   {
     name: "Rinaldo Festa",
-    role: "Blockchain Specialist",
+    role: "Full Stack Developer",
     avatar: "", // Avatar image URL
     github: "https://github.com/Rislo5/MoonFolio",
     linkedin: "https://www.linkedin.com/in/rinaldofesta/",
+  },
+  {
+    name: "Angela Mantia",
+    role: "Project Manager & Coordinator",
+    avatar: "", // Avatar image URL
+    github: "https://github.com/Rislo5/MoonFolio",
+    linkedin: "https://www.linkedin.com/in/angelamantia/",
   }
 ];
 
