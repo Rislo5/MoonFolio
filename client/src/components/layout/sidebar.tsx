@@ -7,6 +7,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/contexts/language-context";
 import LanguageSelector from "@/components/language-selector";
 
 export default function Sidebar() {
@@ -14,6 +15,8 @@ export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
+  const { toggleLanguage } = useLanguage();
 
   // Keep sidebar expanded on large screens by default
   useEffect(() => {
@@ -29,8 +32,6 @@ export default function Sidebar() {
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
-
-  const { t } = useTranslation();
   
   const NavItem = ({ href, icon: Icon, label, current }: { href: string; icon: any; label: string; current: boolean }) => {
     return (
@@ -167,30 +168,21 @@ export default function Sidebar() {
             </div>
           </div>
           
-          {/* Language Selector */}
-          {!isCollapsed && (
-            <div className="px-3 py-2 mt-2">
+          {/* Language Selector - always visible */}
+          <div className="px-3 py-2 mt-2">
+            {isCollapsed ? (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleLanguage}
+                className="h-8 w-8 mx-auto"
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+            ) : (
               <LanguageSelector />
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="px-3 py-2 mt-2 flex justify-center">
-              <div className="relative group">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
-                >
-                  <Globe className="h-4 w-4" />
-                </Button>
-                
-                {/* Pop-up language selector when hovering over the globe icon in collapsed mode */}
-                <div className="absolute left-full ml-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity z-50 bg-background rounded-md shadow-md border p-3 w-40 invisible group-hover:visible">
-                  <LanguageSelector />
-                </div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </nav>
       </aside>
     </>
