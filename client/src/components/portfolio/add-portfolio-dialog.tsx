@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useLocation } from "wouter";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
   Dialog, 
   DialogContent, 
@@ -70,6 +71,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
   const { createManualPortfolio, addAsset, setActivePortfolio } = usePortfolio();
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<CryptoCurrency[]>([]);
@@ -196,6 +198,10 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
           description: "Puoi ora aggiungere asset al tuo portfolio",
         });
       }
+      
+      // Invalida tutte le query relative ai portfolio per aggiornare la UI
+      queryClient.invalidateQueries({ queryKey: ['/api/portfolios'] });
+      queryClient.invalidateQueries({ queryKey: ['/overview-chart'] });
       
       // Chiudi il dialog
       onOpenChange(false);
