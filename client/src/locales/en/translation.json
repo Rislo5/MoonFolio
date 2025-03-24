@@ -1,0 +1,69 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "portfolios": "Portfolios", 
+    "assets": "Assets",
+    "transactions": "Transactions",
+    "settings": "Settings",
+    "language": "Language"
+  },
+  "common": {
+    "total_value": "Total Value",
+    "change_24h": "Change (24h)",
+    "top_assets": "Your Top Assets",
+    "portfolio_summary": "Portfolio Summary",
+    "portfolio_overview": "Overview of all your cryptocurrency portfolios",
+    "performance": "Performance",
+    "distribution": "Portfolio Distribution",
+    "add_asset": "Add Asset",
+    "add_portfolio": "New Portfolio",
+    "transfer_asset": "Transfer Asset",
+    "updated": "Updated",
+    "no_data": "Insufficient data",
+    "add_assets": "Add assets to portfolio",
+    "portfolios_count": "Portfolios",
+    "others": "others"
+  },
+  "portfolio": {
+    "title": "Your Portfolios",
+    "subtitle": "Manage and view all your cryptocurrency portfolios",
+    "manual_portfolios": "Manual Portfolios",
+    "ens_wallets": "ENS Wallets",
+    "created_on": "Created on",
+    "active": "Active",
+    "view_details": "View Details",
+    "create_portfolio": "Create Portfolio in One Step",
+    "create_description": "Create a wallet and add your first cryptocurrency right away"
+  },
+  "asset": {
+    "add_crypto": "Add Crypto",
+    "optional": "Optional",
+    "popular": "Popular",
+    "search": "Search",
+    "search_placeholder": "Search for a cryptocurrency (e.g. Bitcoin, Ethereum...)",
+    "no_results": "No results found for",
+    "type_more": "Type at least 3 characters to start searching",
+    "selected_crypto": "Selected cryptocurrencies",
+    "remove": "Remove",
+    "quantity": "Quantity",
+    "buy_price": "Purchase price ($)",
+    "portfolio_name": "Portfolio Name",
+    "portfolio_placeholder": "E.g. My main portfolio",
+    "portfolio_description": "Choose a meaningful name to distinguish this portfolio from others",
+    "cancel": "Cancel",
+    "create": "Create Portfolio",
+    "creating": "Creating..."
+  },
+  "language": {
+    "en": "English",
+    "it": "Italiano",
+    "select": "Select language"
+  },
+  "timeframes": {
+    "24h": "24h",
+    "7d": "7d",
+    "30d": "30d",
+    "1y": "1y",
+    "all": "All"
+  }
+}
