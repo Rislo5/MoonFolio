@@ -462,6 +462,52 @@ const Portfolios = () => {
         onOpenChange={setIsTransferDialogOpen} 
         initialAssetId={selectedAssetId || undefined}
       />
+      
+      {/* Dialogo di conferma per eliminare il portfolio */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler eliminare questo portfolio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione eliminerà permanentemente il portfolio "{portfolioToAction?.name}" 
+              e tutti i suoi asset e transazioni. Questa azione non può essere annullata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Dialogo di conferma per disconnettere il wallet ENS */}
+      <AlertDialog open={showDisconnectDialog} onOpenChange={setShowDisconnectDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disconnettere questo wallet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Stai per disconnettere il wallet "{portfolioToAction?.name}". 
+              Potrai riconnetterlo in qualsiasi momento. I tuoi dati verranno rimossi dalla dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDisconnect}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Disconnetti
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
