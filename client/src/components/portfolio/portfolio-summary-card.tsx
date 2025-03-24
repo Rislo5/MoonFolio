@@ -81,7 +81,7 @@ const TimeframeSelector = ({ value, onChange }: { value: TimeFrame, onChange: (t
               : 'hover:bg-muted/80 bg-muted/50'
           }`}
         >
-          {t(`timeframes.${tf}`)}
+          {tf === 'all' ? 'All' : tf}
         </button>
       ))}
     </div>
@@ -151,7 +151,7 @@ export default function PortfolioSummaryCard() {
             <CardDescription>Overview of all your cryptocurrency portfolios</CardDescription>
           </div>
           <Badge variant="outline" className="bg-primary/10 text-primary font-medium">
-            {pieData.length} {t('common.assets')}
+            {pieData.length} assets
           </Badge>
         </div>
       </CardHeader>
@@ -309,7 +309,7 @@ export default function PortfolioSummaryCard() {
                 ))}
                 {pieData.length > 2 && (
                   <div className="text-xs text-muted-foreground text-center mt-1">
-                    + {pieData.length - 2} {t('common.others')}
+                    + {pieData.length - 2} others
                   </div>
                 )}
               </div>
