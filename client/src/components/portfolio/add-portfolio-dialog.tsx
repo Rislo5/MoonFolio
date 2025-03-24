@@ -476,7 +476,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                             type="number" 
                             step="any" 
                             min="0"
-                            placeholder="Es. 50000" 
+                            placeholder="e.g. 50000" 
                             value={crypto.avgPrice || ""}
                             onChange={(e) => updateCryptoAvgPrice(crypto.id, e.target.value)}
                             className="h-8 text-sm"
@@ -495,7 +495,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                   type="button"
                   variant="outline"
                 >
-                  Annulla
+                  Cancel
                 </Button>
               </DialogClose>
               <Button 
@@ -506,7 +506,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creazione in corso...
+                    Creating portfolio...
                   </>
                 ) : (
                   <>
