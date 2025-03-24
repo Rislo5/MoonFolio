@@ -127,10 +127,10 @@ export default function PortfolioDetails() {
         </div>
       </div>
       
-      {/* Riepilogo Portfolio con Grafici Integrati */}
+      {/* Portfolio Summary with Integrated Charts */}
       <PortfolioSummaryCard />
       
-      {/* Sezione Dettagli */}
+      {/* Details Section */}
       <div>
         <Tabs defaultValue="assets" className="w-full">
           <TabsList className="mb-4">
@@ -140,22 +140,22 @@ export default function PortfolioDetails() {
             </TabsTrigger>
             <TabsTrigger value="transactions" className="flex items-center">
               <Calendar className="mr-2 h-4 w-4" />
-              Transazioni
+              Transactions
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="assets" className="mt-0">
             {assets.length === 0 ? (
               <div className="text-center py-12 bg-muted/20 rounded-lg">
-                <h3 className="text-lg font-medium mb-2">Nessun asset presente</h3>
+                <h3 className="text-lg font-medium mb-2">No assets present</h3>
                 {activePortfolio.isEns ? (
                   <p className="text-muted-foreground mb-6">
-                    Nessun asset rilevato in questo wallet ENS
+                    No assets detected in this ENS wallet
                   </p>
                 ) : (
                   <>
                     <p className="text-muted-foreground mb-6">
-                      Aggiungi il tuo primo asset per iniziare a tracciare il tuo portfolio
+                      Add your first asset to start tracking your portfolio
                     </p>
                     <Button onClick={() => setIsAddAssetDialogOpen(true)}>
                       <PlusCircle className="h-4 w-4 mr-2" />
@@ -172,7 +172,7 @@ export default function PortfolioDetails() {
           <TabsContent value="transactions" className="mt-0">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <p className="text-sm text-muted-foreground">
-                Visualizza e gestisci tutte le tue transazioni in questo portfolio
+                View and manage all your transactions in this portfolio
               </p>
             </div>
             
