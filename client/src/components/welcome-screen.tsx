@@ -13,27 +13,13 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
+import { ConnectEnsWalletDialog } from "@/components/portfolio/connect-ens-wallet-dialog";
 
 const WelcomeScreen = () => {
   const { connectEnsWallet } = usePortfolio();
-  const [ensAddress, setEnsAddress] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEnsDialogOpen, setIsEnsDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"main" | "ens">("main");
-
-  const handleConnectWallet = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ensAddress.trim()) return;
-    
-    setIsConnecting(true);
-    try {
-      await connectEnsWallet(ensAddress);
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
-    } finally {
-      setIsConnecting(false);
-    }
-  };
 
   const renderMainScreen = () => (
     <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
