@@ -101,8 +101,12 @@ export class EthereumService {
       }
 
       // Verifica validità nome ENS
-      if (typeof ensName === 'string' && !ensName.endsWith('.eth')) {
-        throw new Error('Nome ENS non valido');
+      if (typeof ensName === 'string') {
+        if (!ensName.endsWith('.eth')) {
+          throw new Error('Nome ENS non valido');
+        }
+      } else {
+        throw new Error('Il parametro ensName deve essere una stringa');
       }
 
       // Risolvi il nome ENS in un indirizzo
