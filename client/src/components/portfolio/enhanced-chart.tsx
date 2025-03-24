@@ -127,13 +127,16 @@ export default function EnhancedChart({ portfolioValue }: EnhancedChartProps) {
   
   // Calcola il colore del grafico in base all'andamento
   const chartColorScheme = useMemo(() => {
-    if (!portfolioOverview) return { stroke: "#8B5CF6", gradient: ["#C084FC", "#8B5CF6"] };
+    if (!portfolioOverview) return { stroke: "#3b82f6", gradient: ["#60a5fa", "#3b82f6"] }; // Colore blu fisso
     
-    const isPositive = portfolioOverview.change24hPercentage >= 0;
+    // Usiamo sempre il colore blu per avere uniformità e visibilità in dark mode
+    return { stroke: "#3b82f6", gradient: ["#60a5fa", "#3b82f6"] };
     
-    return isPositive
-      ? { stroke: "#10B981", gradient: ["#10B981", "#059669"] }
-      : { stroke: "#EF4444", gradient: ["#EF4444", "#DC2626"] };
+    // Commentato il codice per colori dinamici basati su andamento - problematico in dark mode
+    // const isPositive = portfolioOverview.change24hPercentage >= 0;
+    // return isPositive
+    //   ? { stroke: "#10B981", gradient: ["#10B981", "#059669"] }
+    //   : { stroke: "#EF4444", gradient: ["#EF4444", "#DC2626"] };
   }, [portfolioOverview]);
   
   return (

@@ -137,10 +137,10 @@ export default function PortfolioChart({ portfolioValue }: PortfolioChartProps) 
               <Line 
                 type="monotone" 
                 dataKey="value" 
-                stroke="var(--primary)" 
+                stroke="#3b82f6" 
                 strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 6, fill: 'var(--primary)', strokeWidth: 2, stroke: 'var(--background)' }}
+                activeDot={{ r: 6, fill: '#3b82f6', strokeWidth: 2, stroke: 'var(--background)' }}
                 isAnimationActive={true}
                 animationDuration={1000}
               />

@@ -242,36 +242,53 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     },
   });
   
+  // Flag per prevenire doppi clic durante la creazione di un portfolio
+  const [isCreatingPortfolio, setIsCreatingPortfolio] = useState(false);
+  
   const createManualPortfolioMutation = useMutation({
     mutationFn: async (name: string) => {
-      const portfolio = await createPortfolio({ name });
-      return portfolio;
+      // Previene creazioni multiple con doppi clic
+      if (isCreatingPortfolio) {
+        throw new Error("Un portfolio è già in fase di creazione, attendi un momento...");
+      }
+      
+      setIsCreatingPortfolio(true);
+      try {
+        const portfolio = await createPortfolio({ name });
+        return portfolio;
+      } finally {
+        // Dopo 1 secondo, riabilita la creazione per evitare problemi di UI bloccata
+        setTimeout(() => setIsCreatingPortfolio(false), 1000);
+      }
     },
     onSuccess: (portfolio) => {
       queryClient.invalidateQueries({ queryKey: ["/api/portfolios"] });
-      // Impostazione immediata del portfolio attivo
-      setActivePortfolioId(portfolio.id);
       
-      // Forza il recupero dei dati del nuovo portfolio
-      queryClient.fetchQuery({ 
-        queryKey: [`/api/portfolios/${portfolio.id}/assets`] 
-      });
-      queryClient.fetchQuery({ 
-        queryKey: [`/api/portfolios/${portfolio.id}/transactions`] 
-      });
-      queryClient.fetchQuery({ 
-        queryKey: [`/api/portfolios/${portfolio.id}/overview`] 
-      });
+      // Imposta il portfolio attivo con un breve ritardo per garantire che l'API abbia tempo di rispondere
+      setTimeout(() => {
+        setActivePortfolioId(portfolio.id);
+        
+        // Forza il recupero dei dati del nuovo portfolio
+        queryClient.fetchQuery({ 
+          queryKey: [`/api/portfolios/${portfolio.id}/assets`] 
+        });
+        queryClient.fetchQuery({ 
+          queryKey: [`/api/portfolios/${portfolio.id}/transactions`] 
+        });
+        queryClient.fetchQuery({ 
+          queryKey: [`/api/portfolios/${portfolio.id}/overview`] 
+        });
+      }, 100);
       
       toast({
-        title: "Portfolio created successfully",
-        description: "You can now add assets to your portfolio.",
+        title: "Portfolio creato con successo",
+        description: "Ora puoi aggiungere asset al tuo portfolio.",
       });
     },
     onError: (error: Error) => {
-      console.error("Failed to create portfolio or add asset:", error);
+      console.error("Failed to create portfolio:", error);
       toast({
-        title: "Failed to create portfolio",
+        title: "Impossibile creare il portfolio",
         description: error.message,
         variant: "destructive",
       });
