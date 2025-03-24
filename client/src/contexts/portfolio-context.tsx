@@ -354,7 +354,31 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
       return createTransaction(activePortfolioId, transaction);
     },
     onSuccess: () => {
-      invalidatePortfolioData();
+      // Assicurarsi che tutte le query vengano invalidate
+      if (activePortfolioId) {
+        // Invalida i dati di portafoglio
+        queryClient.invalidateQueries({ 
+          queryKey: [`/api/portfolios/${activePortfolioId}/assets`] 
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: [`/api/portfolios/${activePortfolioId}/transactions`] 
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: [`/api/portfolios/${activePortfolioId}/overview`] 
+        });
+        queryClient.invalidateQueries({
+          queryKey: [`/portfolio-chart`, activePortfolioId, activeTimeframe]
+        });
+        
+        // Forza anche il refetch dei dati di portafoglio immediatamente
+        queryClient.fetchQuery({ 
+          queryKey: [`/api/portfolios/${activePortfolioId}/transactions`] 
+        });
+        queryClient.fetchQuery({ 
+          queryKey: [`/api/portfolios/${activePortfolioId}/assets`] 
+        });
+      }
+      
       toast({
         title: "Transaction added successfully",
         description: "Your portfolio has been updated.",
