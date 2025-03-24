@@ -46,23 +46,23 @@ export default function PortfolioDetails() {
   useEffect(() => {
     if (match && params.id) {
       const portfolioId = parseInt(params.id);
-      // Imposta il portfolio attivo se non lo è già
+      // Set the active portfolio if it's not already set
       if (!activePortfolio || activePortfolio.id !== portfolioId) {
         setActivePortfolio(portfolioId);
       }
     } else {
-      // Se non c'è un match con la rotta, torniamo alla dashboard
+      // If there's no match with the route, return to the dashboard
       navigate("/");
     }
   }, [match, params, activePortfolio, setActivePortfolio, navigate]);
   
-  // Funzione per aprire il dialogo di trasferimento
+  // Function to open the transfer dialog
   const handleOpenTransferDialog = (assetId: number) => {
     setSelectedAssetId(assetId);
     setIsTransferDialogOpen(true);
   };
 
-  // Se non c'è un portfolio attivo o se siamo in attesa del caricamento
+  // If there's no active portfolio or if we're waiting for loading
   if (!activePortfolio) {
     return <WelcomeScreen />;
   }
@@ -85,7 +85,7 @@ export default function PortfolioDetails() {
             </h1>
           </div>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Gestisci e analizza il tuo portfolio
+            Manage and analyze your portfolio
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export default function PortfolioDetails() {
               onClick={() => setIsAddAssetDialogOpen(true)}
             >
               <PlusCircle className="h-4 w-4 mr-1 sm:mr-2" />
-              Aggiungi Asset
+              Add Asset
             </Button>
           )}
           {portfolios.length > 1 && !activePortfolio.isEns && (
@@ -109,7 +109,7 @@ export default function PortfolioDetails() {
                 <path d="M18 8L22 12L18 16" />
                 <path d="M2 12H22" />
               </svg>
-              Trasferisci
+              Transfer
             </Button>
           )}
           {activePortfolio.isEns && (
@@ -121,7 +121,7 @@ export default function PortfolioDetails() {
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 sm:mr-2">
                 <path d="M12 5v14M5 12h14" />
               </svg>
-              Sola lettura
+              Read-only
             </Button>
           )}
         </div>
@@ -159,7 +159,7 @@ export default function PortfolioDetails() {
                     </p>
                     <Button onClick={() => setIsAddAssetDialogOpen(true)}>
                       <PlusCircle className="h-4 w-4 mr-2" />
-                      Aggiungi Asset
+                      Add Asset
                     </Button>
                   </>
                 )}
