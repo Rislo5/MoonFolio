@@ -86,22 +86,12 @@ const WelcomeScreen = () => {
           Enter your ENS domain (like 'vitalik.eth') or Ethereum address to view your portfolio data.
         </p>
         
-        <form onSubmit={handleConnectWallet} className="space-y-4">
-          <Input
-            type="text"
-            placeholder="vitalik.eth or 0x123..."
-            value={ensAddress}
-            onChange={(e) => setEnsAddress(e.target.value)}
-            disabled={isConnecting}
-          />
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isConnecting}
-          >
-            {isConnecting ? "Connecting..." : "Connect Wallet"}
-          </Button>
-        </form>
+        <Button 
+          className="w-full"
+          onClick={() => setIsEnsDialogOpen(true)}
+        >
+          Connect Wallet with ENS
+        </Button>
       </div>
       
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -124,6 +114,12 @@ const WelcomeScreen = () => {
       
       {/* Utilizziamo lo stesso componente AddPortfolioDialog usato nella pagina Portfolio */}
       <AddPortfolioDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
+      
+      {/* Dialog per connettere wallet ENS con l'opzione includeInSummary */}
+      <ConnectEnsWalletDialog
+        open={isEnsDialogOpen}
+        onOpenChange={setIsEnsDialogOpen}
+      />
     </div>
   );
 };
