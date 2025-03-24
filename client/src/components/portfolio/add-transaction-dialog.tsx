@@ -52,7 +52,7 @@ type Props = {
 };
 
 const AddTransactionDialog = ({ open, onOpenChange, defaultAssetId }: Props) => {
-  const { assets, addTransaction } = usePortfolio();
+  const { assets, addTransaction, activePortfolio } = usePortfolio();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -115,6 +115,15 @@ const AddTransactionDialog = ({ open, onOpenChange, defaultAssetId }: Props) => 
       }
     }
     
+    if (!activePortfolio) {
+      toast({
+        title: "Error",
+        description: "No active portfolio selected. Please create or select a portfolio first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       await addTransaction({
@@ -141,8 +150,8 @@ const AddTransactionDialog = ({ open, onOpenChange, defaultAssetId }: Props) => 
     } catch (error) {
       console.error("Failed to add transaction:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add transaction",
+        title: "Errore",
+        description: error instanceof Error ? error.message : "Impossibile aggiungere la transazione. Verifica di aver selezionato un asset e un portfolio validi.",
         variant: "destructive",
       });
     } finally {

@@ -50,7 +50,7 @@ type CryptoCurrency = {
 };
 
 const AddAssetDialog = ({ open, onOpenChange }: Props) => {
-  const { addAsset } = usePortfolio();
+  const { addAsset, activePortfolio } = usePortfolio();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cryptoList, setCryptoList] = useState<CryptoCurrency[]>([]);
