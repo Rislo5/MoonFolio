@@ -334,11 +334,11 @@ export default function TransactionDetailList() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Azioni</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => console.log('Modifica', transaction.id)}>
                           <PencilLine className="h-4 w-4 mr-2" />
-                          Modifica transazione
+                          {t('transaction.edit_transaction')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -349,12 +349,12 @@ export default function TransactionDetailList() {
                           {isDeleting === transaction.id ? (
                             <>
                               <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
-                              Eliminazione...
+                              {t('common.deleting')}
                             </>
                           ) : (
                             <>
                               <Trash2 className="h-4 w-4 mr-2" />
-                              Elimina transazione
+                              {t('transaction.delete_transaction')}
                             </>
                           )}
                         </DropdownMenuItem>
