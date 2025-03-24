@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import i18n from '../i18n';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
 
@@ -8,37 +7,30 @@ interface LanguageSelectorProps {
 }
 
 /**
- * Componente selettore di lingua estremamente semplificato.
- * Alterna direttamente tra italiano e inglese quando viene cliccato.
+ * Selettore di lingua completamente reingegnerizzato.
+ * Non usa hook o state, semplicemente cambia direttamente la lingua nel documento.
  */
 export default function LanguageSelector({ isCollapsed = false }: LanguageSelectorProps) {
-  const [lang, setLang] = React.useState(i18n.language);
+  // Leggi direttamente l'attributo lang dal documento
+  const currentLang = document.documentElement.lang || 'it';
   
-  // Sincronizza lo stato locale con i18n quando cambia la lingua
-  useEffect(() => {
-    const handleLanguageChange = (lng: string) => {
-      setLang(lng);
-    };
-    
-    i18n.on('languageChanged', handleLanguageChange);
-    return () => {
-      i18n.off('languageChanged', handleLanguageChange);
-    };
-  }, []);
-
-  // Funzione diretta per cambiare lingua
-  const switchLanguage = () => {
+  // Cambia la lingua direttamente
+  const handleLanguageChange = () => {
     try {
-      const newLang = lang === 'it' ? 'en' : 'it';
-      console.log(`Switching language from ${lang} to ${newLang}`);
+      // Determina la nuova lingua basandosi su quella corrente
+      const newLang = currentLang === 'it' ? 'en' : 'it';
+      console.log(`Changing language from ${currentLang} to ${newLang}`);
       
-      // Cambia la lingua in i18n
-      i18n.changeLanguage(newLang);
+      // Cambia l'attributo lang del documento
+      document.documentElement.lang = newLang;
       
       // Salva la preferenza nel localStorage
       localStorage.setItem('language', newLang);
+      
+      // Forza il ricaricamento della pagina per applicare le traduzioni
+      window.location.reload();
     } catch (error) {
-      console.error('Error switching language:', error);
+      console.error('Errore durante il cambio di lingua:', error);
     }
   };
   
@@ -49,9 +41,10 @@ export default function LanguageSelector({ isCollapsed = false }: LanguageSelect
         variant="outline"
         size="icon"
         className="h-8 w-8 mx-auto"
-        onClick={switchLanguage}
+        onClick={handleLanguageChange}
+        title={currentLang === 'it' ? 'Cambia in Inglese' : 'Change to Italian'}
       >
-        {lang === 'it' ? <span>🇮🇹</span> : <span>🇬🇧</span>}
+        {currentLang === 'it' ? <span aria-label="Italiano">🇮🇹</span> : <span aria-label="English">🇬🇧</span>}
       </Button>
     );
   }
@@ -61,11 +54,12 @@ export default function LanguageSelector({ isCollapsed = false }: LanguageSelect
     <Button 
       variant="outline"
       size="sm" 
-      onClick={switchLanguage}
+      onClick={handleLanguageChange}
       className="w-full justify-start"
+      title={currentLang === 'it' ? 'Cambia in Inglese' : 'Change to Italian'}
     >
       <Globe className="mr-2 h-4 w-4" />
-      {lang === 'it' ? 'Italiano' : 'English'}
+      {currentLang === 'it' ? '🇮🇹 Italiano' : '🇬🇧 English'}
     </Button>
   );
 }
