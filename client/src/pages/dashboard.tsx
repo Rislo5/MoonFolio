@@ -7,7 +7,7 @@ import { Portfolio } from "@shared/schema";
 import WelcomeScreen from "@/components/welcome-screen";
 import { AddPortfolioDialog } from "@/components/portfolio/add-portfolio-dialog";
 
-// Estende il tipo Portfolio con la proprietà isActive
+// Extends Portfolio type with isActive property
 type ExtendedPortfolio = Portfolio & {
   isActive?: boolean;
 };
@@ -22,7 +22,7 @@ const Dashboard = () => {
     navigate(`/portfolios/${portfolio.id}`);
   };
   
-  // Sempre mostra la welcome screen in Dashboard
+  // Always show the welcome screen in Dashboard
   return (
     <>
       <WelcomeScreen />
