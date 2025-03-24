@@ -7,7 +7,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useLanguage } from "@/contexts/language-context";
+import i18n from "@/i18n";
 import LanguageSelector from "@/components/language-selector";
 
 export default function Sidebar() {
@@ -16,7 +16,6 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isMobile = useIsMobile();
   const { t } = useTranslation();
-  const { toggleLanguage } = useLanguage();
 
   // Keep sidebar expanded on large screens by default
   useEffect(() => {
@@ -67,6 +66,20 @@ export default function Sidebar() {
         </div>
         <div className="flex items-center gap-2">
           <ModeToggle />
+          {/* Selettore lingua per mobile */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              const currLang = i18n.language;
+              const newLang = currLang === 'it' ? 'en' : 'it';
+              i18n.changeLanguage(newLang);
+              localStorage.setItem('language', newLang);
+            }}
+            className="h-8 w-8"
+          >
+            <Globe className="h-4 w-4" />
+          </Button>
         </div>
       </header>
 
@@ -168,20 +181,9 @@ export default function Sidebar() {
             </div>
           </div>
           
-          {/* Language Selector - always visible */}
+          {/* Language Selector - sempre visibile e semplificato */}
           <div className="px-3 py-2 mt-2">
-            {isCollapsed ? (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleLanguage}
-                className="h-8 w-8 mx-auto"
-              >
-                <Globe className="h-4 w-4" />
-              </Button>
-            ) : (
-              <LanguageSelector />
-            )}
+            <LanguageSelector />
           </div>
         </nav>
       </aside>
