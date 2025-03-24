@@ -35,10 +35,15 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   // Cambia la lingua utilizzando i18next
   const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    setLanguage(lang);
-    // Salva la preferenza della lingua nel localStorage
-    localStorage.setItem('language', lang);
+    console.log(`Language context: changing to ${lang}`);
+    i18n.changeLanguage(lang).then(() => {
+      console.log(`Language changed to ${lang}`);
+      setLanguage(lang);
+      // Salva la preferenza della lingua nel localStorage
+      localStorage.setItem('language', lang);
+    }).catch(error => {
+      console.error("Error changing language:", error);
+    });
   };
 
   // Funzione per alternare tra italiano e inglese

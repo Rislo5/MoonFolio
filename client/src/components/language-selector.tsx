@@ -7,6 +7,11 @@ export default function LanguageSelector() {
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
 
+  const handleLanguageChange = (lang: string) => {
+    console.log(`Changing language to: ${lang}`);
+    changeLanguage(lang);
+  };
+
   return (
     <div className="flex flex-col space-y-2">
       <div className="flex items-center mb-2">
@@ -17,16 +22,16 @@ export default function LanguageSelector() {
         <Button
           variant={language === 'it' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => changeLanguage('it')}
-          className="w-full justify-start"
+          onClick={() => handleLanguageChange('it')}
+          className="w-full justify-start cursor-pointer"
         >
           🇮🇹 {t('language.it')}
         </Button>
         <Button
           variant={language === 'en' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => changeLanguage('en')}
-          className="w-full justify-start"
+          onClick={() => handleLanguageChange('en')}
+          className="w-full justify-start cursor-pointer"
         >
           🇬🇧 {t('language.en')}
         </Button>
