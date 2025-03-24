@@ -26,9 +26,13 @@ const WelcomeScreen = () => {
       <div className="flex items-center justify-center mb-6">
         <RocketIcon className="h-12 w-12 text-primary-DEFAULT dark:text-primary-light" />
       </div>
-      <h1 className="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-white">
+      <h1 className="text-2xl font-bold text-center mb-2 text-gray-900 dark:text-white">
         Welcome to Moonfolio
       </h1>
+      <p className="text-center text-gray-600 dark:text-gray-300 mb-8">
+        Get Started with Your Portfolio<br />
+        Choose how you'd like to manage your crypto investments with our easy-to-use options.
+      </p>
       
       <div className="grid grid-cols-1 gap-6">
         <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 hover:shadow-lg transition-shadow">
