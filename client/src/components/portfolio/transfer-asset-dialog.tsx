@@ -92,7 +92,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
   // Available portfolios for transfer (excluding the active one)
   const availablePortfolios = portfolios.filter(p => p.id !== activePortfolio?.id);
 
-  // Gestisce il submit del form
+  // Handle form submission
   const handleSubmit = async (values: z.infer<typeof transferAssetSchema>) => {
     if (!activePortfolio || !selectedAsset) return;
     
@@ -100,11 +100,11 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     const targetPortfolioId = parseInt(values.targetPortfolioId);
     const amount = parseFloat(values.amount);
     
-    // Controlla che l'importo non superi il saldo disponibile
+    // Check that the amount does not exceed the available balance
     if (amount > parseFloat(selectedAsset.balance.toString())) {
       toast({
-        title: "Importo non valido",
-        description: "L'importo da trasferire supera il saldo disponibile",
+        title: "Invalid amount",
+        description: "The transfer amount exceeds the available balance",
         variant: "destructive",
       });
       return;
@@ -113,33 +113,33 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     setIsSubmitting(true);
     
     try {
-      // 1. Verifica se il portfolio di destinazione esiste
+      // 1. Check if the destination portfolio exists
       const targetPortfolio = portfolios.find(p => p.id === targetPortfolioId);
       if (!targetPortfolio) {
-        throw new Error("Portfolio di destinazione non trovato");
+        throw new Error("Destination portfolio not found");
       }
       
-      // 2. Crea una transazione "withdraw" nel portfolio di origine
+      // 2. Create a "withdraw" transaction in the source portfolio
       await addTransaction({
         assetId: sourceAssetId,
         type: "withdraw",
         amount: amount.toString(),
         price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-        date: new Date().toISOString(), // Converti in stringa ISO
+        date: new Date().toISOString(), // Convert to ISO string
       });
       
-      // 2b. Aggiorna il saldo dell'asset nel portfolio di origine
+      // 2b. Update the asset balance in the source portfolio
       const currentBalance = parseFloat(selectedAsset.balance.toString());
       const newBalance = currentBalance - amount;
       
-      // Se il saldo è 0, elimina l'asset, altrimenti aggiornalo
+      // If the balance is 0, delete the asset, otherwise update it
       if (newBalance <= 0) {
-        // Elimina l'asset dal portfolio di origine
+        // Delete the asset from the source portfolio
         await fetch(`/api/assets/${sourceAssetId}`, {
           method: 'DELETE',
         });
       } else {
-        // Aggiorna l'asset con il nuovo saldo
+        // Update the asset with the new balance
         await fetch(`/api/assets/${sourceAssetId}`, {
           method: 'PUT',
           headers: {
@@ -151,7 +151,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
         });
       }
       
-      // 3. Aggiungi o aggiorna l'asset nel portfolio di destinazione usando la API diretta
+      // 3. Add or update the asset in the destination portfolio using the direct API
       const response = await fetch(`/api/portfolios/${targetPortfolioId}/assets`, {
         method: 'POST',
         headers: {
@@ -168,48 +168,48 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
       });
       
       if (!response.ok) {
-        throw new Error("Impossibile aggiungere l'asset al portfolio di destinazione");
+        throw new Error("Unable to add the asset to the destination portfolio");
       }
       
       const newAsset = await response.json();
       
-      // 4. Crea una transazione "deposit" nel portfolio di destinazione
+      // 4. Create a "deposit" transaction in the destination portfolio
       if (newAsset && newAsset.id) {
         await createTransaction(targetPortfolioId, {
           assetId: newAsset.id,
           type: "deposit",
           amount: amount.toString(),
           price: selectedAsset.currentPrice?.toString() || selectedAsset.avgBuyPrice || "0",
-          date: new Date().toISOString(), // Converti in stringa ISO
+          date: new Date().toISOString(), // Convert to ISO string
         });
       }
       
       toast({
-        title: "Trasferimento completato",
-        description: `${amount} ${selectedAsset.symbol.toUpperCase()} trasferiti con successo a ${targetPortfolio.name}`,
+        title: "Transfer completed",
+        description: `${amount} ${selectedAsset.symbol.toUpperCase()} successfully transferred to ${targetPortfolio.name}`,
       });
       
-      // Forza il refresh dei dati: assets, transazioni e overview
+      // Force data refresh: assets, transactions and overview
       
-      // Invalida tutte le queries relative agli assets del portfolio di origine
+      // Invalidate all queries related to the source portfolio assets
       await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolio.id}/assets`] });
       await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolio.id}/overview`] });
       await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${activePortfolio.id}/transactions`] });
       
-      // Invalida tutte le queries relative agli assets del portfolio di destinazione
+      // Invalidate all queries related to the destination portfolio assets
       await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${targetPortfolioId}/assets`] });
       await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${targetPortfolioId}/overview`] });
       await queryClient.invalidateQueries({ queryKey: [`/api/portfolios/${targetPortfolioId}/transactions`] });
       
-      // Attende un breve momento per dare tempo ai dati di aggiornarsi
+      // Wait a brief moment to allow data to update
       await new Promise(resolve => setTimeout(resolve, 300));
       
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to transfer asset:", error);
       toast({
-        title: "Errore",
-        description: error instanceof Error ? error.message : "Impossibile completare il trasferimento",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Unable to complete the transfer",
         variant: "destructive",
       });
     } finally {
@@ -221,21 +221,21 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Trasferisci Asset</DialogTitle>
+          <DialogTitle>Transfer Asset</DialogTitle>
           <DialogDescription>
-            Trasferisci un asset da questo portfolio a un altro.
+            Transfer an asset from this portfolio to another.
           </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Selezione asset */}
+            {/* Asset selection */}
             <FormField
               control={form.control}
               name="sourceAssetId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Asset da trasferire</FormLabel>
+                  <FormLabel>Asset to transfer</FormLabel>
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
@@ -245,7 +245,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleziona un asset" />
+                        <SelectValue placeholder="Select an asset" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -272,20 +272,20 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
               )}
             />
             
-            {/* Selezione portfolio destinazione */}
+            {/* Destination portfolio selection */}
             <FormField
               control={form.control}
               name="targetPortfolioId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Portfolio di destinazione</FormLabel>
+                  <FormLabel>Destination portfolio</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleziona un portfolio" />
+                        <SelectValue placeholder="Select a portfolio" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -296,26 +296,26 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
                       ))}
                       {availablePortfolios.length === 0 && (
                         <div className="text-center py-2 text-muted-foreground text-sm">
-                          Nessun altro portfolio disponibile
+                          No other portfolios available
                         </div>
                       )}
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    L'asset sarà trasferito in questo portfolio
+                    The asset will be transferred to this portfolio
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            {/* Importo da trasferire */}
+            {/* Amount to transfer */}
             <FormField
               control={form.control}
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantità da trasferire</FormLabel>
+                  <FormLabel>Amount to transfer</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input 
@@ -323,7 +323,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
                         step="any"
                         min="0"
                         max={selectedAsset ? selectedAsset.balance.toString() : undefined}
-                        placeholder="Es. 0.5"
+                        placeholder="e.g. 0.5"
                         {...field}
                       />
                       {selectedAsset && (
@@ -335,7 +335,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
                   </FormControl>
                   {selectedAsset && (
                     <FormDescription>
-                      Saldo disponibile: {selectedAsset.balance.toString()} {selectedAsset.symbol.toUpperCase()}
+                      Available balance: {selectedAsset.balance.toString()} {selectedAsset.symbol.toUpperCase()}
                     </FormDescription>
                   )}
                   <FormMessage />
@@ -343,17 +343,17 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
               )}
             />
             
-            {/* Schema riepilogativo */}
+            {/* Summary schema */}
             {selectedAsset && form.watch("targetPortfolioId") && (
               <div className="rounded-lg border p-3 bg-muted/10">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex flex-col items-start">
-                    <span className="text-muted-foreground">Da:</span>
+                    <span className="text-muted-foreground">From:</span>
                     <span className="font-medium">{activePortfolio?.name}</span>
                   </div>
                   <ArrowRight className="text-muted-foreground" />
                   <div className="flex flex-col items-end">
-                    <span className="text-muted-foreground">A:</span>
+                    <span className="text-muted-foreground">To:</span>
                     <span className="font-medium">
                       {
                         portfolios.find(
@@ -369,7 +369,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline">
-                  Annulla
+                  Cancel
                 </Button>
               </DialogClose>
               <Button 
@@ -379,10 +379,10 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Trasferimento in corso...
+                    Transferring...
                   </>
                 ) : (
-                  "Trasferisci"
+                  "Transfer"
                 )}
               </Button>
             </DialogFooter>
