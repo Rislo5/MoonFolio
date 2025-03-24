@@ -52,6 +52,7 @@
     "asset_removed": "The asset has been removed from the portfolio",
     "error": "Error",
     "delete_error": "Unable to delete the asset",
+    "deleting": "Deleting...",
     "theme": "Theme"
   },
   "portfolio": {

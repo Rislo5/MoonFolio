@@ -3,6 +3,7 @@ import { TransactionWithDetails } from "@shared/schema";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatDate, getTransactionTypeColor } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -48,6 +49,7 @@ type SortOption = {
 export default function TransactionDetailList() {
   const { transactions, removeTransaction } = usePortfolio();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>({ column: 'date', direction: 'desc' });
   const [showAddTransactionDialog, setShowAddTransactionDialog] = useState(false);
@@ -55,18 +57,18 @@ export default function TransactionDetailList() {
 
   // Gestisce l'eliminazione di una transazione
   const handleDeleteTransaction = async (transactionId: number) => {
-    if (window.confirm("Sei sicuro di voler eliminare questa transazione? Questa azione non può essere annullata.")) {
+    if (window.confirm(t('transaction.confirm_delete'))) {
       setIsDeleting(transactionId);
       try {
         await removeTransaction(transactionId);
         toast({
-          title: "Transazione eliminata",
-          description: "La transazione è stata rimossa dal portfolio",
+          title: t('transaction.transaction_deleted'),
+          description: t('transaction.transaction_removed'),
         });
       } catch (error) {
         toast({
-          title: "Errore",
-          description: "Impossibile eliminare la transazione",
+          title: t('common.error'),
+          description: t('transaction.delete_error'),
           variant: "destructive",
         });
       } finally {
@@ -128,10 +130,10 @@ export default function TransactionDetailList() {
   // Ottiene un'etichetta per il tipo di transazione
   const getTransactionTypeLabel = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'buy': return 'Acquisto';
-      case 'sell': return 'Vendita';
-      case 'swap': return 'Scambio';
-      case 'transfer': return 'Trasferimento';
+      case 'buy': return t('transaction.type_buy');
+      case 'sell': return t('transaction.type_sell');
+      case 'swap': return t('transaction.type_swap');
+      case 'transfer': return t('transaction.type_transfer');
       default: return type;
     }
   };
@@ -151,16 +153,16 @@ export default function TransactionDetailList() {
     <Card className="overflow-hidden">
       <div className="p-4 border-b flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col">
-          <h3 className="text-lg font-semibold">Storico Transazioni</h3>
+          <h3 className="text-lg font-semibold">{t('transaction.transaction_history')}</h3>
           <p className="text-sm text-muted-foreground">
-            {transactions.length} transazioni totali
+            {transactions.length} {t('transaction.total_transactions')}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-3">
           <div className="relative flex-1 sm:flex-initial">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Cerca transazioni..."
+              placeholder={t('transaction.search_transactions')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-8 h-9"
@@ -170,29 +172,29 @@ export default function TransactionDetailList() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-9">
                 <ListFilter className="mr-2 h-4 w-4" />
-                Filtri
+                {t('common.filters')}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Ordina per</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('common.sort_by')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleSort('asset')}>
-                Asset {sortOption.column === 'asset' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                {t('common.assets')} {sortOption.column === 'asset' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleSort('type')}>
-                Tipo {sortOption.column === 'type' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                {t('transaction.type')} {sortOption.column === 'type' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleSort('date')}>
-                Data {sortOption.column === 'date' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                {t('transaction.date')} {sortOption.column === 'date' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleSort('value')}>
-                Valore {sortOption.column === 'value' && (sortOption.direction === 'asc' ? '↑' : '↓')}
+                {t('common.asset_value')} {sortOption.column === 'value' && (sortOption.direction === 'asc' ? '↑' : '↓')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="default" size="sm" className="h-9" onClick={() => setShowAddTransactionDialog(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Nuova Transazione
+            {t('transaction.new_transaction')}
           </Button>
         </div>
       </div>
@@ -203,7 +205,7 @@ export default function TransactionDetailList() {
             <TableRow>
               <TableHead className="w-[150px]">
                 <div className="flex items-center">
-                  Asset
+                  {t('common.assets')}
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('asset')}
@@ -212,7 +214,7 @@ export default function TransactionDetailList() {
               </TableHead>
               <TableHead className="w-[100px]">
                 <div className="flex items-center">
-                  Tipo
+                  {t('transaction.type')}
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('type')}
@@ -221,17 +223,17 @@ export default function TransactionDetailList() {
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  Quantità
+                  {t('common.quantity')}
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  Prezzo
+                  {t('common.current_price')}
                 </div>
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  Valore
+                  {t('common.asset_value')}
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('value')}
@@ -240,14 +242,14 @@ export default function TransactionDetailList() {
               </TableHead>
               <TableHead>
                 <div className="flex items-center">
-                  Data
+                  {t('transaction.date')}
                   <ArrowUpDown
                     className="ml-2 h-3 w-3 cursor-pointer text-muted-foreground"
                     onClick={() => handleSort('date')}
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-[80px] text-right">Azioni</TableHead>
+              <TableHead className="w-[80px] text-right">{t('common.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -256,17 +258,17 @@ export default function TransactionDetailList() {
                 <TableCell colSpan={7} className="text-center py-8">
                   {searchTerm ? (
                     <div>
-                      <p className="text-muted-foreground mb-2">Nessuna transazione corrisponde alla ricerca "{searchTerm}"</p>
+                      <p className="text-muted-foreground mb-2">{t('transaction.no_matching_transactions')} "{searchTerm}"</p>
                       <Button variant="outline" size="sm" onClick={() => setSearchTerm("")}>
-                        Cancella ricerca
+                        {t('common.clear_search')}
                       </Button>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-muted-foreground mb-2">Non hai ancora nessuna transazione in questo portfolio</p>
+                      <p className="text-muted-foreground mb-2">{t('transaction.no_transactions_yet')}</p>
                       <Button variant="outline" size="sm" onClick={() => setShowAddTransactionDialog(true)}>
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Aggiungi la prima transazione
+                        {t('transaction.add_first_transaction')}
                       </Button>
                     </div>
                   )}
