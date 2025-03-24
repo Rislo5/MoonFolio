@@ -561,7 +561,7 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     const socket = new WebSocket(wsUrl);
     
     socket.onopen = () => {
-      console.log("WebSocket connesso");
+      console.log("WebSocket connected");
     };
     
     socket.onmessage = (event) => {
@@ -569,25 +569,25 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
         const message = JSON.parse(event.data);
         
         if (message.type === 'priceUpdate' && Array.isArray(message.data)) {
-          console.log("Aggiornamento prezzi ricevuto via WebSocket");
+          console.log("Price update received via WebSocket");
           
-          // Aggiorna i dati relativi al portfolio se necessario
-          // Questo attiverà una ri-renderizzazione delle componenti che mostrano i prezzi
+          // Update portfolio data if necessary
+          // This will trigger a re-rendering of the components that display prices
           if (activePortfolioId) {
             invalidatePortfolioData();
           }
         }
       } catch (error) {
-        console.error("Errore nell'elaborazione del messaggio WebSocket:", error);
+        console.error("Error processing WebSocket message:", error);
       }
     };
     
     socket.onerror = (error) => {
-      console.error("Errore WebSocket:", error);
+      console.error("WebSocket error:", error);
     };
     
     socket.onclose = () => {
-      console.log("WebSocket disconnesso");
+      console.log("WebSocket disconnected");
     };
     
     // Cleanup alla disconnessione

@@ -8,7 +8,7 @@ type LanguageContextType = {
 };
 
 const defaultLanguageContext: LanguageContextType = {
-  language: 'it',
+  language: 'en',
   changeLanguage: () => {},
   toggleLanguage: () => {},
 };
@@ -18,7 +18,7 @@ const LanguageContext = createContext<LanguageContextType>(defaultLanguageContex
 export const useLanguage = () => useContext(LanguageContext);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState(i18n.language || 'it');
+  const [language, setLanguage] = useState(i18n.language || 'en');
 
   // Aggiorna lo stato quando cambia la lingua di i18n
   useEffect(() => {
