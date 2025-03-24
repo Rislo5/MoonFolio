@@ -175,14 +175,20 @@ export default function Sidebar() {
           )}
           {isCollapsed && (
             <div className="px-3 py-2 mt-2 flex justify-center">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setIsCollapsed(false)}
-                className="h-8 w-8"
-              >
-                <Globe className="h-4 w-4" />
-              </Button>
+              <div className="relative group">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                >
+                  <Globe className="h-4 w-4" />
+                </Button>
+                
+                {/* Pop-up language selector when hovering over the globe icon in collapsed mode */}
+                <div className="absolute left-full ml-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity z-50 bg-background rounded-md shadow-md border p-3 w-40 invisible group-hover:visible">
+                  <LanguageSelector />
+                </div>
+              </div>
             </div>
           )}
         </nav>
