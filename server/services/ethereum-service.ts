@@ -226,27 +226,31 @@ export class EthereumService {
           const balance = await tokenContract.balanceOf(address);
           const formattedBalance = parseFloat(ethers.formatUnits(balance, token.decimals));
           
-          // Only return tokens with balance > 0
-          if (formattedBalance > 0) {
-            return {
-              name: token.name,
-              symbol: token.symbol,
-              coinGeckoId: token.coinGeckoId,
-              balance: formattedBalance,
-              imageUrl: token.logoUrl
-            };
-          }
-          return null;
+          // Return all tokens, even with zero balance
+          return {
+            name: token.name,
+            symbol: token.symbol,
+            coinGeckoId: token.coinGeckoId,
+            balance: formattedBalance,
+            imageUrl: token.logoUrl
+          };
         } catch (error) {
           console.error(`Error getting balance for token ${token.symbol}:`, error);
-          return null;
+          // Return the token with zero balance in case of error
+          return {
+            name: token.name,
+            symbol: token.symbol,
+            coinGeckoId: token.coinGeckoId,
+            balance: 0,
+            imageUrl: token.logoUrl
+          };
         }
       });
 
       const results = await Promise.all(balancePromises);
       
-      // Filter out null results (tokens with 0 balance or errors)
-      return results.filter(result => result !== null);
+      // Return all results, including those with zero balance
+      return results;
     } catch (error) {
       console.error(`Error getting token balances for ${address}:`, error);
       throw error;
@@ -272,9 +276,10 @@ export class EthereumService {
       
       // Get balances of ERC20 tokens
       const tokenBalances = await this.getCommonTokenBalances(address);
-      console.log(`Found ${tokenBalances.length} ERC20 tokens with non-zero balance for ${address}`);
+      const tokensWithBalance = tokenBalances.filter(token => token.balance > 0);
+      console.log(`Found ${tokensWithBalance.length} ERC20 tokens with non-zero balance for ${address} (displaying all ${tokenBalances.length} supported tokens)`);
       
-      // Create array of all assets (ETH + ERC20 tokens)
+      // Create array of all assets (ETH + ERC20 tokens) without filtering zero balances
       const assets = [
         {
           name: "Ethereum",
@@ -284,7 +289,7 @@ export class EthereumService {
           imageUrl: "https://cryptologos.cc/logos/ethereum-eth-logo.png"
         },
         ...tokenBalances
-      ].filter(asset => asset.balance > 0); // Filter only assets with balance > 0
+      ];
       
       return {
         address,
