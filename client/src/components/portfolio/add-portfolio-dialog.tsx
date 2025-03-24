@@ -38,9 +38,9 @@ import { fetchPopularCryptos, searchCryptos } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-// Schema per la creazione del portfolio
+// Schema for portfolio creation
 const createPortfolioSchema = z.object({
-  name: z.string().min(2, "Il nome deve contenere almeno 2 caratteri").max(50, "Il nome non può superare i 50 caratteri"),
+  name: z.string().min(2, "Name must contain at least 2 characters").max(50, "Name cannot exceed 50 characters"),
   selectedCryptos: z.array(z.object({
     id: z.string(),
     name: z.string(),
@@ -78,7 +78,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
   const [selectedCryptos, setSelectedCryptos] = useState<CryptoCurrency[]>([]);
   const [activeTab, setActiveTab] = useState<"popular" | "search">("popular");
   
-  // Form per la creazione del portfolio
+  // Form for portfolio creation
   const form = useForm<z.infer<typeof createPortfolioSchema>>({
     resolver: zodResolver(createPortfolioSchema),
     defaultValues: {
@@ -87,14 +87,14 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     },
   });
   
-  // Fetch delle criptovalute popolari
+  // Fetch popular cryptocurrencies
   const { data: popularCryptos, isLoading: isLoadingPopular } = useQuery({
     queryKey: ['popularCryptos'],
     queryFn: fetchPopularCryptos,
-    staleTime: 1000 * 60 * 5, // 5 minuti
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
-  // Effettua la ricerca quando cambia il termine di ricerca
+  // Perform search when search term changes
   useEffect(() => {
     const delaySearch = setTimeout(async () => {
       if (searchTerm.trim().length > 2) {
