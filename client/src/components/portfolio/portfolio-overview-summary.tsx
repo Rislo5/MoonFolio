@@ -256,7 +256,7 @@ const PortfolioOverviewSummary = () => {
             <div className="space-y-5">
               {/* Valore totale */}
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Valore Totale</div>
+                <div className="text-sm text-muted-foreground mb-1">Total Value</div>
                 <div className="text-2xl font-bold">
                   {isPortfolioQueriesLoading || isPortfolioCtxLoading ? <Skeleton className="h-8 w-32" /> : formatCurrency(totalValue)}
                 </div>
@@ -264,7 +264,7 @@ const PortfolioOverviewSummary = () => {
               
               {/* Cambio 24h */}
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Cambio (24h)</div>
+                <div className="text-sm text-muted-foreground mb-1">Change (24h)</div>
                 {isPortfolioQueriesLoading || isPortfolioCtxLoading ? (
                   <Skeleton className="h-6 w-32" />
                 ) : (
@@ -290,7 +290,7 @@ const PortfolioOverviewSummary = () => {
               
               {/* Top Assets */}
               <div>
-                <div className="text-sm text-muted-foreground mb-2 border-t pt-3">I tuoi Top Asset</div>
+                <div className="text-sm text-muted-foreground mb-2 border-t pt-3">Your Top Assets</div>
                 {isPortfolioQueriesLoading || isPortfolioCtxLoading ? (
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => (
@@ -323,12 +323,12 @@ const PortfolioOverviewSummary = () => {
                     ))}
                     
                     {top5Assets.length === 0 && (
-                      <p className="text-sm text-muted-foreground">Nessun asset disponibile</p>
+                      <p className="text-sm text-muted-foreground">No assets available</p>
                     )}
                     
                     {top5Assets.length > 3 && (
                       <div className="text-xs text-muted-foreground text-center mt-1 pt-1 border-t">
-                        + {top5Assets.length - 3} altr{top5Assets.length - 3 > 1 ? "i" : "o"} asset
+                        + {top5Assets.length - 3} more {top5Assets.length - 3 > 1 ? "assets" : "asset"}
                       </div>
                     )}
                   </div>
@@ -339,7 +339,7 @@ const PortfolioOverviewSummary = () => {
             <div className="mt-4">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 <InfoIcon className="w-3 h-3" />
-                Aggiornato {formatDate(lastUpdated)}
+                Updated {formatDate(lastUpdated)}
               </div>
             </div>
           </div>
@@ -347,7 +347,7 @@ const PortfolioOverviewSummary = () => {
           {/* Sezione grafico andamento */}
           <div className="col-span-12 md:col-span-4 p-4 border-b md:border-b-0 md:border-r border-muted-foreground/10">
             <div className="flex justify-between items-center mb-3">
-              <div className="text-sm font-medium">Andamento</div>
+              <div className="text-sm font-medium">Performance</div>
               <TimeframeSelector value={activeTimeframe} onChange={setActiveTimeframe} />
             </div>
             
@@ -398,7 +398,7 @@ const PortfolioOverviewSummary = () => {
             ) : (
               <div className="flex items-center justify-center h-48 bg-muted/30 rounded-lg">
                 <div className="text-center p-2">
-                  <p className="text-muted-foreground text-xs">Dati insufficienti</p>
+                  <p className="text-muted-foreground text-xs">Insufficient data</p>
                 </div>
               </div>
             )}
@@ -406,7 +406,7 @@ const PortfolioOverviewSummary = () => {
           
           {/* Sezione composizione portfolio */}
           <div className="col-span-12 md:col-span-4 p-4">
-            <div className="text-sm font-medium mb-3">Distribuzione Portfolio</div>
+            <div className="text-sm font-medium mb-3">Portfolio Distribution</div>
             
             {isPortfolioQueriesLoading || isPortfolioCtxLoading ? (
               <div className="h-48 flex items-center justify-center">
@@ -441,7 +441,7 @@ const PortfolioOverviewSummary = () => {
             ) : (
               <div className="flex items-center justify-center h-48 bg-muted/30 rounded-lg">
                 <div className="text-center p-2">
-                  <p className="text-muted-foreground text-xs">Aggiungi asset al portfolio</p>
+                  <p className="text-muted-foreground text-xs">Add assets to your portfolio</p>
                 </div>
               </div>
             )}
