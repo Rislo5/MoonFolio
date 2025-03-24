@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, X, LayoutDashboard, Wallet, ChevronLeft, ChevronRight, Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "@/components/language-selector";
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -28,6 +30,8 @@ export default function Sidebar() {
     setIsCollapsed(!isCollapsed);
   };
 
+  const { t } = useTranslation();
+  
   const NavItem = ({ href, icon: Icon, label, current }: { href: string; icon: any; label: string; current: boolean }) => {
     return (
       <Link href={href}>
@@ -140,13 +144,13 @@ export default function Sidebar() {
           <NavItem
             href="/"
             icon={LayoutDashboard}
-            label="Dashboard"
+            label={t("sidebar.dashboard")}
             current={location === "/" || location === "/dashboard"}
           />
           <NavItem
             href="/portfolios"
             icon={Wallet}
-            label="Portfolio"
+            label={t("sidebar.portfolios")}
             current={location === "/portfolios" || location.startsWith("/portfolios/")}
           />
 
@@ -162,6 +166,25 @@ export default function Sidebar() {
               <ModeToggle />
             </div>
           </div>
+          
+          {/* Language Selector */}
+          {!isCollapsed && (
+            <div className="px-3 py-2 mt-2">
+              <LanguageSelector />
+            </div>
+          )}
+          {isCollapsed && (
+            <div className="px-3 py-2 mt-2 flex justify-center">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setIsCollapsed(false)}
+                className="h-8 w-8"
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </nav>
       </aside>
     </>
