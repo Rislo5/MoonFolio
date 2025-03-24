@@ -41,7 +41,7 @@ const WelcomeScreen = () => {
             </p>
             <Button 
               className="w-full"
-              onClick={() => setViewMode("ens")}
+              onClick={() => setIsEnsDialogOpen(true)}
             >
               Connect ENS Wallet
             </Button>
