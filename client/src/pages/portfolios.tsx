@@ -157,10 +157,17 @@ const Portfolios = () => {
   
   const handleAddAsset = (portfolioId?: number) => {
     if (portfolioId) {
+      // Impostiamo il portfolio attivo e attendiamo un breve timeout prima di aprire il dialogo
       setActivePortfolio(portfolioId);
-      setIsAddAssetDialogOpen(true);
+      setTimeout(() => {
+        setIsAddAssetDialogOpen(true);
+      }, 100); // Piccolo ritardo per garantire che il portfolio attivo sia impostato
     } else if (activePortfolio) {
-      setIsAddAssetDialogOpen(true);
+      // Se c'è già un portfolio attivo, assicuriamoci che sia correttamente impostato
+      setActivePortfolio(activePortfolio.id);
+      setTimeout(() => {
+        setIsAddAssetDialogOpen(true);
+      }, 100); // Piccolo ritardo per garantire che il portfolio attivo sia impostato
     } else {
       toast({
         title: "No active portfolio",
@@ -252,7 +259,7 @@ const Portfolios = () => {
         <div className="flex space-x-2">
           {activePortfolio && (
             <>
-              <Button onClick={handleAddAsset} variant="outline">
+              <Button onClick={() => handleAddAsset()} variant="outline">
                 <CoinsIcon className="mr-2 h-4 w-4" />
                 Add Asset
               </Button>

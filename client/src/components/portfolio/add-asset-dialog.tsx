@@ -142,8 +142,14 @@ const AddAssetDialog = ({ open, onOpenChange }: Props) => {
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      if (!activePortfolio) {
-        throw new Error("No active portfolio. Please create or select a portfolio first.");
+      if (!activePortfolio || !activePortfolio.id) {
+        toast({
+          title: "No active portfolio",
+          description: "Please create or select a portfolio first",
+          variant: "destructive",
+        });
+        onOpenChange(false);
+        return;
       }
       
       await addAsset({
@@ -154,13 +160,19 @@ const AddAssetDialog = ({ open, onOpenChange }: Props) => {
         avgBuyPrice: values.avgBuyPrice ? values.avgBuyPrice.toString() : undefined, // Convert to string if defined
         imageUrl: values.imageUrl,
       });
+      
+      toast({
+        title: "Asset added",
+        description: `${values.name} (${values.symbol.toUpperCase()}) has been added to your portfolio.`,
+      });
+      
       onOpenChange(false);
       form.reset();
     } catch (error) {
       console.error("Failed to add asset:", error);
       toast({
-        title: "Errore",
-        description: error instanceof Error ? error.message : "Impossibile aggiungere l'asset. Assicurati di aver selezionato un portfolio.",
+        title: "Error adding asset",
+        description: error instanceof Error ? error.message : "Could not add the asset. Make sure you have selected a portfolio.",
         variant: "destructive",
       });
     } finally {
