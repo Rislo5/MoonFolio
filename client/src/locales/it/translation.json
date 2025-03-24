@@ -1,0 +1,69 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "portfolios": "Portfolios", 
+    "assets": "Asset",
+    "transactions": "Transazioni",
+    "settings": "Impostazioni",
+    "language": "Lingua"
+  },
+  "common": {
+    "total_value": "Valore Totale",
+    "change_24h": "Cambio (24h)",
+    "top_assets": "I tuoi Top Asset",
+    "portfolio_summary": "Riepilogo del Patrimonio",
+    "portfolio_overview": "Panoramica di tutti i tuoi portfolio di criptovalute",
+    "performance": "Andamento",
+    "distribution": "Distribuzione Portfolio",
+    "add_asset": "Aggiungi Asset",
+    "add_portfolio": "Nuovo Portfolio",
+    "transfer_asset": "Trasferisci Asset",
+    "updated": "Aggiornato",
+    "no_data": "Dati insufficienti",
+    "add_assets": "Aggiungi asset al portfolio",
+    "portfolios_count": "Portfolio",
+    "others": "altri"
+  },
+  "portfolio": {
+    "title": "I tuoi Portfolio",
+    "subtitle": "Gestisci e visualizza tutti i tuoi portfolio di criptovalute",
+    "manual_portfolios": "Portfolio Manuali",
+    "ens_wallets": "Wallet ENS",
+    "created_on": "Creato il",
+    "active": "Attivo",
+    "view_details": "Visualizza Dettagli",
+    "create_portfolio": "Crea Portfolio in un Solo Passaggio",
+    "create_description": "Crea un wallet e aggiungi subito la tua prima criptovaluta"
+  },
+  "asset": {
+    "add_crypto": "Aggiungi Crypto",
+    "optional": "Facoltativo",
+    "popular": "Popolari",
+    "search": "Cerca",
+    "search_placeholder": "Cerca una criptovaluta (es. Bitcoin, Ethereum...)",
+    "no_results": "Nessun risultato trovato per",
+    "type_more": "Digita almeno 3 caratteri per iniziare la ricerca",
+    "selected_crypto": "Crypto selezionate",
+    "remove": "Rimuovi",
+    "quantity": "Quantità",
+    "buy_price": "Prezzo acquisto ($)",
+    "portfolio_name": "Nome Portfolio",
+    "portfolio_placeholder": "Es. Il mio portfolio principale",
+    "portfolio_description": "Scegli un nome significativo per distinguere questo portfolio dagli altri",
+    "cancel": "Annulla",
+    "create": "Crea Portfolio",
+    "creating": "Creazione in corso..."
+  },
+  "language": {
+    "en": "English",
+    "it": "Italiano",
+    "select": "Seleziona lingua"
+  },
+  "timeframes": {
+    "24h": "24h",
+    "7d": "7d",
+    "30d": "30d",
+    "1y": "1y",
+    "all": "Tutti"
+  }
+}
