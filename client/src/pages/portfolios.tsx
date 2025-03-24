@@ -307,14 +307,14 @@ const Portfolios = () => {
                       <div>
                         <CardTitle>{portfolio.name}</CardTitle>
                         <CardDescription>
-                          Creato il {portfolio.createdAt 
+                          Created on {portfolio.createdAt 
                             ? new Date(portfolio.createdAt).toLocaleDateString() 
-                            : 'data non disponibile'}
+                            : 'date not available'}
                         </CardDescription>
                       </div>
                       <div className="flex items-center space-x-2">
                         {activePortfolio?.id === portfolio.id && (
-                          <Badge variant="default">Attivo</Badge>
+                          <Badge variant="default">Active</Badge>
                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={handleMenuClick}>
@@ -405,7 +405,7 @@ const Portfolios = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         {activePortfolio?.id === portfolio.id && (
-                          <Badge variant="default">Attivo</Badge>
+                          <Badge variant="default">Active</Badge>
                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={handleMenuClick}>
