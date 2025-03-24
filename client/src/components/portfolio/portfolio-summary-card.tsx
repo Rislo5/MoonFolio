@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
+import { useTranslation } from "react-i18next";
 import { 
   Card, 
   CardHeader, 
@@ -35,12 +36,14 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9E42FF', '#FF4286'
 
 // Custom tooltip per il grafico a torta
 const CustomPieTooltip = ({ active, payload }: any) => {
+  const { t } = useTranslation();
+  
   if (active && payload && payload.length) {
     return (
       <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
         <p className="font-medium">{payload[0].name}</p>
         <p className="text-sm">{formatCurrency(payload[0].value)}</p>
-        <p className="text-xs text-muted-foreground">{payload[0].payload.percentage}% del portafoglio</p>
+        <p className="text-xs text-muted-foreground">{payload[0].payload.percentage}%</p>
       </div>
     );
   }
@@ -49,6 +52,8 @@ const CustomPieTooltip = ({ active, payload }: any) => {
 
 // Custom tooltip per il grafico lineare
 const CustomLineTooltip = ({ active, payload, label }: any) => {
+  const { t } = useTranslation();
+  
   if (active && payload && payload.length) {
     return (
       <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
@@ -62,6 +67,8 @@ const CustomLineTooltip = ({ active, payload, label }: any) => {
 
 // Componente timeframe selector
 const TimeframeSelector = ({ value, onChange }: { value: TimeFrame, onChange: (tf: TimeFrame) => void }) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="flex items-center space-x-1">
       {['24h', '7d', '30d', '1y', 'all'].map((tf) => (
@@ -74,7 +81,7 @@ const TimeframeSelector = ({ value, onChange }: { value: TimeFrame, onChange: (t
               : 'hover:bg-muted/80 bg-muted/50'
           }`}
         >
-          {tf}
+          {t(`timeframes.${tf}`)}
         </button>
       ))}
     </div>
@@ -90,6 +97,7 @@ export default function PortfolioSummaryCard() {
     activeTimeframe,
     setActiveTimeframe
   } = usePortfolio();
+  const { t } = useTranslation();
 
   const [pieData, setPieData] = useState<{ name: string; symbol: string; value: number; percentage: number }[]>([]);
 
@@ -139,11 +147,11 @@ export default function PortfolioSummaryCard() {
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl">Riepilogo Portfolio</CardTitle>
-            <CardDescription>Panoramica del valore e delle performance</CardDescription>
+            <CardTitle className="text-xl">{t('common.portfolio_summary')}</CardTitle>
+            <CardDescription>{t('common.portfolio_overview')}</CardDescription>
           </div>
           <Badge variant="outline" className="bg-primary/10 text-primary font-medium">
-            {pieData.length} Asset
+            {pieData.length} {t('common.assets')}
           </Badge>
         </div>
       </CardHeader>
@@ -155,13 +163,13 @@ export default function PortfolioSummaryCard() {
             <div className="space-y-5">
               {/* Valore totale */}
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Valore Totale</div>
+                <div className="text-sm text-muted-foreground mb-1">{t('common.total_value')}</div>
                 <div className="text-2xl font-bold">{formatCurrency(portfolioOverview.totalValue)}</div>
               </div>
               
               {/* Cambio 24h */}
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Cambio (24h)</div>
+                <div className="text-sm text-muted-foreground mb-1">{t('common.change_24h')}</div>
                 <div className="flex items-center">
                   <div className={`text-xl font-bold ${portfolioOverview.change24hPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {formatCurrency(portfolioOverview.change24h)}
@@ -185,7 +193,7 @@ export default function PortfolioSummaryCard() {
             <div className="mt-4">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 <InfoIcon className="w-3 h-3" />
-                Aggiornato {formatDate(new Date())}
+                {t('common.updated')} {formatDate(new Date())}
               </div>
             </div>
           </div>
@@ -193,7 +201,7 @@ export default function PortfolioSummaryCard() {
           {/* Sezione grafico andamento */}
           <div className="col-span-12 md:col-span-4 p-4 border-b md:border-b-0 md:border-r border-muted-foreground/10">
             <div className="flex justify-between items-center mb-2">
-              <div className="text-sm font-medium">Andamento</div>
+              <div className="text-sm font-medium">{t('common.performance')}</div>
               <TimeframeSelector value={activeTimeframe} onChange={setActiveTimeframe} />
             </div>
             
@@ -243,7 +251,7 @@ export default function PortfolioSummaryCard() {
             ) : (
               <div className="flex items-center justify-center h-36 bg-muted/30 rounded-lg">
                 <div className="text-center p-2">
-                  <p className="text-muted-foreground text-xs">Dati insufficienti</p>
+                  <p className="text-muted-foreground text-xs">{t('common.no_data')}</p>
                 </div>
               </div>
             )}
@@ -251,7 +259,7 @@ export default function PortfolioSummaryCard() {
           
           {/* Sezione composizione portfolio */}
           <div className="col-span-12 md:col-span-4 p-4">
-            <div className="text-sm font-medium mb-2">Composizione</div>
+            <div className="text-sm font-medium mb-2">{t('common.distribution')}</div>
             
             {pieData.length > 0 ? (
               <div className="h-36">
@@ -280,7 +288,7 @@ export default function PortfolioSummaryCard() {
             ) : (
               <div className="flex items-center justify-center h-36 bg-muted/30 rounded-lg">
                 <div className="text-center p-2">
-                  <p className="text-muted-foreground text-xs">Aggiungi asset al portfolio</p>
+                  <p className="text-muted-foreground text-xs">{t('common.add_assets')}</p>
                 </div>
               </div>
             )}
@@ -301,7 +309,7 @@ export default function PortfolioSummaryCard() {
                 ))}
                 {pieData.length > 2 && (
                   <div className="text-xs text-muted-foreground text-center mt-1">
-                    + {pieData.length - 2} altro{pieData.length - 2 > 1 ? "i" : ""}
+                    + {pieData.length - 2} {t('common.others')}
                   </div>
                 )}
               </div>
