@@ -86,10 +86,109 @@ async function fetchPopularCryptocurrencies(): Promise<CryptoCurrency[]> {
   }
 }
 
+// Funzione per recuperare i prezzi delle criptovalute con cache
+async function getPricesWithCache(coinGeckoIds: string[]): Promise<Record<string, { price: number, percentChange24h: number }>> {
+  const now = Date.now();
+  
+  // Se la cache è ancora valida (meno di un'ora) e contiene tutti gli ID richiesti, usa la cache
+  const shouldRefreshCache = 
+    now - priceCache.lastUpdated > CACHE_DURATION || 
+    isPriceUpdateInProgress === false && 
+    coinGeckoIds.some(id => !priceCache.prices[id]);
+  
+  if (!shouldRefreshCache) {
+    return priceCache.prices;
+  }
+  
+  // Evita richieste concorrenti
+  if (isPriceUpdateInProgress) {
+    // Se un altro aggiornamento è in corso, attendere e restituire i dati attuali
+    console.log("Aggiornamento prezzi già in corso, utilizzo cache esistente");
+    return priceCache.prices;
+  }
+  
+  // Segnala che è in corso un aggiornamento
+  isPriceUpdateInProgress = true;
+  
+  try {
+    console.log("Aggiornamento cache prezzi CoinMarketCap...");
+    
+    // Raggruppa gli ID in gruppi più piccoli per rispettare i limiti dell'API
+    const idGroups: string[][] = [];
+    for (let i = 0; i < coinGeckoIds.length; i += 5) {
+      idGroups.push(coinGeckoIds.slice(i, i + 5));
+    }
+    
+    for (const group of idGroups) {
+      const slugs = group.join(',');
+      
+      if (!slugs) continue;
+      
+      try {
+        const response = await fetch(
+          `${COINMARKETCAP_API_URL}/cryptocurrency/quotes/latest?slug=${slugs}`, {
+            headers: {
+              'X-CMC_PRO_API_KEY': COINMARKETCAP_API_KEY,
+              'Accept': 'application/json'
+            }
+          }
+        );
+        
+        if (!response.ok) {
+          console.error(`Errore API CoinMarketCap: ${response.statusText} per slugs: ${slugs}`);
+          continue;
+        }
+        
+        const responseData = await response.json();
+        
+        if (responseData && responseData.data) {
+          // Estrai dati di prezzo per ogni criptovaluta
+          Object.values(responseData.data).forEach((coin: any) => {
+            priceCache.prices[coin.slug] = {
+              price: coin.quote.USD.price,
+              percentChange24h: coin.quote.USD.percent_change_24h
+            };
+          });
+        }
+        
+        // Piccola pausa tra le richieste
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (error) {
+        console.error(`Errore nel recupero dei prezzi per gruppo ${slugs}:`, error);
+      }
+    }
+    
+    // Aggiorna il timestamp di aggiornamento cache
+    priceCache.lastUpdated = Date.now();
+    console.log("Cache prezzi aggiornata con successo");
+    
+    return priceCache.prices;
+  } catch (error) {
+    console.error('Errore nell\'aggiornamento dei prezzi:', error);
+    return priceCache.prices;
+  } finally {
+    // Resetta il flag di aggiornamento in corso
+    isPriceUpdateInProgress = false;
+  }
+}
+
 async function broadcastPriceUpdates() {
   try {
     // Aggiorna i prezzi popolari ogni 30 secondi
     popularCryptos = await fetchPopularCryptocurrencies();
+    
+    // Aggiorna la cache con questi dati popolari
+    popularCryptos.forEach(crypto => {
+      priceCache.prices[crypto.id] = {
+        price: crypto.current_price,
+        percentChange24h: crypto.price_change_percentage_24h
+      };
+    });
+    
+    // Aggiorna il timestamp se necessario
+    if (Date.now() - priceCache.lastUpdated > CACHE_DURATION) {
+      priceCache.lastUpdated = Date.now();
+    }
     
     // Invia i dati aggiornati a tutti i client connessi
     const message = JSON.stringify({
@@ -597,47 +696,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch current prices for all assets to calculate total value
       try {
-        // Create a map to store prices
-        const priceMap: Record<string, { price: number, percentChange24h: number }> = {};
+        // Ottieni gli ID delle criptovalute
+        const coinGeckoIds = assets.map(asset => asset.coinGeckoId).filter(Boolean);
         
-        // Group assets by 10 to avoid hitting API limits
-        const assetGroups = [];
-        for (let i = 0; i < assets.length; i += 10) {
-          assetGroups.push(assets.slice(i, i + 10));
-        }
-        
-        // Fetch prices for each group
-        for (const group of assetGroups) {
-          const slugs = group.map(asset => asset.coinGeckoId).join(','); // coinGeckoId is actually the slug
-          
-          if (slugs.length === 0) continue;
-          
-          const priceResponse = await fetch(
-            `${COINMARKETCAP_API_URL}/cryptocurrency/quotes/latest?slug=${slugs}`, {
-              headers: {
-                'X-CMC_PRO_API_KEY': COINMARKETCAP_API_KEY,
-                'Accept': 'application/json'
-              }
-            }
-          );
-          
-          if (!priceResponse.ok) {
-            throw new Error(`CoinMarketCap API error: ${priceResponse.statusText}`);
-          }
-          
-          const responseData = await priceResponse.json();
-          
-          // Extract price data for each asset
-          if (responseData.data) {
-            // CoinMarketCap returns data as an object with IDs as keys
-            Object.values(responseData.data).forEach((coin: any) => {
-              priceMap[coin.slug] = {
-                price: coin.quote.USD.price,
-                percentChange24h: coin.quote.USD.percent_change_24h
-              };
-            });
-          }
-        }
+        // Usa la funzione di cache per ottenere i prezzi
+        const priceMap = await getPricesWithCache(coinGeckoIds);
         
         // Enhance assets with current price data
         const assetsWithPrices = assets.map(asset => {
@@ -931,47 +994,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch current prices for all assets to calculate total value
       try {
-        // Create a map to store prices
-        const priceMap: Record<string, { price: number, percentChange24h: number }> = {};
+        // Ottieni gli ID delle criptovalute
+        const coinGeckoIds = assets.map(asset => asset.coinGeckoId).filter(Boolean);
         
-        // Group assets by 10 to avoid hitting API limits
-        const assetGroups = [];
-        for (let i = 0; i < assets.length; i += 10) {
-          assetGroups.push(assets.slice(i, i + 10));
-        }
-        
-        // Fetch prices for each group
-        for (const group of assetGroups) {
-          const slugs = group.map(asset => asset.coinGeckoId).join(','); // coinGeckoId is actually the slug
-          
-          if (slugs.length === 0) continue;
-          
-          const priceResponse = await fetch(
-            `${COINMARKETCAP_API_URL}/cryptocurrency/quotes/latest?slug=${slugs}`, {
-              headers: {
-                'X-CMC_PRO_API_KEY': COINMARKETCAP_API_KEY,
-                'Accept': 'application/json'
-              }
-            }
-          );
-          
-          if (!priceResponse.ok) {
-            throw new Error(`CoinMarketCap API error: ${priceResponse.statusText}`);
-          }
-          
-          const responseData = await priceResponse.json();
-          
-          // Extract price data for each asset
-          if (responseData.data) {
-            // CoinMarketCap returns data as an object with IDs as keys
-            Object.values(responseData.data).forEach((coin: any) => {
-              priceMap[coin.slug] = {
-                price: coin.quote.USD.price,
-                percentChange24h: coin.quote.USD.percent_change_24h
-              };
-            });
-          }
-        }
+        // Usa la funzione di cache per ottenere i prezzi
+        const priceMap = await getPricesWithCache(coinGeckoIds);
         
         // Calculate total portfolio value and 24h change
         let totalValue = 0;
