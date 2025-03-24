@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePortfolio } from "@/hooks/use-portfolio";
 import { generatePortfolioChartData } from "@/lib/api";
 import { formatCurrency, formatPercentage, formatDate } from "@/lib/utils";
@@ -109,14 +109,14 @@ const PortfolioOverviewSummary = () => {
   // Usa React Query per ottenere i dati di overview solo dei portfolio che devono essere inclusi nel riepilogo
   // Memorizza la lista filtrata di portfolio per evitare cambiamenti continui
   const filteredPortfolios = useMemo(() => 
-    portfolios.filter(portfolio => portfolio.showInSummary !== false),
+    portfolios.filter((portfolio) => portfolio.showInSummary !== false),
     [portfolios]
   );
   
   // Assegna colori stabili ai portfolio
   const portfolioColors = useMemo(() => {
     const colors: Record<number, string> = {};
-    filteredPortfolios.forEach((portfolio, index) => {
+    filteredPortfolios.forEach((portfolio: any, index: number) => {
       colors[portfolio.id] = COLORS[index % COLORS.length];
     });
     return colors;
@@ -124,7 +124,7 @@ const PortfolioOverviewSummary = () => {
   
   // Ottieni i dati dai portfolio
   const portfolioQueries = useQueries({
-    queries: filteredPortfolios.map(portfolio => ({
+    queries: filteredPortfolios.map((portfolio: any) => ({
       queryKey: [`portfolio-overview-${portfolio.id}`, 'overview'],
       queryFn: async () => {
         try {
