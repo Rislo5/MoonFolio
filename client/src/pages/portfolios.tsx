@@ -498,14 +498,14 @@ const Portfolios = () => {
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Dialogo di conferma per disconnettere il wallet ENS */}
+      {/* Confirmation dialog for disconnecting ENS wallet */}
       <AlertDialog open={showDisconnectDialog} onOpenChange={setShowDisconnectDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Disconnettere questo wallet?</AlertDialogTitle>
+            <AlertDialogTitle>Disconnect this wallet?</AlertDialogTitle>
             <AlertDialogDescription>
-              Stai per disconnettere il wallet "{portfolioToAction?.name}". 
-              Potrai riconnetterlo in qualsiasi momento. I tuoi dati verranno rimossi dalla dashboard.
+              You are about to disconnect the wallet "{portfolioToAction?.name}". 
+              You can reconnect it at any time. Your data will be removed from the dashboard.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -515,13 +515,13 @@ const Portfolios = () => {
               className="bg-red-600 hover:bg-red-700"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Disconnetti
+              Disconnect
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       
-      {/* Dialog per connettere wallet ENS con l'opzione includeInSummary */}
+      {/* Dialog for connecting ENS wallet with includeInSummary option */}
       <ConnectEnsWalletDialog
         open={isEnsDialogOpen}
         onOpenChange={setIsEnsDialogOpen}
