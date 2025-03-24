@@ -533,7 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get wallet assets (ETH e token ERC20)
+  // Get wallet assets (ETH and ERC20 tokens)
   app.get("/api/wallet/:address", async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -547,23 +547,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid Ethereum address format" });
       }
       
-      // Usa il servizio Ethereum per ottenere gli asset del wallet
+      console.log(`Fetching wallet assets for address: ${address}`);
+      
+      // Use Ethereum service to get wallet assets
       const walletData = await ethereumService.getWalletAssets(address);
       
-      // Cerca se esiste un nome ENS per questo indirizzo (reverse lookup)
+      // Check if there's an ENS name for this address (reverse lookup)
       try {
+        console.log(`Attempting reverse ENS lookup for address: ${address}`);
         const ensName = await provider.lookupAddress(address);
         if (ensName) {
+          console.log(`Found ENS name for address ${address}: ${ensName}`);
           walletData.ensName = ensName;
         }
       } catch (lookupError) {
         console.error(`Error performing reverse ENS lookup for ${address}:`, lookupError);
-        // Non fallire l'intero endpoint se il lookup reverse ENS fallisce
+        // Don't fail the entire endpoint if reverse ENS lookup fails
       }
       
       res.json(walletData);
     } catch (error) {
       console.error(`Error fetching wallet assets for ${req.params.address}:`, error);
+      
+      // Provide more specific error messages based on the type of error
+      if (error instanceof Error) {
+        if (error.message.includes('Infura API')) {
+          return res.status(500).json({
+            message: "Infura API configuration error",
+            error: error.message
+          });
+        }
+      }
+      
       res.status(500).json({
         message: "Failed to fetch wallet assets",
         error: error instanceof Error ? error.message : String(error),
