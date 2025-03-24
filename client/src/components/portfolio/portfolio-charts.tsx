@@ -28,9 +28,9 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9E42FF', '#FF4286'
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
-        <p className="text-muted-foreground text-xs mb-1">{label}</p>
-        <p className="font-medium">{formatCurrency(payload[0].value)}</p>
+      <div className="bg-gray-900 border border-gray-700 shadow-sm rounded-lg p-2 text-sm">
+        <p className="text-gray-400 text-xs mb-1">{label}</p>
+        <p className="font-medium text-white">{formatCurrency(payload[0].value)}</p>
       </div>
     );
   }
@@ -41,10 +41,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const CustomPieTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-background border shadow-sm rounded-lg p-2 text-sm">
-        <p className="font-medium">{payload[0].name}</p>
-        <p className="text-sm">{formatCurrency(payload[0].value)}</p>
-        <p className="text-xs text-muted-foreground">{payload[0].payload.percentage}% del portafoglio</p>
+      <div className="bg-gray-900 border border-gray-700 shadow-sm rounded-lg p-2 text-sm">
+        <p className="font-medium text-white">{payload[0].name}</p>
+        <p className="text-sm text-white">{formatCurrency(payload[0].value)}</p>
+        <p className="text-xs text-gray-400">{payload[0].payload.percentage}% del portafoglio</p>
       </div>
     );
   }
@@ -190,24 +190,24 @@ export default function PortfolioCharts() {
               >
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.1} />
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.2} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
+                  tick={{ fontSize: 12, fill: '#9CA3AF' }}
                   tickFormatter={formatXAxis}
-                  axisLine={{ stroke: 'var(--border)' }}
-                  tickLine={{ stroke: 'var(--border)' }}
+                  axisLine={{ stroke: '#374151' }}
+                  tickLine={{ stroke: '#374151' }}
                   allowDataOverflow={true}
                 />
                 <YAxis 
-                  tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
+                  tick={{ fontSize: 12, fill: '#9CA3AF' }}
                   tickFormatter={(value) => formatCurrency(value, 'USD', 0)}
-                  axisLine={{ stroke: 'var(--border)' }}
-                  tickLine={{ stroke: 'var(--border)' }}
+                  axisLine={{ stroke: '#374151' }}
+                  tickLine={{ stroke: '#374151' }}
                   domain={['auto', 'auto']}
                   allowDataOverflow={true}
                 />
@@ -224,7 +224,7 @@ export default function PortfolioCharts() {
                 <Area 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="var(--primary)" 
+                  stroke="#3b82f6" 
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorValue)"
@@ -262,7 +262,7 @@ export default function PortfolioCharts() {
                   outerRadius={100}
                   innerRadius={50}
                   dataKey="value"
-                  stroke="var(--background)"
+                  stroke="#111827"
                   strokeWidth={1}
                   nameKey="name"
                 >
@@ -276,7 +276,7 @@ export default function PortfolioCharts() {
                   verticalAlign="middle" 
                   align="right"
                   formatter={(value, entry, index) => (
-                    <span className="text-sm" style={{color: 'var(--foreground)'}}>
+                    <span className="text-sm" style={{color: '#E5E7EB'}}>
                       {value} ({pieData[index]?.percentage}%)
                     </span>
                   )}
