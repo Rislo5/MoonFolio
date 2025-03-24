@@ -36,11 +36,11 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Asset, AssetWithPrice, Portfolio } from "@shared/schema";
 
-// Schema per il transfer
+// Schema for the transfer
 const transferAssetSchema = z.object({
-  sourceAssetId: z.string().min(1, "Seleziona un asset da trasferire"),
-  targetPortfolioId: z.string().min(1, "Seleziona un portfolio di destinazione"),
-  amount: z.string().min(1, "Inserisci una quantità da trasferire"),
+  sourceAssetId: z.string().min(1, "Select an asset to transfer"),
+  targetPortfolioId: z.string().min(1, "Select a destination portfolio"),
+  amount: z.string().min(1, "Enter an amount to transfer"),
 });
 
 type Props = {
@@ -62,7 +62,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithPrice | null>(null);
   
-  // Form per il trasferimento
+  // Form for the transfer
   const form = useForm<z.infer<typeof transferAssetSchema>>({
     resolver: zodResolver(transferAssetSchema),
     defaultValues: {
@@ -72,7 +72,7 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     },
   });
 
-  // Impostare l'asset iniziale se specificato
+  // Set the initial asset if specified
   useEffect(() => {
     if (initialAssetId && open) {
       form.setValue("sourceAssetId", initialAssetId.toString());
@@ -83,13 +83,13 @@ export const TransferAssetDialog = ({ open, onOpenChange, initialAssetId }: Prop
     }
   }, [initialAssetId, assets, open, form]);
 
-  // Aggiorna l'asset selezionato quando cambia la selezione
+  // Update the selected asset when the selection changes
   const handleAssetChange = (assetId: string) => {
     const asset = assets.find(a => a.id === parseInt(assetId));
     setSelectedAsset(asset || null);
   };
 
-  // Portfolio disponibili per il trasferimento (escluso quello attivo)
+  // Available portfolios for transfer (excluding the active one)
   const availablePortfolios = portfolios.filter(p => p.id !== activePortfolio?.id);
 
   // Gestisce il submit del form

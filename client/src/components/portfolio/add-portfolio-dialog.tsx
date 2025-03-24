@@ -156,8 +156,8 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
   const handleFormSubmit = async (values: z.infer<typeof createPortfolioSchema>) => {
     if (!values.name.trim()) {
       toast({
-        title: "Campo obbligatorio",
-        description: "Inserisci un nome per il tuo portfolio",
+        title: "Required field",
+        description: "Enter a name for your portfolio",
         variant: "destructive",
       });
       return;
@@ -189,13 +189,13 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
         }
         
         toast({
-          title: "Portfolio creato con successo",
-          description: `Portfolio "${values.name}" creato con ${selectedCryptos.filter(c => c.balance && c.avgPrice).length} asset`,
+          title: "Portfolio created successfully",
+          description: `Portfolio "${values.name}" created with ${selectedCryptos.filter(c => c.balance && c.avgPrice).length} assets`,
         });
       } else {
         toast({
-          title: "Portfolio creato con successo",
-          description: "Puoi ora aggiungere asset al tuo portfolio",
+          title: "Portfolio created successfully",
+          description: "You can now add assets to your portfolio",
         });
       }
       
@@ -211,8 +211,8 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
     } catch (error) {
       console.error("Failed to create portfolio or add asset:", error);
       toast({
-        title: "Errore",
-        description: error instanceof Error ? error.message : "Impossibile completare l'operazione",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Unable to complete the operation",
         variant: "destructive",
       });
     } finally {
@@ -289,13 +289,13 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
                         <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
                         <Input 
                           className="pl-10"
-                          placeholder="Es. Il mio portfolio principale" 
+                          placeholder="e.g. My main portfolio" 
                           {...field} 
                         />
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Scegli un nome significativo per distinguere questo portfolio dagli altri
+                      Choose a meaningful name to distinguish this portfolio from others
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -303,7 +303,7 @@ export const AddPortfolioDialog = ({ open, onOpenChange }: Props) => {
               />
               
               <div className="grid grid-cols-2 gap-2 mt-1">
-                {["Portfolio principale", "Investimenti lungo termine", "Trading attivo", "Risparmio"].map((suggestion) => (
+                {["Main Portfolio", "Long-term Investments", "Active Trading", "Savings"].map((suggestion) => (
                   <Button 
                     key={suggestion} 
                     variant="outline" 
