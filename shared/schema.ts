@@ -22,6 +22,7 @@ export const portfolios = pgTable("portfolios", {
   walletAddress: text("wallet_address"),
   isEns: boolean("is_ens").default(false),
   ensName: text("ens_name"),
+  showInSummary: boolean("show_in_summary").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -208,7 +208,6 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
         walletAddress: address,
         isEns: true,
         ensName: ensName || undefined,
-        // Le wallet ENS non incluse nel riepilogo non vengono mostrate nel totale
         showInSummary: includeInSummary,
       });
       
