@@ -40,7 +40,7 @@ type PortfolioContextType = {
   activeTimeframe: TimeFrame;
   
   // Portfolio actions
-  connectEnsWallet: (ensNameOrAddress: string) => Promise<void>;
+  connectEnsWallet: (ensNameOrAddress: string, includeInSummary?: boolean) => Promise<void>;
   createManualPortfolio: (name: string) => Promise<Portfolio>;
   setActivePortfolio: (portfolioId: number) => void;
   disconnect: () => void;
@@ -181,7 +181,10 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
   
   // Mutations
   const connectEnsWalletMutation = useMutation({
-    mutationFn: async (ensNameOrAddress: string) => {
+    mutationFn: async ({ ensNameOrAddress, includeInSummary = true }: { 
+      ensNameOrAddress: string;
+      includeInSummary?: boolean;
+    }) => {
       // 1. Resolve the ENS name or address
       const { address, ensName } = await resolveEnsName(ensNameOrAddress);
       
@@ -205,6 +208,8 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
         walletAddress: address,
         isEns: true,
         ensName: ensName || undefined,
+        // Le wallet ENS non incluse nel riepilogo non vengono mostrate nel totale
+        showInSummary: includeInSummary,
       });
       
       // 5. Add assets to the portfolio
@@ -485,7 +490,8 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         activeTimeframe,
         
-        connectEnsWallet: (ensNameOrAddress) => connectEnsWalletMutation.mutateAsync(ensNameOrAddress),
+        connectEnsWallet: (ensNameOrAddress, includeInSummary) => 
+          connectEnsWalletMutation.mutateAsync({ ensNameOrAddress, includeInSummary }),
         createManualPortfolio: (name) => createManualPortfolioMutation.mutateAsync(name),
         setActivePortfolio: (portfolioId) => setActivePortfolioId(portfolioId),
         disconnect: () => {
